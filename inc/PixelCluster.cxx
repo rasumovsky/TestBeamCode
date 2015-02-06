@@ -26,7 +26,7 @@ PixelCluster::PixelCluster(PixelHit hit) {
 /**
    Add a hit to the cluster.
 */
-PixelCluster::addHit(PixelHit hit) {
+void PixelCluster::addHit(PixelHit hit) {
   clusteredHits.push_back(hit);
   nClusteredHits++;
 }
@@ -41,17 +41,17 @@ int PixelCluster::getNHits() {
 /**
    Get a specific hit based on the index from a cluster.
 */
-PixelHits PixelCluster::getHit(int hitIndex) {
-  return clusteredHits[i];
+PixelHit PixelCluster::getHit(int hitIndex) {
+  return clusteredHits[hitIndex];
 }
 
 /**
    Check if a hit is contained in the cluster.
 */
 bool PixelCluster::containsHit(PixelHit hit) {
-  for (int i = 0; i < clusteredHits.size(); i++) {
-    if (clusteredHits[i].getRow() == hit.getRow() &&
-	clusteredHits[i].getCol() == hit.getCol()) {
+  for (int i = 0; i < (int)clusteredHits.size(); i++) {
+    if ((clusteredHits[i]).getRow() == hit.getRow() &&
+	(clusteredHits[i]).getCol() == hit.getCol()) {
       return true;
     }
   }
@@ -61,6 +61,8 @@ bool PixelCluster::containsHit(PixelHit hit) {
 /**
    Returns an iterator over the hits in the cluster.
 */
-vector<PixelHit>::iterator PixelCluster::iterator() {
-  return clusteredHits.iterator();
+std::vector<PixelHit>::iterator PixelCluster::iterator() {
+  std::vector<PixelHit>::iterator hitIter;
+  hitIter = clusteredHits.begin();
+  return hitIter;//clusteredHits.iterator();
 }

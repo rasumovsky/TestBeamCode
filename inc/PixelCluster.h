@@ -23,7 +23,7 @@ class PixelCluster
  private:
   
   // Member objects:
-  vector<PixelHit> clusteredHits;
+  std::vector<PixelHit> clusteredHits;
   int nClusteredHits;
   
  public:
@@ -33,13 +33,13 @@ class PixelCluster
   ~PixelCluster();
   
   // Mutators:
-  addHit(PixelHit hit);
+  void addHit(PixelHit hit);
     
   // Accessors:
   int getNHits();
   PixelHit getHit(int hitIndex);
   bool containsHit(PixelHit hit);
-  vector<PixelHit>::iterator iterator();
+  std::vector<PixelHit>::iterator iterator();
 };
 
 #endif
