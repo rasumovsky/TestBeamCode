@@ -33,8 +33,10 @@ class HitMatching
   // masking T3MAPS (or should we?)
 
   // Member objects:
-  bool hitsFEI4[336][80];
-  bool hitsT3MAPS[16][64];
+  vector<int> rowHitsFEI4;
+  vector<int> colHitsFEI4;
+  vector<int> rowHitsT3MAPS;
+  vector<int> colHitsT3MAPS;
   
   int nPixHitsT3MAPS;
   int nPixHitsFEI4;
@@ -42,6 +44,7 @@ class HitMatching
   int nClustersT3MAPS;
   int nClustersFEI4;
   
+  ModuleMapping *mapper;
   
  public:
   
@@ -53,8 +56,9 @@ class HitMatching
   void AddHitInFEI4(int row, int col);
   void AddHitInT3MAPS(int row, int col);
   // Basically, we want to 
-  void checkMatchInFEI4(int row, int col);
-  void checkMatchInT3MAPS(int rowFEI4, int colFEI4);
+  bool isMatchedInFEI4(int rowT3MAPS, int colT3MAPS);
+  bool isMatchedInT3MAPS(int rowFEI4, int colFEI4);
+
 };
 
 #endif
