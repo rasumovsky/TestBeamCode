@@ -49,3 +49,4 @@ int TestBeamAnalysis::main( int argc, char **argv ) {
   TFile *fileFEI4;
   TTree *myTreeFEI4;
   
+  ///// FOR FEI4, chiech that they have the same event number before reco clusters and hits.

@@ -22,13 +22,11 @@
 HitMatching::HitMatching(ModuleMapping *mapper) {
   std::cout << std::endl << "HitMatching::Initializing..." << std::endl;
 
-  rowHitsFEI4.clear();
-  colHitsFEI4.clear();
+  hitsFEI4.clear();
   nPixHitsFEI4 = 0;
   nClustersFEI4 = 0;
   
-  rowHitsT3MAPS.clear();
-  colHitsT3MAPS.clear();
+  hitsT3MAPS.clear();
   nPixHitsT3MAPS = 0;
   nClustersT3MAPS = 0;  
   
@@ -41,10 +39,10 @@ HitMatching::HitMatching(ModuleMapping *mapper) {
 /**
    Add a single pixel hit in the FEI4 chip.
  */
-void HitMatching::AddHitInFEI4(int row, int col) {
-  if (row > 0 && row < 336 && col > 0 && col < 336) {
-    rowHitsFEI4.push_back(row);
-    colHitsFEI4.push_back(col);
+void HitMatching::AddHitInFEI4(PixelHit hit) {
+  if (hit.getRow() > 0 && hit.getRow() < 336 && 
+      hit.getCol() > 0 && hit.getCol() < 336) {
+    hitsFEI4.push_back(hit);
     nPixHitsFEI4++;
   }
   else {
@@ -56,10 +54,10 @@ void HitMatching::AddHitInFEI4(int row, int col) {
 /**
    Add a single pixel hit in the T3MAPS chip.
 */
-void HitMatching::AddHitInT3MAPS(int row, int col) {
-  if (row > 0 && row < 16 && col > 0 && col < 64) {
-    rowHitsT3MAPS.push_back(row);
-    colHitsT3MAPS.push_back(col);
+void HitMatching::AddHitInT3MAPS(PixelHit hit) {
+  if (hit.getRow() > 0 && hit.getRow() < 16 && 
+      hit.getCol() > 0 && hit.getCol() < 64) {
+    hitsT3MAPS.push_back(hit);
     nPixHitsT3MAPS++;
   }
   else {
@@ -71,22 +69,22 @@ void HitMatching::AddHitInT3MAPS(int row, int col) {
 /**
    For a given hit in T3MAPS, searches for a corresponding hit in FEI4.
 */
-bool isMatchedInFEI4(int rowT3MAPS, int colT3MAPS) {
+bool HitMatching::isHitMatchedInFEI4(PixelHit hit) {
   
   // These are the nominal positions:
-  int rowNomFEI4 = mapper->GetFEI4fromT3MAPS("rowVal",rowT3MAPS);
-  int colNomFEI4 = mapper->GetFEI4fromT3MAPS("colVal",colT3MAPS);
+  int rowNomFEI4 = mapper->GetFEI4fromT3MAPS("rowVal",hit.getRow());
+  int colNomFEI4 = mapper->GetFEI4fromT3MAPS("colVal",hit.getCol());
   
   /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
-  int rowSigmaFEI4 = mapper->GetFEI4fromT3MAPS("rowSigma",rowT3MAPS);
-  int colSigmaFEI4 = mapper->GetFEI4fromT3MAPS("colSigma",colT3MAPS);
+  int rowSigmaFEI4 = mapper->GetFEI4fromT3MAPS("rowSigma",hit.getRow());
+  int colSigmaFEI4 = mapper->GetFEI4fromT3MAPS("colSigma",hit.getCol());
   
   // loop over FEI4 hits, see if any are around the nominal +/- sigma positions
   for (int i = 0; i < nPixHitsFEI4; i++) {
-    if (rowHitsFEI4(i) >= (rowNomFEI4 - rowSigmaFEI4) &&
-	rowHitsFEI4(i) <= (rowNomFEI4 + rowSigmaFEI4) &&
-	colHitsFEI4(i) >= (colNomFEI4 - colSigmaFEI4) &&
-	colHitsFEI4(i) <= (colNomFEI4 + colSigmaFEI4)) {
+    if (hitsFEI4(i).getRow() >= (rowNomFEI4 - rowSigmaFEI4) &&
+	hitsFEI4(i).getRow() <= (rowNomFEI4 + rowSigmaFEI4) &&
+	hitsFEI4(i).getCol() >= (colNomFEI4 - colSigmaFEI4) &&
+	hitsFEI4(i).getCol() <= (colNomFEI4 + colSigmaFEI4)) {
       return true;
     }
   }
@@ -96,24 +94,40 @@ bool isMatchedInFEI4(int rowT3MAPS, int colT3MAPS) {
 /**
    For a given hit in FEI4, searches for a corresponding hit in T3MAPS.
  */
-bool isMatchedInT3MAPS(int rowFEI4, int colFEI4) {
+bool HitMatching::isHitMatchedInT3MAPS(PixelHit hit) {
   
   // These are the nominal positions:
-  int rowNomT3MAPS = mapper->GetT3MAPSfromFEI4("rowVal",rowFEI4);
-  int colNomT3MAPS = mapper->GetT3MAPSfromFEI4("colVal",colFEI4);
+  int rowNomT3MAPS = mapper->GetT3MAPSfromFEI4("rowVal",hit.getRow());
+  int colNomT3MAPS = mapper->GetT3MAPSfromFEI4("colVal",hit.getCol());
   
   /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
-  int rowSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("rowSigma",rowFEI4);
-  int colSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("colSigma",colFEI4);
+  int rowSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("rowSigma",hit.getRow());
+  int colSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("colSigma",hit.getCol());
   
   // loop over FEI4 hits, see if any are around the nominal +/- sigma positions
   for (int i = 0; i < nPixHitsFEI4; i++) {
-    if (rowHitsT3MAPS(i) >= (rowNomT3MAPS - rowSigmaT3MAPS) &&
-	rowHitsT3MAPS(i) <= (rowNomT3MAPS + rowSigmaT3MAPS) &&
-	colHitsT3MAPS(i) >= (colNomT3MAPS - colSigmaT3MAPS) &&
-	colHitsT3MAPS(i) <= (colNomT3MAPS + colSigmaT3MAPS)) {
+    if (hitsT3MAPS(i).getRow() >= (rowNomT3MAPS - rowSigmaT3MAPS) &&
+	hitsT3MAPS(i).getRow() <= (rowNomT3MAPS + rowSigmaT3MAPS) &&
+	hitsT3MAPS(i).getCol() >= (colNomT3MAPS - colSigmaT3MAPS) &&
+	hitsT3MAPS(i).getCol() <= (colNomT3MAPS + colSigmaT3MAPS)) {
       return true;
     }
   }
   return false;
+}
+
+void buildFEI4Clusters() {
+
+  nClustersFEI4 = 0;
+  clusterIndicesFEI4.clear();
+  
+  // loop over hits in FEI4:
+  for (int hitIdx1 = 0; hitIdx1 < rowHitsFEI4; hitIdx1++) {
+    
+    if (notInFEI4Cluster) {
+      
+    }
+    
+  }
+  
 }
