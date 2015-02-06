@@ -31,7 +31,7 @@ void PixelHit::setCol(int col) {
   hitCol = col;
 }
 
-void PixelHit::setMatched(bool match) {
+bool PixelHit::setMatched(bool match) {
   hitMatched = match;
 }
 
