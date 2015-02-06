@@ -33,7 +33,7 @@ class PixelHit
   // Mutators:
   void setRow(int row);
   void setCol(int col);
-  bool setMatched(bool matched);
+  void setMatched(bool matched);
   
   // Accessors:
   int getRow();
