@@ -19,117 +19,44 @@
 
 //--------------------------------------//
 // HitMatching: For the initialization, load table values fr.
-HitMatching::HitMatching( std::string inFileName, std::string outFileName ) {
+HitMatching::HitMatching() {
   std::cout << std::endl << "HitMatching::Initializing..." << std::endl;
-  
-  nEvents = 0;
-  
-  int currLineIndex = 0;
-  std::string currText;
 
-  // Load output file, configure output TTree:
-  outputT3MAPS = new TFile(outFileName,"recreate");
-  treeT3MAPS = new TTree("TreeT3MAPS","TreeT3MAPS");
-  treeT3MAPS.Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
-  treeT3MAPS.Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
-  treeT3MAPS.Branch("hit_row", &hit_row);
-  treeT3MAPS.Branch("hit_column", &hit_column);
+  hitsFEI4 = {{false}};
+  nPixHitsFEI4 = 0;
+  nClustersFEI4 = 0;
   
-  // Open input text file from T3MAPS run:
-  ifstream historyFile(inFileName);
-  if (historyFile.is_open()) {
-    while (getline(historyFile, currText) ) {
-      std::cout << currText << std::endl;
-      
-      // Start counting the line numbers (one run is 0-23)
-      std::size_t foundText = currText.find("BEGIN SCAN");
-      if (foundText!=std::string::npos) {
-	currLineIndex = 0;
-	hit_row.clear();
-	hit_column.clear();
-      }
-      
-      // start time recorded:
-      if (currLineIndex == 2) timestamp_start = atoi(currText.c_str());
-      
-      // stop time recorded:
-      else if (currLineIndex == 4) timestamp_stop = atoi(currText.c_str());
-      
-      // get hit table information:
-      else if (currLineIndex > 4 && currLineIndex < 23) {
-	int currRow = currLineIndex - 4;
-	
-	std::vector<std::string> hitColumns = delimString(currText, " ");
-	
-	// iterate over the columns that were hit in each row:
-	for (std::vector<string>::iterator it = hitColumns.begin(); 
-	     it != hitColumns.end(); ++it) {
-	  int currColumn = atoi(*it->c_str());
-	  hit_row.push_back(currRow);
-	  hit_column.push_back(currColumn);
-	}
-      }
-      
-      // end scan, save event information:
-      else if (currLineIndex == 23) {
-	treeT3MAPS.Fill();
-	nEvents++;
-      }
-            
-      // increment the line number:
-      currLineIndex++;
-    }
-  }
-  
-  historyFile.close();
-  
-  //TDirectory *savedir = gDirectory;
-  //fOutputFile->cd();
-  treeT3MAPS.Write();
-  //treeT3MAPS.SetDirectory(0);
-  //gDirectory = savedir;
-  outputT3MAPS->Close();
+  hitsT3MAPS = {{false}};
+  nPixHitsT3MAPS = 0;
+  nClustersT3MAPS = 0;  
   
   return;
 }
 
-//--------------------------------------//
-// delimString:
-std::vector<std::string> HitMatching::delimString( std::string line, 
-						 std::string delim ) {
-  // vector to return (for table)
-  std::vector<std::string> result;
-  result.clear();
-  
-  // the positions in the string of delims:
-  std::size_t found = line.find(delim);
-  std::size_t found_prev = 0;
-  
-  while (found!=std::string::npos) {
-    std::string token = s.substr(found_prev, found);
-    result.push_back(token);
-    found_prev = found;
-    found = line.find(delim,found+1);
+/**
+   Add a single pixel hit in the FEI4 chip.
+ */
+void HitMatching::AddHitInFEI4(int row, int col) {
+  if (row > 0 && row < 336 && col > 0 && col < 336) {
+    nPixHitsFEI4++;
+    hitsFEI4[row][col] = true;
   }
-  
-  return result;  
+  else {
+    std::cout << "HitMatching::AddHitInFEI4 Error! Pixel out of bounds" 
+	      << std::endl;
+  }
 }
 
-//--------------------------------------//
-// getNHits:
-int HitMatching::getNEvents() {
-  return nEvents;
-}
-
-//--------------------------------------//
-// getEvent:
-TTree* HitMatching::getTree() {
-  return treeT3MAPS;
-}
-
-//--------------------------------------//
-// closeFiles:
-void HitMatching::closeFiles() {
-  //treeT3MAPS->Delete();
-  outputT3MAPS->Close();
+/**
+   Add a single pixel hit in the T3MAPS chip.
+ */
+void HitMatching::AddHitInT3MAPS(int row, int col) {
+  if (row > 0 && row < 16 && col > 0 && col < 64) {
+    nPixHitsT3MAPS++;
+    hitsT3MAPS[row][col] = true;
+  }
+  else {
+    std::cout << "HitMatching::AddHitInT3MAPS Error! Pixel out of bounds" 
+	      << std::endl;
+  }
 }

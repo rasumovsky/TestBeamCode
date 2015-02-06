@@ -50,7 +50,6 @@ class LoadT3MAPS
   int getNEvents();
   TTree* getTree();
   void closeFiles();
-  
 };
 
 #endif

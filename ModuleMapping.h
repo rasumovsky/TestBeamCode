@@ -20,13 +20,10 @@
 #include <vector>
 #include <string>
 
-#include "TFile.h"
 #include "TTree.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TString.h"
-
-#incude "LoadT3MAPS.h"
 
 using namespace std;
 
@@ -40,15 +37,9 @@ class ModuleMapping {
   int nRowT3MAPS;
   int nColT3MAPS;
   
-  // For T3MAPS data:
-  LoadT3MAPS *T3MAPS;
   TTree *myTreeT3MAPS;
-  
-  // For FEI4 data:
-  TFile *fileFEI4;
   TTree *myTreeFEI4;
   
-  TCanvas *can;
   TH1F *histMapValues[4];
   TH1F *histRowFEI4Pix[2];
   TH1F *histColFEI4Pix[2];
@@ -71,23 +62,24 @@ class ModuleMapping {
   double mapRMS[4];
   bool createdMap[4];
   
+  void setChipDimensions(void);
+
  public:
   
   ModuleMapping(TString inputT3MAPS, TString inputFEI4, TString fileDir);
   ModuleMapping(TString fileDir);
   ~ModuleMapping();
   
-  void closeInputFiles();
   void saveMapParameters(TString outputDir);
   void loadMapParameters(TString inputDir);
-  void printMapParameters();
+  void printMapParameters(void);
   
-  void prepareTrees();
-  void makeCombinedMap();
+  void prepareTrees(void);
+  void makeCombinedMap(void);
   void makeGeoMap(int rowT3MAPS_1, int colT3MAPS_1, 
 		  int rowT3MAPS_2, int colT3MAPS_2);
   
-  bool mapExists();
+  bool mapExists(void);
   int getFEI4fromT3MAPS(TString pos, int valT3MAPS);
   int getT3MAPSfromFEI4(TString pos, int valFEI4);
   double getMapVar(int varIndex);

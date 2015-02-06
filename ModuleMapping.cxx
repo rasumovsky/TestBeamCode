@@ -22,43 +22,35 @@
 /**
    Initialize the class using the input files to calculate new mapping:
 */
-ModuleMapping::ModuleMapping( TString inputT3MAPS, TString inputFEI4, 
-			      TString fileDir) {
+ModuleMapping::ModuleMapping(TTree *tT3MAPS, TTree *tFEI4, TString fileDir) {
   
   std::cout << "Initializing ModuleMapping..." << std::endl;
   // Settings for FEI4 and T3MAPS chip layouts:
-  nRowFEI4 = 336; nColFEI4 = 80; nRowT3MAPS = 16; nColT3MAPS = 64;
+  setChipDimensions();
   for (int i = 0; i < 4; i++) createdMap[i] = false;
   
-  prepareTrees(inputT3MAPS, inputFEI4);// Load the two trees  
+  // if this doesn't work, maybe try double pointer?? **TTree... see bookmark
+  myTreeT3MAPS = tT3MAPS;
+  myTreeFEI4 = tFEI4;
+  
+  prepareTrees();// Load the two trees  
   makeCombinedMap();//Construct mapping T3MAPS<-->FEI4
   saveMapParameters(outputDir);//Save parameters to file
-  closeInputFiles();//close files
+  
   std::cout << "Successfully initialized ModuleMapping!" << std::endl;
 }
 
 /**
    Initialize the class by using the results of a previous run:
  */
-ModuleMapping::ModuleMapping( TString fileDir) {
+ModuleMapping::ModuleMapping(TString fileDir) {
   
   std::cout << "Initializing ModuleMapping..." << std::endl;
   // Settings for FEI4 and T3MAPS chip layouts:
-  nRowFEI4 = 336; nColFEI4 = 80; nRowT3MAPS = 16; nColT3MAPS = 64;
+  setChipDimensions();
   
   loadMapParameters(fileDir);// Load map from file
   std::cout << "Successfully initialized ModuleMapping!" << std::endl;
-}
-
-/**
-   Safely close all input files for the module mapping.
-*/
-void ModuleMapping::closeInputFiles() {
-  myTreeFEI4->Delete();
-  fileFEI4->Close();
-  myTreeT3MAPS->Delete();
-  T3MAPS->closeFiles();
-  delete T3MAPS;
 }
 
 /**
@@ -113,22 +105,17 @@ void ModuleMapping::printMapParameters() {
 /**
    Load the TTrees for T3MAPS and FEI4 from file, and set the branch addresses.
 */
-void ModuleMapping::prepareTrees(TString inputT3MAPS, TString inputFEI4) {
+void ModuleMapping::prepareTrees() {
   
   std::cout << "  ModuleMapping::prepareTrees() reading hit files" << std::endl;
   
-  // Load the T3MAPS data into a TTree:
-  outputT3MAPS = inputT3MAPS.ReplaceAll(".txt",".root");
-  T3MAPS = new LoadT3MAPS(inputT3MAPS, outputT3MAPS);
-  myTreeT3MAPS = T3MAPS->getTree();
+  // Set the T3MAPS TTree addresses:
   myTreeT3MAPS->SetBranchAddress("timestamp_start", &t_T3MAPS_timestamp_start);
   myTreeT3MAPS->SetBranchAddress("timestamp_stop", &t_T3MAPS_timestamp_stop);
   myTreeT3MAPS->SetBranchAddress("hit_row", &t_T3MAPS_hit_row);
   myTreeT3MAPS->SetBranchAddress("hit_column", &t_T3MAPS_hit_column);
   
   // Load the FEI4 data tree:
-  fileFEI4 = new TFile(inputFEI4);
-  myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
   myTreeFEI4->SetBranchAddress("timestamp_start", &t_FEI4_timestamp_start);
   myTreeFEI4->SetBranchAddress("timestamp_stop", &t_FEI4_timestamp_stop);
   myTreeFEI4->SetBranchAddress("row", &t_FEI4_hit_row);
@@ -416,4 +403,15 @@ void ModuleMapping::setMapRMS(int varIndex, double newVal) {
   else {
     std::cout << "    ModuleMapping::setMapVar Improper varIndex!" << std::endl;
   }
+}
+
+/**
+   Set the standard number of rows and columns for pixels in FEI4 and T3MAPS.
+   Row and column numbers start at 1 and go up to the values below.
+ */
+void ModuleMapping::setChipDimensions(void) {
+  nRowFEI4 = 336;
+  nColFEI4 = 80;
+  nRowT3MAPS = 16;
+  nColT3MAPS = 64;
 }

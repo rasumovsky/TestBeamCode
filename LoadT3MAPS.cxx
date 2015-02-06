@@ -13,13 +13,15 @@
 //         - hit_row           (vector of hit rows)                           //
 //         - hit_column        (vector of hit columns)                        //
 //                                                                            //
+//  The class will produce an output root file.                               //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "LoadT3MAPS.h"
 
 //--------------------------------------//
 // LoadT3MAPS: For the initialization, load table values fr.
-LoadT3MAPS::LoadT3MAPS( std::string inFileName, std::string outFileName ) {
+LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   std::cout << std::endl << "LoadT3MAPS::Initializing..." << std::endl;
   
   nEvents = 0;
