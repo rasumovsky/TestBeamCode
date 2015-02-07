@@ -17,7 +17,9 @@
 
 class PixelHit 
 {
+  
  public:
+  
   PixelHit(int row, int col, bool match);
   ~PixelHit();
   
@@ -25,11 +27,13 @@ class PixelHit
   void setRow(int row);
   void setCol(int col);
   void setMatched(bool matched);
+ 
   // Accessors:
   int getRow();
   int getCol();
-  bool isMatched();
-  
+  bool isHitMatched();
+  bool hitIsAdjacent(PixelHit* hit);
+
  private:
   
   // Member objects:

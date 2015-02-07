@@ -13,7 +13,7 @@
 
 #include "TestBeamAnalysis.h"
 
-int TestBeamAnalysis::main( int argc, char **argv ) {
+int main( int argc, char **argv ) {
   
   // Check arguments:
   if (argc < 4) {
@@ -25,11 +25,16 @@ int TestBeamAnalysis::main( int argc, char **argv ) {
   TString inputFEI4 = argv[2];
   options = argv[3];
 
+  PixelHit *hit = new PixelHit(1,1,true);
+  //PixelHit hit(1,1,true);
+  
+  PixelCluster *cluster = new PixelCluster(hit);
+  
   // Root macros:
-  SetAtlasStyle();
+  //SetAtlasStyle();
   
   // in this program, first call LoadT3MAPS, then call Map, then HitMatch
-
+  /**
   // Code to load the input data:
   outputT3MAPS = inputT3MAPS.ReplaceAll(".txt",".root");
   T3MAPS = new LoadT3MAPS(inputT3MAPS, outputT3MAPS);
@@ -48,5 +53,8 @@ int TestBeamAnalysis::main( int argc, char **argv ) {
   // For FEI4 data:
   TFile *fileFEI4;
   TTree *myTreeFEI4;
-  
+  */  
   ///// FOR FEI4, chiech that they have the same event number before reco clusters and hits.
+  
+  return 0;
+}

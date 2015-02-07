@@ -43,6 +43,16 @@ int PixelHit::getCol() {
   return hitCol;
 }
 
-bool PixelHit::isMatched() {
+bool PixelHit::isHitMatched() {
   return hitMatched;
+}
+
+bool PixelHit::hitIsAdjacent(PixelHit* hit) {
+  if (hit->getRow() >= hitRow-1 && hit->getRow() <= hitRow+1 &&
+      hit->getCol() >= hitCol-1 && hit->getCol() <= hitCol+1) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }

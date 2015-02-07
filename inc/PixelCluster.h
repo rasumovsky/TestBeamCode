@@ -20,26 +20,29 @@
 
 class PixelCluster 
 {
- private:
-  
-  // Member objects:
-  std::vector<PixelHit> clusteredHits;
-  int nClusteredHits;
   
  public:
   
-  // Constructor:
-  PixelCluster(PixelHit hit);
+  PixelCluster(PixelHit *hit);
   ~PixelCluster();
   
   // Mutators:
-  void addHit(PixelHit hit);
-    
+  void addHit(PixelHit *hit);
+  void addCluster(PixelCluster *cluster);
+
   // Accessors:
   int getNHits();
-  PixelHit getHit(int hitIndex);
-  bool containsHit(PixelHit hit);
-  std::vector<PixelHit>::iterator iterator();
+  PixelHit* getHit(int hitIndex);
+  bool containsHit(PixelHit *hit);
+  bool clusterIsAdjacent(PixelCluster *cluster);
+  bool isClusterMatched();
+  bool reTestClusterMatching();
+
+private:
+  
+  // Member objects:
+  std::vector<PixelHit*> clusteredHits;
+  bool clusterMatched;
 };
 
 #endif
