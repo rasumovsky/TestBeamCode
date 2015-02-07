@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: HitMatching.cxx                                                     //
+//  Name: MatchMaker.cxx                                                     //
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
@@ -8,7 +8,7 @@
 //                                                                            //
 //  This class uses the ModuleMapping information to look for matches between //
 //  clusters in FEI4 and T3MAPS. Procedure for use:                           //
-//      1. HitMatching(mapper)                                                //
+//      1. MatchMaker(mapper)                                                //
 //      2. AddHitInFEI4 & AddHitInT3MAPS                                      //
 //      3. matchHits();                                                       //
 //      4. matchClusters();                                                   //
@@ -18,14 +18,14 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "HitMatching.h"
+#include "MatchMaker.h"
 
 /**
    All that is necessary for initializing the class is a mapping from the FEI4
    chip to the T3MAPS chip. 
 */
-HitMatching::HitMatching(ModuleMapping *mapper) {
-  std::cout << std::endl << "HitMatching::Initializing..." << std::endl;
+MatchMaker::MatchMaker(ModuleMapping *mapper) {
+  std::cout << std::endl << "MatchMaker::Initializing..." << std::endl;
   
   clustersFEI4.clear();
   hitsFEI4.clear();
@@ -39,7 +39,7 @@ HitMatching::HitMatching(ModuleMapping *mapper) {
   
   // make sure this assignment works!
   myMapper = mapper;
-  myChips = new ChimDimension();
+  myChips = new ChipDimension();
   
   return;
 }
@@ -47,12 +47,12 @@ HitMatching::HitMatching(ModuleMapping *mapper) {
 /**
    Add a single pixel hit in the FEI4 chip.
  */
-void HitMatching::AddHitInFEI4(PixelHit *hit) {
+void MatchMaker::AddHitInFEI4(PixelHit *hit) {
   if (myChips->isInChip("FEI4", hit->getRow(), hit->getCol())) {
     hitsFEI4.push_back(hit);
   }
   else {
-    std::cout << "HitMatching::AddHitInFEI4 Error! Pixel out of bounds" 
+    std::cout << "MatchMaker::AddHitInFEI4 Error! Pixel out of bounds" 
 	      << std::endl;
   }
 }
@@ -60,12 +60,12 @@ void HitMatching::AddHitInFEI4(PixelHit *hit) {
 /**
    Add a single pixel hit in the T3MAPS chip.
 */
-void HitMatching::AddHitInT3MAPS(PixelHit *hit) {
+void MatchMaker::AddHitInT3MAPS(PixelHit *hit) {
   if (myChips->isInChip("T3MAPS", hit->getRow(), hit->getCol())) {
     hitsT3MAPS.push_back(hit);
   }
   else {
-    std::cout << "HitMatching::AddHitInT3MAPS Error! Pixel out of bounds" 
+    std::cout << "MatchMaker::AddHitInT3MAPS Error! Pixel out of bounds" 
 	      << std::endl;
   }
 }
@@ -73,10 +73,10 @@ void HitMatching::AddHitInT3MAPS(PixelHit *hit) {
 /**
    Matches all FEI4 and T3MAPS hits that have been added.
  */
-void HitMatching::matchHits() {
+void MatchMaker::matchHits() {
   // loop over T3MAPS hits, call isHitMatchedInFEI4:
   for (int i = 0; i < (int)hitsT3MAPS.size(); i++) {
-    if (isHitMatchedInFEI4(hitsT3MAPS[iT3MAPS])) {
+    if (isHitMatchedInFEI4(hitsT3MAPS[i])) {
       nMatchedHits["T3MAPS"]++;
     }
   }
@@ -91,22 +91,22 @@ void HitMatching::matchHits() {
 /**
    For a given hit in T3MAPS, searches for a corresponding hit in FEI4.
 */
-bool HitMatching::isHitMatchedInFEI4(PixelHit *hit) {
+bool MatchMaker::isHitMatchedInFEI4(PixelHit *hit) {
   
   // These are the nominal positions:
-  int rowNomFEI4 = mapper->GetFEI4fromT3MAPS("rowVal",hit->getRow());
-  int colNomFEI4 = mapper->GetFEI4fromT3MAPS("colVal",hit->getCol());
+  int rowNomFEI4 = myMapper->getFEI4fromT3MAPS("rowVal",hit->getRow());
+  int colNomFEI4 = myMapper->getFEI4fromT3MAPS("colVal",hit->getCol());
   
   /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
-  int rowSigmaFEI4 = mapper->GetFEI4fromT3MAPS("rowSigma",hit->getRow());
-  int colSigmaFEI4 = mapper->GetFEI4fromT3MAPS("colSigma",hit->getCol());
+  int rowSigmaFEI4 = myMapper->getFEI4fromT3MAPS("rowSigma",hit->getRow());
+  int colSigmaFEI4 = myMapper->getFEI4fromT3MAPS("colSigma",hit->getCol());
   
   // loop over FEI4 hits, see if any are around the nominal +/- sigma position
   for (int i = 0; i < (int)hitsFEI4.size(); i++) {
-    if (hitsFEI4(i)->getRow() >= (rowNomFEI4 - rowSigmaFEI4) &&
-	hitsFEI4(i)->getRow() <= (rowNomFEI4 + rowSigmaFEI4) &&
-	hitsFEI4(i)->getCol() >= (colNomFEI4 - colSigmaFEI4) &&
-	hitsFEI4(i)->getCol() <= (colNomFEI4 + colSigmaFEI4)) {
+    if (hitsFEI4[i]->getRow() >= (rowNomFEI4 - rowSigmaFEI4) &&
+	hitsFEI4[i]->getRow() <= (rowNomFEI4 + rowSigmaFEI4) &&
+	hitsFEI4[i]->getCol() >= (colNomFEI4 - colSigmaFEI4) &&
+	hitsFEI4[i]->getCol() <= (colNomFEI4 + colSigmaFEI4)) {
       hit->setMatched(true);
       return true;
     }
@@ -117,22 +117,22 @@ bool HitMatching::isHitMatchedInFEI4(PixelHit *hit) {
 /**
    For a given hit in FEI4, searches for a corresponding hit in T3MAPS.
  */
-bool HitMatching::isHitMatchedInT3MAPS(PixelHit hit) {
+bool MatchMaker::isHitMatchedInT3MAPS(PixelHit *hit) {
   
   // These are the nominal positions:
-  int rowNomT3MAPS = mapper->GetT3MAPSfromFEI4("rowVal",hit->getRow());
-  int colNomT3MAPS = mapper->GetT3MAPSfromFEI4("colVal",hit->getCol());
+  int rowNomT3MAPS = myMapper->getT3MAPSfromFEI4("rowVal",hit->getRow());
+  int colNomT3MAPS = myMapper->getT3MAPSfromFEI4("colVal",hit->getCol());
   
   /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
-  int rowSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("rowSigma",hit->getRow());
-  int colSigmaT3MAPS = mapper->GetT3MAPSfromFEI4("colSigma",hit->getCol());
+  int rowSigmaT3MAPS = myMapper->getT3MAPSfromFEI4("rowSigma",hit->getRow());
+  int colSigmaT3MAPS = myMapper->getT3MAPSfromFEI4("colSigma",hit->getCol());
   
   // loop over T3MAPS hits, see if any are around the nominal +/- sigma position
   for (int i = 0; i < (int)hitsT3MAPS.size(); i++) {
-    if (hitsT3MAPS(i)->getRow() >= (rowNomT3MAPS - rowSigmaT3MAPS) &&
-	hitsT3MAPS(i)->getRow() <= (rowNomT3MAPS + rowSigmaT3MAPS) &&
-	hitsT3MAPS(i)->getCol() >= (colNomT3MAPS - colSigmaT3MAPS) &&
-	hitsT3MAPS(i)->getCol() <= (colNomT3MAPS + colSigmaT3MAPS)) {
+    if (hitsT3MAPS[i]->getRow() >= (rowNomT3MAPS - rowSigmaT3MAPS) &&
+	hitsT3MAPS[i]->getRow() <= (rowNomT3MAPS + rowSigmaT3MAPS) &&
+	hitsT3MAPS[i]->getCol() >= (colNomT3MAPS - colSigmaT3MAPS) &&
+	hitsT3MAPS[i]->getCol() <= (colNomT3MAPS + colSigmaT3MAPS)) {
       hit->setMatched(true);
       return true;
     }
@@ -145,9 +145,10 @@ bool HitMatching::isHitMatchedInT3MAPS(PixelHit hit) {
    loop to ensure that merging is complete and not partial (see the 
    buildFEI4Clusters() and buildT3MAPSClusters() methods for examples.
  */
-vector<PixelCluster*> HitMatching::mergeClusters(vector<PixelCluster*> inList) {
+std::vector<PixelCluster*> MatchMaker::mergeClusters(std::vector<PixelCluster*> 
+						     inList) {
   
-  vector<PixelCluster*> result;
+  std::vector<PixelCluster*> result;
   result.clear();
   for (int i = 0; i < (int)inList.size(); i++) {
     // check to see if we can merge:
@@ -170,7 +171,7 @@ vector<PixelCluster*> HitMatching::mergeClusters(vector<PixelCluster*> inList) {
    Combine individual hits in FEI4 and T3MAPS into clusters and also check the
    matching of the clusters.
  */
-void buildAndMatchClusters() {
+void MatchMaker::buildAndMatchClusters() {
   buildFEI4Clusters();
   buildT3MAPSClusters();
 }
@@ -178,7 +179,7 @@ void buildAndMatchClusters() {
 /**
    Combine individual hits in FEI4 into clusters.
 */
-void HitMatching::buildFEI4Clusters() {
+void MatchMaker::buildFEI4Clusters() {
   
   clustersFEI4.clear();
   nMatchedClusters["FEI4"] = 0;
@@ -208,7 +209,7 @@ void HitMatching::buildFEI4Clusters() {
 /**
    Combine individual hits in T3MAPS into clusters.
 */
-void HitMatching::buildT3MAPSClusters() {
+void MatchMaker::buildT3MAPSClusters() {
   
   clustersT3MAPS.clear();
   nMatchedClusters["T3MAPS"] = 0;
@@ -238,7 +239,7 @@ void HitMatching::buildT3MAPSClusters() {
 /**
    Retrieve the number of hits in a chip, either total or matched.
 */
-int HitMatching::getNHits(std::string chip, std::string type = "") {
+int MatchMaker::getNHits(std::string chip, std::string type = "") {
   if (type=="matched") {
     return nMatchedHits[chip];
   }
@@ -251,7 +252,7 @@ int HitMatching::getNHits(std::string chip, std::string type = "") {
 /**
    Retrieve the number of clusters in a chip, either total or matched.
 */
-int HitMatching::getNClusters(std::string chip, std::string type = "") {
+int MatchMaker::getNClusters(std::string chip, std::string type = "") {
   if (type=="matched") {
     return nMatchedClusters[chip];
   }

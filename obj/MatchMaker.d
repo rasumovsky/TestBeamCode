@@ -1,4 +1,4 @@
-obj/HitMatching.o: inc/HitMatching.cxx inc/HitMatching.h \
+obj/MatchMaker.o: inc/MatchMaker.cxx inc/MatchMaker.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/stdlib.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/Availability.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/AvailabilityInternal.h \
@@ -188,4 +188,60 @@ obj/HitMatching.o: inc/HitMatching.cxx inc/HitMatching.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/fstream \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/vector \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__split_buffer \
-  inc/PixelHit.h
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/map \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
+  inc/ChipDimension.h inc/PixelHit.h inc/PixelCluster.h \
+  inc/ModuleMapping.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TTree.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBranch.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TNamed.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TObject.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Rtypes.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/RConfig.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/RVersion.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/AvailabilityMacros.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/TargetConditionals.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/DllImport.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Rtypeinfo.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/snprintf.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/strlcpy.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGenericClassInfo.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TSchemaHelper.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TStorage.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVersionCheck.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Riosfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBuffer.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TString.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMathBase.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TObjArray.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TSeqCollection.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TCollection.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TIterator.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttFill.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TDataType.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TDictionary.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Property.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttLine.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttMarker.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayD.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArray.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayI.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TClass.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TObjString.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH1.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAxis.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttAxis.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayC.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayS.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayF.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Foption.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/float.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFitResultPtr.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: HitMatching.h                                                       //
-//  Class: HitMatching.cxx                                                    //
+//  Name: MatchMaker.h                                                       //
+//  Class: MatchMaker.cxx                                                    //
 //                                                                            //
 //  Author: Andrew Hard                                                       //
 //  Email: ahard@cern.ch                                                      //
@@ -9,8 +9,8 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef HitMatching_h
-#define HitMatching_h
+#ifndef MatchMaker_h
+#define MatchMaker_h
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,13 +23,13 @@
 #include "ChipDimension.h"
 #include "PixelHit.h"
 
-class HitMatching 
+class MatchMaker 
 {
  
  public:
   
-  HitMatching(ModuleMapping* mapper);
-  ~HitMatching();
+  MatchMaker(ModuleMapping* mapper);
+  ~MatchMaker();
   
   // Mutators:
   void AddHitInFEI4(PixelHit *hit);
