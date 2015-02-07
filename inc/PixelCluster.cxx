@@ -94,14 +94,6 @@ bool PixelCluster::clusterIsAdjacent(PixelCluster *cluster) {
    other chip.
  */
 bool PixelCluster::isClusterMatched() {
-  /*
-  for (int i = 0; i < (int)clusteredHits.size(); i++) {
-    if (clusteredHits[i].isHitMatched()) {
-      return true;
-    }
-  }
-  return false;
-  */
   return clusterMatched;
 }
 

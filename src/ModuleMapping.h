@@ -12,7 +12,6 @@
 #ifndef ModuleMapping_h
 #define ModuleMapping_h
 
-// look at CommonHead.hh to see what might be missing...
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -25,18 +24,36 @@
 #include "TH2F.h"
 #include "TString.h"
 
-using namespace std;
+#include "ChipDimension.h"
 
 class ModuleMapping {
+  
+ public:
+  
+  ModuleMapping(TString inputT3MAPS, TString inputFEI4, TString fileDir);
+  ModuleMapping(TString fileDir);
+  ~ModuleMapping();
+  
+  void loadMapParameters(TString inputDir);
+  void saveMapParameters(TString outputDir);
+  void printMapParameters(void);
+  
+  void prepareTrees(void);
+  void makeCombinedMap(void);
+  void makeGeoMap(int rowT3MAPS_1, int colT3MAPS_1, 
+		  int rowT3MAPS_2, int colT3MAPS_2);
+  
+  bool mapExists(void);
+  int getFEI4fromT3MAPS(TString pos, int valT3MAPS);
+  int getT3MAPSfromFEI4(TString pos, int valFEI4);
+  double getMapVar(int varIndex);
+  double getMapRMS(int varIndex);
+  void setMapVar(int varIndex, double newVal);
+  void setMapRMS(int varIndex, double newVal);
 
  private:
   
-  // Pixel ranges for FEI4 and T3MAPS:
-  int nRowFEI4;
-  int nColFEI4;
-  int nRowT3MAPS;
-  int nColT3MAPS;
-  
+  ChipDimension *myChips;
   TTree *myTreeT3MAPS;
   TTree *myTreeFEI4;
   
@@ -61,31 +78,6 @@ class ModuleMapping {
   double mapVar[4];
   double mapRMS[4];
   bool createdMap[4];
-  
-  void setChipDimensions(void);
-
- public:
-  
-  ModuleMapping(TString inputT3MAPS, TString inputFEI4, TString fileDir);
-  ModuleMapping(TString fileDir);
-  ~ModuleMapping();
-  
-  void saveMapParameters(TString outputDir);
-  void loadMapParameters(TString inputDir);
-  void printMapParameters(void);
-  
-  void prepareTrees(void);
-  void makeCombinedMap(void);
-  void makeGeoMap(int rowT3MAPS_1, int colT3MAPS_1, 
-		  int rowT3MAPS_2, int colT3MAPS_2);
-  
-  bool mapExists(void);
-  int getFEI4fromT3MAPS(TString pos, int valT3MAPS);
-  int getT3MAPSfromFEI4(TString pos, int valFEI4);
-  double getMapVar(int varIndex);
-  double getMapRMS(int varIndex);
-  void setMapVar(int varIndex, double newVal);
-  void setMapRMS(int varIndex, double newVal);
   
 };
 

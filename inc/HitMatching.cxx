@@ -20,51 +20,35 @@
 
 #include "HitMatching.h"
 
-//--------------------------------------//
-// HitMatching: For the initialization, load table values fr.
+/**
+   All that is necessary for initializing the class is a mapping from the FEI4
+   chip to the T3MAPS chip. 
+*/
 HitMatching::HitMatching(ModuleMapping *mapper) {
   std::cout << std::endl << "HitMatching::Initializing..." << std::endl;
   
   clustersFEI4.clear();
   hitsFEI4.clear();
-  nMatchedClustersFEI4 = 0;
-  nMatchedHitsFEI4 = 0;
+  nMatchedClusters["FEI4"] = 0;
+  nMatchedHits["FEI4"] = 0;
       
   clustersT3MAPS.clear();
   hitsT3MAPS.clear();
-  nMatchedClustersT3MAPS = 0;
-  nMatchedHitsT3MAPS = 0;
+  nMatchedClusters["T3MAPS"] = 0;
+  nMatchedHits["T3MAPS"] = 0;
   
   // make sure this assignment works!
   myMapper = mapper;
+  myChips = new ChimDimension();
   
   return;
-}
-
-/**
-   Matches all FEI4 and T3MAPS hits that have been added.
- */
-void HitMatching::matchHits() {
-  // loop over T3MAPS hits, call isHitMatchedInFEI4:
-  for (int i = 0; i < (int)hitsT3MAPS.size(); i++) {
-    if (isHitMatchedInFEI4(hitsT3MAPS[iT3MAPS])) {
-      nMatchedHitsT3MAPS++;
-    }
-  }
-  // loop over FEI4 hits, call isHitMatchedInT3MAPS:
-  for (int j = 0; j < (int)hitsFEI4.size(); j++) {
-    if (isHitMatchedInT3MAPS(hitsFEI4[j])) {
-      nMatchedHitsFEI4++;
-    }
-  }
 }
 
 /**
    Add a single pixel hit in the FEI4 chip.
  */
 void HitMatching::AddHitInFEI4(PixelHit *hit) {
-  if (hit->getRow() > 0 && hit->getRow() < 336 && 
-      hit->getCol() > 0 && hit->getCol() < 336) {
+  if (myChips->isInChip("FEI4", hit->getRow(), hit->getCol())) {
     hitsFEI4.push_back(hit);
   }
   else {
@@ -77,13 +61,30 @@ void HitMatching::AddHitInFEI4(PixelHit *hit) {
    Add a single pixel hit in the T3MAPS chip.
 */
 void HitMatching::AddHitInT3MAPS(PixelHit *hit) {
-  if (hit->getRow() > 0 && hit->getRow() < 16 && 
-      hit->getCol() > 0 && hit->getCol() < 64) {
+  if (myChips->isInChip("T3MAPS", hit->getRow(), hit->getCol())) {
     hitsT3MAPS.push_back(hit);
   }
   else {
     std::cout << "HitMatching::AddHitInT3MAPS Error! Pixel out of bounds" 
 	      << std::endl;
+  }
+}
+
+/**
+   Matches all FEI4 and T3MAPS hits that have been added.
+ */
+void HitMatching::matchHits() {
+  // loop over T3MAPS hits, call isHitMatchedInFEI4:
+  for (int i = 0; i < (int)hitsT3MAPS.size(); i++) {
+    if (isHitMatchedInFEI4(hitsT3MAPS[iT3MAPS])) {
+      nMatchedHits["T3MAPS"]++;
+    }
+  }
+  // loop over FEI4 hits, call isHitMatchedInT3MAPS:
+  for (int j = 0; j < (int)hitsFEI4.size(); j++) {
+    if (isHitMatchedInT3MAPS(hitsFEI4[j])) {
+      nMatchedHits["FEI4"]++;
+    }
   }
 }
 
@@ -139,7 +140,11 @@ bool HitMatching::isHitMatchedInT3MAPS(PixelHit hit) {
   return false;
 }
 
-// NEED TO DO SOME SORT OF ITERATIVE MERGING...
+/**
+   Private method to assist the merging of clusters. Must be called in a while-
+   loop to ensure that merging is complete and not partial (see the 
+   buildFEI4Clusters() and buildT3MAPSClusters() methods for examples.
+ */
 vector<PixelCluster*> HitMatching::mergeClusters(vector<PixelCluster*> inList) {
   
   vector<PixelCluster*> result;
@@ -161,10 +166,22 @@ vector<PixelCluster*> HitMatching::mergeClusters(vector<PixelCluster*> inList) {
   return result;
 }
 
+/**
+   Combine individual hits in FEI4 and T3MAPS into clusters and also check the
+   matching of the clusters.
+ */
+void buildAndMatchClusters() {
+  buildFEI4Clusters();
+  buildT3MAPSClusters();
+}
+
+/**
+   Combine individual hits in FEI4 into clusters.
+*/
 void HitMatching::buildFEI4Clusters() {
   
   clustersFEI4.clear();
-  nMatchedClustersFEI4 = 0;
+  nMatchedClusters["FEI4"] = 0;
   
   // loop over hits in FEI4 and add a new cluster for each:
   for (int hitIndex = 0; hitIndex < (int)hitsFEI4.size(); hitIndex++) {
@@ -175,36 +192,72 @@ void HitMatching::buildFEI4Clusters() {
   // Keep merging clusters until they can't be merged any further:
   int old_size = 1; int new_size = 0;
   while (new_size < old_size) {
-    old_size = (int)tempClusters.size();
+    old_size = (int)clustersFEI4.size();
     clustersFEI4 = mergeClusters(clustersFEI4);
-    new_size = clsutersFEI4.size();
+    new_size = clustersFEI4.size();
   }
   
   // Finally, count the number of matched clusters.
-  
   for (int i = 0; i < (int)clustersFEI4.size(); i++) {
     if (clustersFEI4[i]->isClusterMatched()) {
-      nMatchedClustersFEI4++;
+      nMatchedClusters["FEI4"]++;
     }
   }
 }
-    
-int HitMatching::getNClustersFEI4(std::string type = "") {
-  if (type=="matched") return nMatchedClustersFEI4;
-  else return clustersFEI4.size();
+
+/**
+   Combine individual hits in T3MAPS into clusters.
+*/
+void HitMatching::buildT3MAPSClusters() {
+  
+  clustersT3MAPS.clear();
+  nMatchedClusters["T3MAPS"] = 0;
+  
+  // loop over hits in T3MAPS and add a new cluster for each:
+  for (int hitIndex = 0; hitIndex < (int)hitsT3MAPS.size(); hitIndex++) {
+    PixelCluster *currCluster = new PixelCluster(hitsT3MAPS[hitIndex]);
+    clustersT3MAPS.push_back(currCluster);
+  }
+  
+  // Keep merging clusters until they can't be merged any further:
+  int old_size = 1; int new_size = 0;
+  while (new_size < old_size) {
+    old_size = (int)clustersT3MAPS.size();
+    clustersT3MAPS = mergeClusters(clustersT3MAPS);
+    new_size = clustersT3MAPS.size();
+  }
+  
+  // Finally, count the number of matched clusters.
+  for (int i = 0; i < (int)clustersT3MAPS.size(); i++) {
+    if (clustersT3MAPS[i]->isClusterMatched()) {
+      nMatchedClusters["T3MAPS"]++;
+    }
+  }
 }
 
-int HitMatching::getNClustersT3MAPS(std::string type = "") {
-  if (type=="matched") return nMatchedClustersT3MAPS;
-  else return clustersT3MAPS.size();
+/**
+   Retrieve the number of hits in a chip, either total or matched.
+*/
+int HitMatching::getNHits(std::string chip, std::string type = "") {
+  if (type=="matched") {
+    return nMatchedHits[chip];
+  }
+  else {
+    if (chip == "FEI4") return hitsFEI4.size();
+    else return hitsT3MAPS.size();
+  }
 }
 
-int HitMatching::getNHitsFEI4(std::string type = "") {
-  if (type=="matched") return nMatchedHitsFEI4;
-  else return hitsFEI4.size();
+/**
+   Retrieve the number of clusters in a chip, either total or matched.
+*/
+int HitMatching::getNClusters(std::string chip, std::string type = "") {
+  if (type=="matched") {
+    return nMatchedClusters[chip];
+  }
+  else {
+    if (chip == "FEI4") return clustersFEI4.size();
+    else return clustersT3MAPS.size();
+  }
 }
 
-int HitMatching::getNHitsT3MAPS(std::string type "") {
-  if (type=="matched") return nMatchedHitsT3MAPS;
-  else return hitsT3MAPS.size();
-}

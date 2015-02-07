@@ -26,7 +26,8 @@ ModuleMapping::ModuleMapping(TTree *tT3MAPS, TTree *tFEI4, TString fileDir) {
   
   std::cout << "Initializing ModuleMapping..." << std::endl;
   // Settings for FEI4 and T3MAPS chip layouts:
-  setChipDimensions();
+  myChips = new ChipDimension();
+  
   for (int i = 0; i < 4; i++) createdMap[i] = false;
   
   // if this doesn't work, maybe try double pointer?? **TTree... see bookmark
@@ -54,20 +55,6 @@ ModuleMapping::ModuleMapping(TString fileDir) {
 }
 
 /**
-Create output text file with map parameters:
-*/
-void ModuleMapping::saveMapParameters(TString outputDir) {
-  ofstream outputFile;
-  outputFile.open(Form("%s/mapParameters.txt",outputDir.Data()));
-  for (int i = 0; i < 4; i++) {
-    outputFile << "parameter" << i << " " << mapVar[i] << " " 
-	       << mapRMS[i] << std::endl;
-  }
-  outputFile.close();
-}
-
-
-/**
 Load parameters from previous mapping:
 */
 void ModuleMapping::loadMapParameters(TString inputDir) {
@@ -86,6 +73,20 @@ void ModuleMapping::loadMapParameters(TString inputDir) {
 }
 
 /**
+Create output text file with map parameters:
+*/
+void ModuleMapping::saveMapParameters(TString outputDir) {
+  ofstream outputFile;
+  outputFile.open(Form("%s/mapParameters.txt",outputDir.Data()));
+  for (int i = 0; i < 4; i++) {
+    outputFile << "parameter" << i << " " << mapVar[i] << " " 
+	       << mapRMS[i] << std::endl;
+  }
+  outputFile.close();
+}
+
+/**
+   Print the parameters from the most recent mapping.
  */
 void ModuleMapping::printMapParameters() {
   
@@ -134,8 +135,8 @@ void ModuleMapping::makeCombinedMap() {
   int currRow1 = 1;
   int currCol1 = 1;
   
-  int currRow2 = nRowT3MAPS;
-  int currCol2 = nColT3MAPS;
+  int currRow2 = myChips->getChipSize("T3MAPS","nRows");
+  int currCol2 = myChips->getChipSize("T3MAPS","nColumns");
   
   for (int i = 0; i < 4; i++) {
     histMapValues[i] = new TH1F(Form("histMapValues%i",i),
@@ -144,7 +145,8 @@ void ModuleMapping::makeCombinedMap() {
   }
   
   // Scan edge pixels of T3MAPS and create a map for each.
-  while (currRow1 < nRowT3MAPS || currCol1 < nColT3MAPS) {
+  while (currRow1 < myChips->getChipSize("T3MAPS","nRows") ||
+	 currCol1 < myChips->getChipSize("T3MAPS","nColumns")) {
     
     // Make a new map of the geometries with the current points:
     makeGeoMap( currRow1, currCol1, currRow2, currCol2 );
@@ -155,7 +157,7 @@ void ModuleMapping::makeCombinedMap() {
     }
     
     // Advance each of the points around T3MAPS edge:
-    if (currRow1 < nRowT3MAPS) {
+    if (currRow1 < myChips->getChipSize("T3MAPS","nRows")) {
       currRow1++;
       currRow2--;
     }
@@ -185,12 +187,22 @@ void ModuleMapping::makeGeoMap(int rowT3MAPS_1, int colT3MAPS_1,
   
   for (int i = 0; i < 2; i++) {
     histRowFEI4Pix[i] = new TH1F(Form("FEI4Pix%iRow",i),Form("FEI4Pix%iRow",i),
-				 nRowFEI4,0.5,((double)nRowFEI4)+0.5);
+				 myChips->getChipSize("FEI4","nRows"),0.5,
+				 ((double)myChips->getChipSize("FEI4","nRows"))
+				 +0.5);
     histColFEI4Pix[i] = new TH1F(Form("FEI4Pix%iCol",i),Form("FEI4Pix%iCol",i),
-				 nColFEI4,0.5,((double)nColFEI4)+0.5);
+				 myChips->getChipSize("FEI4","nColumns"),0.5,
+				 ((double)myChips->getChipSize("FEI4",
+							       "nColumns"))
+				 +0.5);
     hist2dFEI4Pix[i] = new TH2F(Form("FEI4Pix%i2d",i),Form("FEI4Pix%i2d",i),
-				nRowFEI4,0.5,((double)nRowFEI4)+0.5,
-				nColFEI4,0.5,((double)nColFEI4)+0.5);
+				myChips->getChipSize("FEI4","nRows"),0.5,
+				((double)myChips->getChipSize("FEI4","nRows"))
+				+0.5,
+				myChips->getChipSize("FEI4","nColumns"),0.5,
+				((double)myChips->getChipSize("FEI4",
+							      "nColumns"))
+				+0.5);
   }
   
   // Count the number of coincidences found.
@@ -301,7 +313,7 @@ int ModuleMapping::getFEI4fromT3MAPS(TString pos, int valT3MAPS) {
   if (mapExists()) {
     if (pos == "row") {
       int row = (int)(mapVar[0] * ((double)valT3MAPS) + mapVar[1]);
-      if (row > 0 && row < nRowFEI4) {
+      if (myChips->isInChip("FEI4",row,1)) {
 	return row;
       }
       else {
@@ -310,7 +322,7 @@ int ModuleMapping::getFEI4fromT3MAPS(TString pos, int valT3MAPS) {
     }
     else if (pos == "col") {
       int col = (int)(mapVar[2] * ((double)valT3MAPS) + mapVar[3]);
-      if (col > 0 && col < nColFEI4) {
+      if (myChips->isInChip("FEI4",1,col)) {
 	return col;
       }
       else {
@@ -329,7 +341,7 @@ int ModuleMapping::getT3MAPSfromFEI4(TString pos, int valFEI4) {
   if (mapExists()) {
     if (pos == "row") {
       int row = (int)((((double)valFEI4) - mapVar[1]) / mapVar[0]);
-      if (row > 0 && row < nRowT3MAPS) {
+      if (myChips->isInChip("T3MAPS",row,1)) {
 	return row;
       }
       else {
@@ -338,7 +350,7 @@ int ModuleMapping::getT3MAPSfromFEI4(TString pos, int valFEI4) {
     }
     else if (pos == "col") {
       int col = (int)((((double)valFEI4) - mapVar[3]) / mapVar[2]);
-      if (col > 0 && col < nColT3MAPS) {
+      if (myChips->isInChip("T3MAPS",1,col)) {
 	return col;
       }
       else { 
@@ -405,13 +417,3 @@ void ModuleMapping::setMapRMS(int varIndex, double newVal) {
   }
 }
 
-/**
-   Set the standard number of rows and columns for pixels in FEI4 and T3MAPS.
-   Row and column numbers start at 1 and go up to the values below.
- */
-void ModuleMapping::setChipDimensions(void) {
-  nRowFEI4 = 336;
-  nColFEI4 = 80;
-  nRowT3MAPS = 16;
-  nColT3MAPS = 64;
-}

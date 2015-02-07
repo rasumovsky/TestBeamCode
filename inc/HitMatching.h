@@ -18,7 +18,9 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <map>
 
+#include "ChipDimension.h"
 #include "PixelHit.h"
 
 class HitMatching 
@@ -30,36 +32,35 @@ class HitMatching
   ~HitMatching();
   
   // Mutators:
-  void matchHits();
-  void buildFEI4Clusters();
-  //void buildT3MAPSClusters();
   void AddHitInFEI4(PixelHit *hit);
   void AddHitInT3MAPS(PixelHit *hit);
+  void matchHits();
+  void buildAndMatchClusters();
+  
     
   // Accessors:
   bool isHitMatchedInFEI4(PixelHit *hit);
   bool isHitMatchedInT3MAPS(PixelHit *hit);
-  int getNClustersFEI4();
-  int getNClustersT3MAPS();
-  int getNHitsFEI4();
-  int getNHitsT3MAPS();
+  int getNHits(std::string chip, std::string type);
+  int getNClusters(std::string chip, std::string type);
   
  private:
   
+  void buildFEI4Clusters();
+  void buildT3MAPSClusters();
   std::vector<PixelCluster*> mergeClusters(std::vector<PixelCluster*> inList);
   
-  int nMatchedHitsFEI4;
-  int nMatchedHitsT3MAPS;
+  std::map<std::string,int> nMatchedHits;
   std::vector<PixelHit*> hitsFEI4;
   std::vector<PixelHit*> hitsT3MAPS;
   
-  int nMatchedClustersFEI4;
-  int nMatchedClustersT3MAPS;
+  std::map<std::string,int> nMatchedClusters;
   std::vector<PixelCluster*> clustersFEI4;
   std::vector<PixelCluster*> clustersT3MAPS;
   
   ModuleMapping *myMapper;
- 
+  ChipDimension *myChips;
+
 };
 
 #endif

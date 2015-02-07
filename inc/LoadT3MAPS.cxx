@@ -19,8 +19,10 @@
 
 #include "LoadT3MAPS.h"
 
-//--------------------------------------//
-// LoadT3MAPS: For the initialization, load table values fr.
+/**
+   Initialize the T3MAPS data class. Loads an input textfile, reads the data 
+   into a TTree, then saves the TTree in a TFile.
+*/
 LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   std::cout << std::endl << "LoadT3MAPS::Initializing..." << std::endl;
   
@@ -30,12 +32,12 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   std::string currText;
 
   // Load output file, configure output TTree:
-  outputT3MAPS = new TFile(outFileName,"recreate");
+  outputT3MAPS = new TFile(TString(outFileName),"recreate");
   treeT3MAPS = new TTree("TreeT3MAPS","TreeT3MAPS");
-  treeT3MAPS.Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
-  treeT3MAPS.Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
-  treeT3MAPS.Branch("hit_row", &hit_row);
-  treeT3MAPS.Branch("hit_column", &hit_column);
+  treeT3MAPS->Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
+  treeT3MAPS->Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
+  treeT3MAPS->Branch("hit_row", &hit_row);
+  treeT3MAPS->Branch("hit_column", &hit_column);
   
   // Open input text file from T3MAPS run:
   ifstream historyFile(inFileName);
@@ -64,9 +66,9 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	std::vector<std::string> hitColumns = delimString(currText, " ");
 	
 	// iterate over the columns that were hit in each row:
-	for (std::vector<string>::iterator it = hitColumns.begin(); 
+	for (std::vector<std::string>::iterator it = hitColumns.begin(); 
 	     it != hitColumns.end(); ++it) {
-	  int currColumn = atoi(*it->c_str());
+	  int currColumn = atoi(it->c_str());
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
 	}
@@ -74,7 +76,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
       
       // end scan, save event information:
       else if (currLineIndex == 23) {
-	treeT3MAPS.Fill();
+	treeT3MAPS->Fill();
 	nEvents++;
       }
             
@@ -87,16 +89,39 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   
   //TDirectory *savedir = gDirectory;
   //fOutputFile->cd();
-  treeT3MAPS.Write();
-  //treeT3MAPS.SetDirectory(0);
+  treeT3MAPS->Write();
+  //treeT3MAPS->SetDirectory(0);
   //gDirectory = savedir;
   outputT3MAPS->Close();
   
   return;
 }
 
-//--------------------------------------//
-// delimString:
+/**
+   Returns the number of events in the data.
+*/
+int LoadT3MAPS::getNEvents() {
+  return nEvents;
+}
+
+/**
+   Returns the TTree produced from the input textfile.
+*/
+TTree* LoadT3MAPS::getTree() {
+  return treeT3MAPS;
+}
+
+/**
+   Close the input files and delete TTree from memory.
+*/
+void LoadT3MAPS::closeFiles() {
+  //treeT3MAPS->Delete();
+  outputT3MAPS->Close();
+}
+
+/**
+   Splits a line of text up into the interpretable chunks.
+ */
 std::vector<std::string> LoadT3MAPS::delimString( std::string line, 
 						 std::string delim ) {
   // vector to return (for table)
@@ -108,30 +133,11 @@ std::vector<std::string> LoadT3MAPS::delimString( std::string line,
   std::size_t found_prev = 0;
   
   while (found!=std::string::npos) {
-    std::string token = s.substr(found_prev, found);
+    std::string token = line.substr(found_prev, found);
     result.push_back(token);
     found_prev = found;
     found = line.find(delim,found+1);
   }
   
   return result;  
-}
-
-//--------------------------------------//
-// getNHits:
-int LoadT3MAPS::getNEvents() {
-  return nEvents;
-}
-
-//--------------------------------------//
-// getEvent:
-TTree* LoadT3MAPS::getTree() {
-  return treeT3MAPS;
-}
-
-//--------------------------------------//
-// closeFiles:
-void LoadT3MAPS::closeFiles() {
-  //treeT3MAPS->Delete();
-  outputT3MAPS->Close();
 }
