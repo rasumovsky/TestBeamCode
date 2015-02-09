@@ -5,12 +5,9 @@
 //                                                                            //
 //  Author: Andrew Hard                                                       //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 04/02/2015                                                          //
+//  Date: 09/02/2015                                                          //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
-
-//#ifndef TestBeamAnalysis_h
-//#define TestBeamAnalysis_h
 
 // look at CommonHead.hh to see what might be missing...
 #include <stdlib.h>
@@ -26,10 +23,11 @@
 #include "TString.h"
 #include "TTree.h"
 
-#include "LoadT3MAPS.h"
 #include "ChipDimension.h"
-#include "PixelHit.h"
+#include "LoadT3MAPS.h"
+#include "MatchMaker.h"
 #include "PixelCluster.h"
+#include "PixelHit.h"
 
 using namespace std;
 

@@ -10,9 +10,8 @@
 //  clusters in FEI4 and T3MAPS. Procedure for use:                           //
 //      1. MatchMaker(mapper)                                                //
 //      2. AddHitInFEI4 & AddHitInT3MAPS                                      //
-//      3. matchHits();                                                       //
-//      4. matchClusters();                                                   //
-//            WARNING! matchHits() must be called before matchClusters().     //
+//      3. buildAndMatchClusters();                                           //
+//            Now calls matchHits(), so that user doesn't have to do so.      //
 //            Otherwise, the PixelCluster class will not be configured. You   //
 //            Could also run reTestClusterMatch()                             //
 //                                                                            //
@@ -168,6 +167,7 @@ std::vector<PixelCluster*> MatchMaker::mergeClusters(std::vector<PixelCluster*>
    matching of the clusters.
  */
 void MatchMaker::buildAndMatchClusters() {
+  matchHits();
   buildFEI4Clusters();
   buildT3MAPSClusters();
 }

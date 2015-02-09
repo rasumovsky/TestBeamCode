@@ -4,7 +4,7 @@
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 04/02/2015                                                          //
+//  Date: 09/02/2015                                                          //
 //                                                                            //
 //  This class loads the FE-I4 and T3MAPS data structures and then correlates //
 //  hits between the two chips for an efficiency test.                        //
@@ -76,7 +76,7 @@ int main( int argc, char **argv ) {
   std::vector<int> t_T3MAPS_hit_column;
   
   // FEI4 tree variables:
-  int t_event_number;
+  int t_FEI4_event_number;
   double t_FEI4_timestamp_start;
   double t_FEI4_timestamp_stop;
   int t_FEI4_hit_row;
@@ -92,7 +92,7 @@ int main( int argc, char **argv ) {
   myTreeT3MAPS->SetBranchAddress("hit_column", &t_T3MAPS_hit_column);
   
   // Load the FEI4 data tree:
-  myTreeFEI4->SetBranchAddress("event_number", &event_number);
+  myTreeFEI4->SetBranchAddress("event_number", &t_FEI4_event_number);
   myTreeFEI4->SetBranchAddress("timestamp_start", &t_FEI4_timestamp_start);
   myTreeFEI4->SetBranchAddress("timestamp_stop", &t_FEI4_timestamp_stop);
   myTreeFEI4->SetBranchAddress("row", &t_FEI4_hit_row);
@@ -121,6 +121,10 @@ int main( int argc, char **argv ) {
       // Same as looking for time coincidence hits in FEI4 and T3MAPS
       if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
 	  t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+	
+	PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
+					     t_FEI4_hit_column,
+					     false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
 	for (int i_h = 0; i_h < t_T3MAPS_hit_row.size(); i_h++) {
@@ -171,14 +175,79 @@ int main( int argc, char **argv ) {
   combinedMap->PrintMapParameters();
   combinedMap->SaveMapParameters();
   
-  // Map has been loaded, may proceed to actual analysis.
-
-// Loop over TTrees in tandem again
+  // Map has been loaded, may proceed to efficiency analysis.
+  
   // in each event, run the MatchMaker class.
   // be sure FEI4 hits have same event number and are within T3MAPS time.
   // get results...
   
   ///// FOR FEI4, chiech that they have the same event number before reco clusters and hits.
+  // --> THIS PART IS TRICKY!!!
   
-
+  // Loop over TTrees in tandem again
+  eventFEI4 = 0;
+  myTreeFEI4->GetEntry(eventFEI4);
+  for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
+    
+    myTreeT3MAPS->GetEntry(eventT3MAPS);
+    
+    MatchMaker *myMatch;
+    
+    // Now also advance the FEI4 tree.
+    int prevEvent = -1;
+    while (t_FEI4_timestamp_start < t_T3MAPS_timestamp_stop && 
+	   eventFEI4 < entriesFEI4) {
+      
+      eventFEI4++;
+      myTreeFEI4->GetEntry(eventFEI4);
+      
+      if (t_FEI4_event_number != prevEvent) {
+	
+	// Save information on previous match.
+	if (prevEvent != -1) {
+	  myMatch->matchClusters();
+	  
+	  nHits["FEI4_total"] += myMatch->getNHits("FEI4","");
+	  nHits["FEI4_matched"] += myMatch->getNHits("FEI4","matched");
+	  nHits["T3MAPS_total"] += myMatch->getNHits("T3MAPS","");
+	  nHits["T3MAPS_matched"] += myMatch->getNHits("T3MAPS","matched");
+	  
+	}
+	
+	myMatch = new MatchMaker(combinedMap);
+	// Loop over T3MAPS hits.
+	for (int i_h = 0; i_h < t_T3MAPS_hit_row.size(); i_h++) {
+	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row,
+						 t_T3MAPS_hit_column,
+						 false);
+	  myMatch->AddHitInT3MAPS(currT3MAPSHit);
+	}
+	
+	// Only consider events with timestamp inside that of T3MAPS
+	// Same as looking for time coincidence hits in FEI4 and T3MAPS
+	if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
+	    t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+	  
+	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
+					       t_FEI4_hit_column,
+					       false);
+	  myMatch->AddHitInFEI4(currFEI4Hit);
+	}
+      }
+      else {// just add new FEI4 hit.
+	// Only consider events with timestamp inside that of T3MAPS
+	// Same as looking for time coincidence hits in FEI4 and T3MAPS
+	if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
+	    t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+	  
+	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
+					       t_FEI4_hit_column,
+					       false);
+	  myMatch->AddHitInFEI4(currFEI4Hit);
+	}
+      }
+      
+      prevEvent = t_FEI4_event_number;
+    }
+  }
 }
