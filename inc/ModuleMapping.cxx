@@ -163,6 +163,23 @@ void ModuleMapping::createMapFromHits() {
 }
 
 /**
+   Check if a hit is in one of the mapping pixels:
+ */
+void ModuleMapping::isPixelHit(int pixIndex, PixelHit *hit) {
+  if (pixIndex >= 0 && pixIndex < 2) {
+    if (pixIndex == 0) {
+      if (hit->getRow() == T3MAPS_r1 && hit->getCol() == T3MAPS_c1) return true;
+      else return false;
+    }
+    else if (pixIndex == 1) {
+      if (hit->getRow() == T3MAPS_r2 && hit->getCol() == T3MAPS_c2) return true;
+      else return false;
+    }
+  }
+  else return false;
+}
+
+/**
    Checks that all four parameters necessary for a complete T3MAPS<-->FEI4
    mapping have been assigned.
 */

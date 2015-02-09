@@ -26,30 +26,23 @@
 #include "TString.h"
 #include "TTree.h"
 
-
-//#incude "LoadT3MAPS.h"
-
+#include "LoadT3MAPS.h"
+#include "ChipDimension.h"
 #include "PixelHit.h"
 #include "PixelCluster.h"
 
 using namespace std;
 
-//class TestBeamAnalysis {
-//public:
-  
-//private:
-  TString options;
-  
-  // For T3MAPS data:
-  //LoadT3MAPS *T3MAPS;
-  TTree *myTreeT3MAPS;
-  
-  // For FEI4 data:
-  TFile *fileFEI4;
-  TTree *myTreeFEI4;
-  
-  TCanvas *can;
-    
-//};
+ChipDimension *myChips;
 
-//#endif
+TString options;
+
+// For T3MAPS data:
+LoadT3MAPS *T3MAPS;
+TTree *myTreeT3MAPS;
+
+// For FEI4 data:
+TFile *fileFEI4;
+TTree *myTreeFEI4;
+
+TCanvas *can;

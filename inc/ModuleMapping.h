@@ -45,6 +45,7 @@ class ModuleMapping {
   
   // Accessors:
   bool mapExists();
+  bool isPixelHit(int pixIndex, PixelHit *hit);
   int getFEI4fromT3MAPS(TString valName, int valT3MAPS);
   int getT3MAPSfromFEI4(TString valName, int valFEI4);
   double getMapRMS(int varIndex);
@@ -62,7 +63,11 @@ class ModuleMapping {
   double mRMS[4];
   bool hasMap[4];
   
-  int T3MAPS_r1; int T3MAPS_c1; int T3MAPS_r2; int T3MAPS_c2;
+  // Coordinates of mapping pixels in T3MAPS:
+  int T3MAPS_r1;
+  int T3MAPS_c1;
+  int T3MAPS_r2;
+  int T3MAPS_c2;
   
 };
 
