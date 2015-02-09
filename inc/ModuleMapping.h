@@ -45,8 +45,8 @@ class ModuleMapping {
   
   // Accessors:
   bool mapExists();
-  int getFEI4fromT3MAPS(TString pos, int valT3MAPS);
-  int getT3MAPSfromFEI4(TString pos, int valFEI4);
+  int getFEI4fromT3MAPS(TString valName, int valT3MAPS);
+  int getT3MAPSfromFEI4(TString valName, int valFEI4);
   double getMapRMS(int varIndex);
   double getMapVar(int varIndex);
   void printMapParameters();

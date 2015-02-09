@@ -179,21 +179,28 @@ bool ModuleMapping::mapExists() {
    Converts T3MAPS row or col number to the corresponding FEI4 row or col.
    Returns -1 if the returned FEI4 row or column is outside defined range.
 */
-int ModuleMapping::getFEI4fromT3MAPS(TString pos, int valT3MAPS) {
+int ModuleMapping::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
   if (mapExists()) {
-    if (pos == "row") {
-      int row = (int)(mVar[0] * ((double)valT3MAPS) + mVar[1]);
-      if (myChips->isInChip("FEI4",row,1)) {
-	return row;
+    if (valName.Contains("row")) {
+      int rowVal = (int)(mVar[0] * ((double)valT3MAPS) + mVar[1]);
+      int rowSigma = (int)((mVar[0]+mRMS[0]) * ((double)valT3MAPS) 
+			   + (mVar[1]+mRMS[1])) - rowVal;
+      if (rowSigma < 0) rowSigma = -1 * rowSigma;
+      if (myChips->isInChip("FEI4",rowVal,1)) {
+	if (valName.Contains("Val")) return rowVal;
+	else if (valName.Contains("Sigma")) return rowSigma;
       }
       else {
 	return -1;
       }
     }
-    else if (pos == "col") {
-      int col = (int)(mVar[2] * ((double)valT3MAPS) + mVar[3]);
-      if (myChips->isInChip("FEI4",1,col)) {
-	return col;
+    else if (valName.Contains("col")) {
+      int colVal = (int)(mVar[2] * ((double)valT3MAPS) + mVar[3]);
+      int colSigma = (int)((mVar[2]+mRMS[2]) * ((double)valT3MAPS) + (mVar[3]+mRMS[3])) - colVal;
+      if (colSigma < 0) colSigma = -1 * colSigma;
+      if (myChips->isInChip("FEI4",1,colVal)) {
+	if (valName.Contains("Val")) return colVal;
+	else if (valName.Contains("Sigma")) return colSigma;
       }
       else {
 	return -1;
@@ -207,21 +214,26 @@ int ModuleMapping::getFEI4fromT3MAPS(TString pos, int valT3MAPS) {
    Converts FEI4 row or col number to the corresponding T3MAPS row or col.
    Returns -1 if the returned T3MAPS row or column is outside defined range.
  */
-int ModuleMapping::getT3MAPSfromFEI4(TString pos, int valFEI4) {
+int ModuleMapping::getT3MAPSfromFEI4(TString valName, int valFEI4) {
   if (mapExists()) {
-    if (pos == "row") {
-      int row = (int)((((double)valFEI4) - mVar[1]) / mVar[0]);
-      if (myChips->isInChip("T3MAPS",row,1)) {
-	return row;
+    if (valName.Contains("row")) {
+      int rowVal = (int)((((double)valFEI4) - mVar[1]) / mVar[0]);
+      int rowSigma = (int)((((double)valFEI4) - (mVar[1]+mRMS[1])) / (mVar[0]-mRMS[0]));
+      if (rowSigma < 0) rowSigma = -1 * rowSigma;
+      if (myChips->isInChip("T3MAPS",rowVal,1)) {
+	if (valName.Contains("Val")) return rowVal;
+	else if (valName.Contains("Sigma")) return rowSigma;
       }
       else {
 	return -1;
       }
     }
-    else if (pos == "col") {
-      int col = (int)((((double)valFEI4) - mVar[3]) / mVar[2]);
-      if (myChips->isInChip("T3MAPS",1,col)) {
-	return col;
+    else if (valName.Contains("col")) {
+      int colVal = (int)((((double)valFEI4) - mVar[3]) / mVar[2]);
+      int colSigma = (int)((((double)valFEI4) - (mVar[3]+mRMS[3])) / (mVar[2]-mRMS[2]));
+      if (myChips->isInChip("T3MAPS",1,colVal)) {
+	if (valName.Contains("Val")) return colVal;
+	if (valName.Contains("Sigma")) return colSigma;
       }
       else { 
 	return -1;

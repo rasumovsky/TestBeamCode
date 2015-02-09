@@ -96,8 +96,6 @@ bool MatchMaker::isHitMatchedInFEI4(PixelHit *hit) {
   // These are the nominal positions:
   int rowNomFEI4 = myMapper->getFEI4fromT3MAPS("rowVal",hit->getRow());
   int colNomFEI4 = myMapper->getFEI4fromT3MAPS("colVal",hit->getCol());
-  
-  /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
   int rowSigmaFEI4 = myMapper->getFEI4fromT3MAPS("rowSigma",hit->getRow());
   int colSigmaFEI4 = myMapper->getFEI4fromT3MAPS("colSigma",hit->getCol());
   
@@ -122,8 +120,6 @@ bool MatchMaker::isHitMatchedInT3MAPS(PixelHit *hit) {
   // These are the nominal positions:
   int rowNomT3MAPS = myMapper->getT3MAPSfromFEI4("rowVal",hit->getRow());
   int colNomT3MAPS = myMapper->getT3MAPSfromFEI4("colVal",hit->getCol());
-  
-  /// WARNING!!@!!! THIS STILL HAS TO BE IMPLEMENTED IN MODULEMAPPING!
   int rowSigmaT3MAPS = myMapper->getT3MAPSfromFEI4("rowSigma",hit->getRow());
   int colSigmaT3MAPS = myMapper->getT3MAPSfromFEI4("colSigma",hit->getCol());
   

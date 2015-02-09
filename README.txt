@@ -49,7 +49,9 @@ ModuleMapping.cxx
   a loop over TTrees to add events, and then create a new mapping. It also 
   provides an interface for accessing map data from other classes.
 
-  ** REMEMBER TO UPDATE METHODS FOR GETTING UNCERTAINTY ON MAP VALUES
+  ** Note: methods for calculating uncertainty are based on application of +1
+  sigma values of mapping constaints. This should be revisited when real data
+  are available and the actual spreads can be determined. 
 
 PixelCluster.cxx
   This class stores a list of hits that have been associated as a cluster. It
