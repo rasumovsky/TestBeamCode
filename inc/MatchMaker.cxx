@@ -46,7 +46,7 @@ MatchMaker::MatchMaker(ModuleMapping *mapper) {
 /**
    Add a single pixel hit in the FEI4 chip.
  */
-void MatchMaker::AddHitInFEI4(PixelHit *hit) {
+void MatchMaker::addHitInFEI4(PixelHit *hit) {
   if (myChips->isInChip("FEI4", hit->getRow(), hit->getCol())) {
     hitsFEI4.push_back(hit);
   }
@@ -59,7 +59,7 @@ void MatchMaker::AddHitInFEI4(PixelHit *hit) {
 /**
    Add a single pixel hit in the T3MAPS chip.
 */
-void MatchMaker::AddHitInT3MAPS(PixelHit *hit) {
+void MatchMaker::addHitInT3MAPS(PixelHit *hit) {
   if (myChips->isInChip("T3MAPS", hit->getRow(), hit->getCol())) {
     hitsT3MAPS.push_back(hit);
   }

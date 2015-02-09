@@ -259,4 +259,9 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
-  inc/PixelHit.h inc/PixelCluster.h
+  inc/ChipDimension.h inc/LoadT3MAPS.h inc/MatchMaker.h inc/PixelHit.h \
+  inc/PixelCluster.h inc/ModuleMapping.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h

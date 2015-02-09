@@ -25,17 +25,20 @@ int main( int argc, char **argv ) {
   TString inputFEI4 = argv[2];
   options = argv[3];
   
+  TString mapFileName = "combined_map_output.txt";
+
   // Root macros:
-  SetAtlasStyle();
+  //SetAtlasStyle();
   
   // LoadT3MAPS and load the FEI4 TTree
-  outputT3MAPS = inputT3MAPS.ReplaceAll(".txt",".root");
-  T3MAPS = new LoadT3MAPS(inputT3MAPS, outputT3MAPS);
-  myTreeT3MAPS = T3MAPS->getTree();
+  TString outputT3MAPS = inputT3MAPS.ReplaceAll(".txt",".root");
+  LoadT3MAPS *T3MAPS = new LoadT3MAPS(string(inputT3MAPS),
+				      string(outputT3MAPS));
+  TTree *myTreeT3MAPS = T3MAPS->getTree();
   
   // Load the FEI4 data tree:
-  fileFEI4 = new TFile(inputFEI4);
-  myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
+  TFile *fileFEI4 = new TFile(inputFEI4);
+  TTree *myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
 
   // Initialize several ModuleMapping instances
   int currR1 = 1;
@@ -59,13 +62,13 @@ int main( int argc, char **argv ) {
     simpleMaps[i]->designatePixelPair(currR1, currC1, currR2, currC2);
     
     // Advance each of the points around T3MAPS edge:
-    if (currRow1 < myChips->getChipSize("T3MAPS","nRows")) {
-      currRow1++;
-      currRow2--;
+    if (currR1 < myChips->getChipSize("T3MAPS","nRows")) {
+      currR1++;
+      currR2--;
     }
     else {
-      currCol1++;
-      currCol2--;
+      currC1++;
+      currC2--;
     }
   }
   
@@ -127,10 +130,10 @@ int main( int argc, char **argv ) {
 					     false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
-	for (int i_h = 0; i_h < t_T3MAPS_hit_row.size(); i_h++) {
+	for (int i_h = 0; i_h < (int)t_T3MAPS_hit_row.size(); i_h++) {
 	  
-	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row, 
-						 t_T3MAPS_hit_column,
+	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row[i_h], 
+						 t_T3MAPS_hit_column[i_h],
 						 false);
 	  
 	  for (int i_m = 0; i_m < nMaps; i_m++) {
@@ -162,24 +165,31 @@ int main( int argc, char **argv ) {
     
     // save map parameters in histograms:
     for (int i_p = 0; i_p < 4; i_p++) {
-      histMapValues[i_p]->Fill(getMapVar(i_p));
+      histMapValues[i_p]->Fill(simpleMaps[i_m]->getMapVar(i_p));
     }
   }
   
   // Create a new "meta map" to be used for the efficiency analysis:
   ModuleMapping *combinedMap = new ModuleMapping("NA","none");
   for (int i_p = 0; i_p < 4; i_p++) {
-    combinedMap->SetMapVar(i_p,histMapValues[i_p]->GetMean());
-    combinedMap->SetMapRMS(i_p,histMapValues[i_p]->GetRMS());
+    combinedMap->setMapVar(i_p,histMapValues[i_p]->GetMean());
+    combinedMap->setMapRMS(i_p,histMapValues[i_p]->GetRMS());
   }
-  combinedMap->PrintMapParameters();
-  combinedMap->SaveMapParameters();
+  combinedMap->printMapParameters();
+  combinedMap->saveMapParameters(mapFileName);
   
   // Map has been loaded, may proceed to efficiency analysis.
   
   // in each event, run the MatchMaker class.
   // be sure FEI4 hits have same event number and are within T3MAPS time.
   // get results...
+  
+  
+  map<string,int> nHitSum;
+  nHitSum["FEI4_total"] = 0;
+  nHitSum["FEI4_matched"] = 0;
+  nHitSum["T3MAPS_total"] = 0;
+  nHitSum["T3MAPS_matched"] = 0;
   
   ///// FOR FEI4, chiech that they have the same event number before reco clusters and hits.
   // --> THIS PART IS TRICKY!!!
@@ -205,22 +215,22 @@ int main( int argc, char **argv ) {
 	
 	// Save information on previous match.
 	if (prevEvent != -1) {
-	  myMatch->matchClusters();
+	  myMatch->buildAndMatchClusters();
 	  
-	  nHits["FEI4_total"] += myMatch->getNHits("FEI4","");
-	  nHits["FEI4_matched"] += myMatch->getNHits("FEI4","matched");
-	  nHits["T3MAPS_total"] += myMatch->getNHits("T3MAPS","");
-	  nHits["T3MAPS_matched"] += myMatch->getNHits("T3MAPS","matched");
+	  nHitSum["FEI4_total"] += myMatch->getNHits("FEI4","");
+	  nHitSum["FEI4_matched"] += myMatch->getNHits("FEI4","matched");
+	  nHitSum["T3MAPS_total"] += myMatch->getNHits("T3MAPS","");
+	  nHitSum["T3MAPS_matched"] += myMatch->getNHits("T3MAPS","matched");
 	  
 	}
 	
 	myMatch = new MatchMaker(combinedMap);
 	// Loop over T3MAPS hits.
-	for (int i_h = 0; i_h < t_T3MAPS_hit_row.size(); i_h++) {
-	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row,
-						 t_T3MAPS_hit_column,
+	for (int i_h = 0; i_h < (int)t_T3MAPS_hit_row.size(); i_h++) {
+	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row[i_h],
+						 t_T3MAPS_hit_column[i_h],
 						 false);
-	  myMatch->AddHitInT3MAPS(currT3MAPSHit);
+	  myMatch->addHitInT3MAPS(currT3MAPSHit);
 	}
 	
 	// Only consider events with timestamp inside that of T3MAPS
@@ -231,7 +241,7 @@ int main( int argc, char **argv ) {
 	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
 					       t_FEI4_hit_column,
 					       false);
-	  myMatch->AddHitInFEI4(currFEI4Hit);
+	  myMatch->addHitInFEI4(currFEI4Hit);
 	}
       }
       else {// just add new FEI4 hit.
@@ -243,11 +253,25 @@ int main( int argc, char **argv ) {
 	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
 					       t_FEI4_hit_column,
 					       false);
-	  myMatch->AddHitInFEI4(currFEI4Hit);
+	  myMatch->addHitInFEI4(currFEI4Hit);
 	}
       }
       
       prevEvent = t_FEI4_event_number;
     }
   }
+  
+  // Print the results:
+  cout << "TestBeamAnalysis is complete. Results:" << endl;
+  cout << "  FEI4 Hits:" << endl;
+  cout << "    Matched = " << nHitSum["FEI4_matched"] << endl;
+  cout << "    Total   = " << nHitSum["FEI4_total"] << endl;
+  cout << "    Ratio   = " << (((double)nHitSum["FEI4_matched"]) /
+			       ((double)nHitSum["FEI4_total"])) << endl << endl;
+  cout << "  T3MAPS Hits:" << endl;
+  cout << "    Matched = " << nHitSum["T3MAPS_matched"] << endl;
+  cout << "    Total   = " << nHitSum["T3MAPS_total"] << endl;
+  cout << "    Ratio   = " << (((double)nHitSum["T3MAPS_matched"]) /
+			       ((double)nHitSum["T3MAPS_total"])) << endl;
+  return 1;
 }

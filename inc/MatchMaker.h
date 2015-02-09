@@ -34,8 +34,8 @@ class MatchMaker
   ~MatchMaker();
   
   // Mutators:
-  void AddHitInFEI4(PixelHit *hit);
-  void AddHitInT3MAPS(PixelHit *hit);
+  void addHitInFEI4(PixelHit *hit);
+  void addHitInT3MAPS(PixelHit *hit);
   void matchHits();
   void buildAndMatchClusters();
   

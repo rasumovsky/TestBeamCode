@@ -35,12 +35,6 @@ ChipDimension *myChips;
 
 TString options;
 
-// For T3MAPS data:
-LoadT3MAPS *T3MAPS;
-TTree *myTreeT3MAPS;
-
-// For FEI4 data:
-TFile *fileFEI4;
-TTree *myTreeFEI4;
+TH1F *histMapValues[4];
 
 TCanvas *can;
