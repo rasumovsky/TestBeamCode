@@ -9,6 +9,9 @@
 //  This class loads the FE-I4 and T3MAPS data structures and then correlates //
 //  hits between the two chips for an efficiency test.                        //
 //                                                                            //
+//  Need to include plotting utility. This will also require implementation   //
+//  of SetAtlasStyle(); Perhaps it would be useful to create a plotting class.//
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "TestBeamAnalysis.h"
