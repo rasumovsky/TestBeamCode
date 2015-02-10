@@ -30,9 +30,9 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   
   int currLineIndex = 0;
   std::string currText;
-
+  char *outFileNameC = (char*)outFileName.c_str();
   // Load output file, configure output TTree:
-  outputT3MAPS = new TFile(TString(outFileName),"recreate");
+  outputT3MAPS = new TFile(outFileNameC,"recreate");
   treeT3MAPS = new TTree("TreeT3MAPS","TreeT3MAPS");
   treeT3MAPS->Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
   treeT3MAPS->Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
