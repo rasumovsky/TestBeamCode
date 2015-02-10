@@ -77,8 +77,17 @@ class PlotUtil
   void setOutputDirectory(TString newOutDir);
   
   // Accessors:
+  void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, double x1,
+		double x2, double y1, double y2);
   
-
+  void plotTH2F(TH2F *h, TString xname, TString yname, TString zname, 
+		TString sname, double x1, double x2, double y1, double y2,
+		double z1, double z2);
+  
+  void plotMultiTH1F(TH1F *h[], TString labels[], int size, TString xname, 
+		     TString yname, TString sname, double x1, double x2,
+		     double y1, double y2);
+  
  private:
   
   TCanvas *can;
