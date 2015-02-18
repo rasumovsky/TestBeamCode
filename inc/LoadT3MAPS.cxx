@@ -28,6 +28,8 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   
   nEvents = 0;
   
+  gROOT->ProcessLine("#include <vector>");
+  
   int currLineIndex = 0;
   std::string currText;
   char *outFileNameC = (char*)outFileName.c_str();
@@ -40,7 +42,8 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   treeT3MAPS->Branch("hit_column", &hit_column);
   
   // Open input text file from T3MAPS run:
-  ifstream historyFile(inFileName);
+  char *inFileNameC = (char*)inFileName.c_str();
+  ifstream historyFile(inFileNameC);
   if (historyFile.is_open()) {
     while (getline(historyFile, currText) ) {
       std::cout << currText << std::endl;
@@ -51,6 +54,8 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	currLineIndex = 0;
 	hit_row.clear();
 	hit_column.clear();
+	//hit_row->clear();
+	//hit_column->clear();
       }
       
       // start time recorded:
@@ -71,6 +76,8 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	  int currColumn = atoi(it->c_str());
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
+	  //hit_row->push_back(currRow);
+	  //hit_column->push_back(currColumn);
 	}
       }
       

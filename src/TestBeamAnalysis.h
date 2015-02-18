@@ -24,10 +24,12 @@
 #include "TTree.h"
 
 #include "ChipDimension.h"
-#include "LoadT3MAPS.h"
+//#include "LoadT3MAPS.h"
 #include "MatchMaker.h"
 #include "PixelCluster.h"
 #include "PixelHit.h"
+#include "TreeFEI4.h"
+#include "TreeT3MAPS.h"
 
 using namespace std;
 
@@ -38,3 +40,6 @@ TString options;
 TH1F *histMapValues[4];
 
 TCanvas *can;
+
+TreeFEI4 *cF;
+TreeT3MAPS *cT;

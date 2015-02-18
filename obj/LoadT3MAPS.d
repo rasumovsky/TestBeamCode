@@ -235,4 +235,5 @@ obj/LoadT3MAPS.o: inc/LoadT3MAPS.cxx inc/LoadT3MAPS.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TObjString.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
-  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h

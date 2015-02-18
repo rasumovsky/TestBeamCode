@@ -29,20 +29,34 @@ int main( int argc, char **argv ) {
   options = argv[3];
   
   TString mapFileName = "combined_map_output.txt";
-
+  
   // Root macros:
   //SetAtlasStyle();
   
   // LoadT3MAPS and load the FEI4 TTree
-  TString outputT3MAPS = inputT3MAPS.ReplaceAll(".txt",".root");
-  LoadT3MAPS *T3MAPS = new LoadT3MAPS(string(inputT3MAPS),
-				      string(outputT3MAPS));
-  TTree *myTreeT3MAPS = T3MAPS->getTree();
+  TFile *fileT3MAPS = new TFile(inputT3MAPS);
+  TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
+  cT = new TreeT3MAPS(myTreeT3MAPS);
   
-  // Load the FEI4 data tree:
   TFile *fileFEI4 = new TFile(inputFEI4);
   TTree *myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
-
+  cF = new TreeFEI4(myTreeFEI4);
+  
+  /**
+     Need to update this map-making section. First of all, it is unwise to use
+     the outside rows for mapping. Choose an interior rectangle. 
+     
+     Then, we want to have protections in place in case the chosen pixel is 
+     never hit, or has zero corresponding hits. Have the map util return 
+     something like -1, and check that in this code to prevent non-existent
+     maps from influencing the meta-map creation.
+     
+     
+  */
+  
+  // Load the chip sizes (but use defaults!)
+  myChips = new ChipDimension();
+    
   // Initialize several ModuleMapping instances
   int currR1 = 1;
   int currC1 = 1;
@@ -74,7 +88,7 @@ int main( int argc, char **argv ) {
       currC2--;
     }
   }
-  
+  /*
   // T3MAPS tree variables:
   double t_T3MAPS_timestamp_start;
   double t_T3MAPS_timestamp_stop;
@@ -103,40 +117,41 @@ int main( int argc, char **argv ) {
   myTreeFEI4->SetBranchAddress("timestamp_stop", &t_FEI4_timestamp_stop);
   myTreeFEI4->SetBranchAddress("row", &t_FEI4_hit_row);
   myTreeFEI4->SetBranchAddress("column", &t_FEI4_hit_column);
+  */
   
   // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
-  Long64_t entriesFEI4 = myTreeFEI4->GetEntries();
+  Long64_t entriesFEI4 = cF->fChain->GetEntries();
   Long64_t eventFEI4 = 0;
-  myTreeFEI4->GetEntry(eventFEI4);
+  cF->fChain->GetEntry(eventFEI4);
   
   // Loop over T3MAPS tree.
-  Long64_t entriesT3MAPS = myTreeT3MAPS->GetEntries();
+  Long64_t entriesT3MAPS = cT->fChain->GetEntries();
   for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
     
-    myTreeT3MAPS->GetEntry(eventT3MAPS);
+    cT->fChain->GetEntry(eventT3MAPS);
     
     
     // Now also advance the FEI4 tree.
-    while (t_FEI4_timestamp_start < t_T3MAPS_timestamp_stop && 
+    while (cF->timestamp_start < cT->timestamp_stop && 
 	   eventFEI4 < entriesFEI4) {
       
       eventFEI4++;
-      myTreeFEI4->GetEntry(eventFEI4);
+      cF->fChain->GetEntry(eventFEI4);
       
       // Only consider events with timestamp inside that of T3MAPS
       // Same as looking for time coincidence hits in FEI4 and T3MAPS
-      if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
-	  t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+      if (cF->timestamp_start >= cT->timestamp_start &&
+	  cF->timestamp_stop <= cT->timestamp_stop) {
 	
-	PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
-					     t_FEI4_hit_column,
+	PixelHit *currFEI4Hit = new PixelHit(cF->row,
+					     cF->column,
 					     false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
-	for (int i_h = 0; i_h < (int)t_T3MAPS_hit_row.size(); i_h++) {
+	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
 	  
-	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row[i_h], 
-						 t_T3MAPS_hit_column[i_h],
+	  PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h], 
+						 (*cT->hit_column)[i_h],
 						 false);
 	  
 	  for (int i_m = 0; i_m < nMaps; i_m++) {
@@ -199,22 +214,22 @@ int main( int argc, char **argv ) {
   
   // Loop over TTrees in tandem again
   eventFEI4 = 0;
-  myTreeFEI4->GetEntry(eventFEI4);
+  cF->fChain->GetEntry(eventFEI4);
   for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
     
-    myTreeT3MAPS->GetEntry(eventT3MAPS);
+    cT->fChain->GetEntry(eventT3MAPS);
     
     MatchMaker *myMatch;
     
     // Now also advance the FEI4 tree.
     int prevEvent = -1;
-    while (t_FEI4_timestamp_start < t_T3MAPS_timestamp_stop && 
+    while (cF->timestamp_start < cT->timestamp_stop && 
 	   eventFEI4 < entriesFEI4) {
       
       eventFEI4++;
-      myTreeFEI4->GetEntry(eventFEI4);
+      cF->fChain->GetEntry(eventFEI4);
       
-      if (t_FEI4_event_number != prevEvent) {
+      if (cF->event_number != prevEvent) {
 	
 	// Save information on previous match.
 	if (prevEvent != -1) {
@@ -229,20 +244,20 @@ int main( int argc, char **argv ) {
 	
 	myMatch = new MatchMaker(combinedMap);
 	// Loop over T3MAPS hits.
-	for (int i_h = 0; i_h < (int)t_T3MAPS_hit_row.size(); i_h++) {
-	  PixelHit *currT3MAPSHit = new PixelHit(t_T3MAPS_hit_row[i_h],
-						 t_T3MAPS_hit_column[i_h],
+	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
+	  PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h],
+						 (*cT->hit_column)[i_h],
 						 false);
 	  myMatch->addHitInT3MAPS(currT3MAPSHit);
 	}
 	
 	// Only consider events with timestamp inside that of T3MAPS
 	// Same as looking for time coincidence hits in FEI4 and T3MAPS
-	if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
-	    t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+	if (cF->timestamp_start >= cT->timestamp_start &&
+	    cF->timestamp_stop <= cT->timestamp_stop) {
 	  
-	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
-					       t_FEI4_hit_column,
+	  PixelHit *currFEI4Hit = new PixelHit(cF->row,
+					       cF->column,
 					       false);
 	  myMatch->addHitInFEI4(currFEI4Hit);
 	}
@@ -250,17 +265,17 @@ int main( int argc, char **argv ) {
       else {// just add new FEI4 hit.
 	// Only consider events with timestamp inside that of T3MAPS
 	// Same as looking for time coincidence hits in FEI4 and T3MAPS
-	if (t_FEI4_timestamp_start >= t_T3MAPS_timestamp_start &&
-	    t_FEI4_timestamp_stop <= t_T3MAPS_timestamp_stop) {
+	if (cF->timestamp_start >= cT->timestamp_start &&
+	    cF->timestamp_stop <= cT->timestamp_stop) {
 	  
-	  PixelHit *currFEI4Hit = new PixelHit(t_FEI4_hit_row,
-					       t_FEI4_hit_column,
+	  PixelHit *currFEI4Hit = new PixelHit(cF->row,
+					       cF->column,
 					       false);
 	  myMatch->addHitInFEI4(currFEI4Hit);
 	}
       }
       
-      prevEvent = t_FEI4_event_number;
+      prevEvent = cF->event_number;
     }
   }
   

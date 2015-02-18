@@ -38,6 +38,17 @@ LoadT3MAPS.cxx
   This program is designed to load the T3MAPS history.txt output textfile and 
   produce and save a TTree that is ROOT-readable. 
 
+  >> root -l
+  >> gROOT->ProcessLine("#include <vector>");
+  >> .L inc/LoadT3MAPS.cxx
+  >> LoadT3MAPS("T3MAPS_17_2_2015.txt","T3MAPS_17_2_2015.root")
+
+  gives an error, but works:
+    (const class LoadT3MAPS)140497680912480
+    Error: ~LoadT3MAPS() declared but not defined inc/LoadT3MAPS.cxx:41:
+    *** Interpreter error recovered ***
+ 
+
 MatchMaker.cxx
   This class is designed to search for matches between hits in FEI4 and T3MAPS.
   It starts by searching for matches between individual pixel hits, then builds
@@ -61,3 +72,8 @@ PixelCluster.cxx
 PixelHit.cxx
   This class stores the basic information associated with a single pixel hit
   (row, column, whether it is matched). 
+
+PlotUtil.cxx
+  This class stores plotting utilities for the analysis. It initializes a canvas
+  and provides default formatting options for output histograms.
+
