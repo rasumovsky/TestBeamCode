@@ -1,16 +1,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: ModuleMapping.h                                                     //
-//  Class: ModuleMapping.cxx                                                  //
+//  Name: MapMaker.h                                                          //
+//  Class: MapMaker.cxx                                                       //
 //                                                                            //
 //  Author: Andrew Hard                                                       //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 05/02/2015                                                          //
+//  Date: 18/02/2015                                                          //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef ModuleMapping_h
-#define ModuleMapping_h
+#ifndef MapMaker_h
+#define MapMaker_h
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,50 +27,41 @@
 #include "ChipDimension.h"
 #include "PixelHit.h"
 
-class ModuleMapping {
+class MapMaker {
   
  public:
   
-  ModuleMapping(TString fileDir, TString option);
-  ~ModuleMapping();
+  MapMaker(TString fileDir, TString option);
+  ~MapMaker();
   
   // Mutators:
   void loadMapParameters(TString inputDir);
   void saveMapParameters(TString outputDir);
   void setMapRMS(int varIndex, double newVal);
   void setMapVar(int varIndex, double newVal);
-  void designatePixelPair(int row1, int col1, int row2, int col2);
-  void addHitToMap(int pixIndex, PixelHit *hit);
+  void addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void createMapFromHits();
   
   // Accessors:
   bool mapExists();
-  bool isPixelHit(int pixIndex, PixelHit *hit);
   int getFEI4fromT3MAPS(TString valName, int valT3MAPS);
   int getT3MAPSfromFEI4(TString valName, int valFEI4);
-  int getPixPos(TString valName, int index);
   double getMapRMS(int varIndex);
   double getMapVar(int varIndex);
   void printMapParameters();
-  TH2D* getHitPlot(int index);
+  TH2D* getHitPlot();
   
  private:
   
   ChipDimension *myChips;
    
-  TH2D *hist2dFEI4Pix[2];
+  TH2D *hist2dFEI4Pix;
       
   // Array to store linear constants.
   double mVar[4];
   double mRMS[4];
   bool hasMap[4];
-  
-  // Coordinates of mapping pixels in T3MAPS:
-  int T3MAPS_r1;
-  int T3MAPS_c1;
-  int T3MAPS_r2;
-  int T3MAPS_c2;
-  
+    
 };
 
 #endif

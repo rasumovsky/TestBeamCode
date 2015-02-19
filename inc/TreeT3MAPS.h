@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Feb 17 17:08:44 2015 by ROOT version 5.34/05
+// Wed Feb 18 14:57:49 2015 by ROOT version 5.34/05
 // from TTree TreeT3MAPS/TreeT3MAPS
-// found on file: T3MAPS_17_2_2015.root
+// found on file: data/T3MAPS_17_2_2015.root
 //////////////////////////////////////////////////////////
 
 #ifndef TreeT3MAPS_h
@@ -25,12 +25,14 @@ public :
    Int_t           fCurrent; //!current Tree number in a TChain
 
    // Declaration of leaf types
+   Int_t           nHits;
    Double_t        timestamp_start;
    Double_t        timestamp_stop;
    vector<int>     *hit_row;
    vector<int>     *hit_column;
 
    // List of branches
+   TBranch        *b_nHits;   //!
    TBranch        *b_timestamp_start;   //!
    TBranch        *b_timestamp_stop;   //!
    TBranch        *b_hit_row;   //!
@@ -55,9 +57,9 @@ TreeT3MAPS::TreeT3MAPS(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("T3MAPS_17_2_2015.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("data/T3MAPS_17_2_2015.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("T3MAPS_17_2_2015.root");
+         f = new TFile("data/T3MAPS_17_2_2015.root");
       }
       f->GetObject("TreeT3MAPS",tree);
 
@@ -109,6 +111,7 @@ void TreeT3MAPS::Init(TTree *tree)
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
+   fChain->SetBranchAddress("nHits", &nHits, &b_nHits);
    fChain->SetBranchAddress("timestamp_start", &timestamp_start, &b_timestamp_start);
    fChain->SetBranchAddress("timestamp_stop", &timestamp_stop, &b_timestamp_stop);
    fChain->SetBranchAddress("hit_row", &hit_row, &b_hit_row);

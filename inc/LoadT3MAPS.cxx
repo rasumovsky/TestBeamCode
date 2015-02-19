@@ -36,6 +36,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   // Load output file, configure output TTree:
   outputT3MAPS = new TFile(outFileNameC,"recreate");
   treeT3MAPS = new TTree("TreeT3MAPS","TreeT3MAPS");
+  treeT3MAPS->Branch("nHits", &nHits, "nHits/I");
   treeT3MAPS->Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
   treeT3MAPS->Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
   treeT3MAPS->Branch("hit_row", &hit_row);
@@ -46,7 +47,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   ifstream historyFile(inFileNameC);
   if (historyFile.is_open()) {
     while (getline(historyFile, currText) ) {
-      std::cout << currText << std::endl;
+      //std::cout << currText << std::endl;
       
       // Start counting the line numbers (one run is 0-23)
       std::size_t foundText = currText.find("BEGIN SCAN");
@@ -54,15 +55,18 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	currLineIndex = 0;
 	hit_row.clear();
 	hit_column.clear();
-	//hit_row->clear();
-	//hit_column->clear();
+	nHits = 0;
+	std::cout << currText << std::endl;
       }
       
       // start time recorded:
-      if (currLineIndex == 2) timestamp_start = atoi(currText.c_str());
-      
+      if (currLineIndex == 2) { 
+	timestamp_start = strtod(currText.c_str(),"");// + 28812.198081;
+      }
       // stop time recorded:
-      else if (currLineIndex == 4) timestamp_stop = atoi(currText.c_str());
+      else if (currLineIndex == 4) {
+	timestamp_stop = strtod(currText.c_str(),"");// + 28812.198081;
+      }
       
       // get hit table information:
       else if (currLineIndex > 4 && currLineIndex < 23) {
@@ -76,8 +80,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	  int currColumn = atoi(it->c_str());
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
-	  //hit_row->push_back(currRow);
-	  //hit_column->push_back(currColumn);
+	  nHits++;
 	}
       }
       
@@ -93,12 +96,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   }
   
   historyFile.close();
-  
-  //TDirectory *savedir = gDirectory;
-  //fOutputFile->cd();
   treeT3MAPS->Write();
-  //treeT3MAPS->SetDirectory(0);
-  //gDirectory = savedir;
   outputT3MAPS->Close();
   
   return;
@@ -130,7 +128,7 @@ void LoadT3MAPS::closeFiles() {
    Splits a line of text up into the interpretable chunks.
  */
 std::vector<std::string> LoadT3MAPS::delimString( std::string line, 
-						 std::string delim ) {
+						  std::string delim ) {
   // vector to return (for table)
   std::vector<std::string> result;
   result.clear();

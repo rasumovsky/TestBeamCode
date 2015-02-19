@@ -31,7 +31,7 @@ class LoadT3MAPS
  public:
   
   LoadT3MAPS( std::string inFileName, std::string outFileName );
-  ~LoadT3MAPS();
+  virtual ~LoadT3MAPS() {};
   
   // Member functions:
   int getNEvents();
@@ -45,8 +45,9 @@ class LoadT3MAPS
   TTree *treeT3MAPS;
   
   // variables stored in TTree:
-  double timestamp_start;
-  double timestamp_stop;
+  int nHits;
+  Double_t timestamp_start;
+  Double_t timestamp_stop;
   //std::vector<int> hit_row;
   //std::vector<int> hit_column;
   vector<int> hit_row;

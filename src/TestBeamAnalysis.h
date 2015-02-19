@@ -24,12 +24,13 @@
 #include "TTree.h"
 
 #include "ChipDimension.h"
-//#include "LoadT3MAPS.h"
 #include "MatchMaker.h"
 #include "PixelCluster.h"
 #include "PixelHit.h"
 #include "TreeFEI4.h"
 #include "TreeT3MAPS.h"
+#include "PlotUtil.h"
+#include "MapMaker.h"
 
 using namespace std;
 

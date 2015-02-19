@@ -12,11 +12,15 @@
 //  Need to include plotting utility. This will also require implementation   //
 //  of SetAtlasStyle(); Perhaps it would be useful to create a plotting class.//
 //                                                                            //
+//  Options:                                                                  //
+//    "CutFullEvt" - Ignores events where T3MAPS has 10% of pixels showing    //
+//                   hits for the integration period.                         //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "TestBeamAnalysis.h"
 
-int main( int argc, char **argv ) {
+int main(int argc, char **argv) {
   
   // Check arguments:
   if (argc < 4) {
@@ -50,18 +54,17 @@ int main( int argc, char **argv ) {
      never hit, or has zero corresponding hits. Have the map util return 
      something like -1, and check that in this code to prevent non-existent
      maps from influencing the meta-map creation.
-     
-     
   */
   
   // Load the chip sizes (but use defaults!)
   myChips = new ChipDimension();
-    
+  
+  /*
   // Initialize several ModuleMapping instances
-  int currR1 = 1;
-  int currC1 = 1;
-  int currR2 = myChips->getChipSize("T3MAPS","nRows");
-  int currC2 = myChips->getChipSize("T3MAPS","nColumns");
+  int currR1 = 3;
+  int currC1 = 3;
+  int currR2 = myChips->getChipSize("T3MAPS","nRows")-2;
+  int currC2 = myChips->getChipSize("T3MAPS","nColumns")-2;
   
   for (int i = 0; i < 4; i++) {
     histMapValues[i] = new TH1F(Form("histMapValues%i",i),
@@ -70,7 +73,7 @@ int main( int argc, char **argv ) {
   }
   
   int const nMaps = (myChips->getChipSize("T3MAPS","nRows") +
-		     myChips->getChipSize("T3MAPS","nColumns"));
+		     myChips->getChipSize("T3MAPS","nColumns") - 8);
   
   ModuleMapping *simpleMaps[nMaps];
   for (int i = 0; i < nMaps; i++) {
@@ -79,7 +82,7 @@ int main( int argc, char **argv ) {
     simpleMaps[i]->designatePixelPair(currR1, currC1, currR2, currC2);
     
     // Advance each of the points around T3MAPS edge:
-    if (currR1 < myChips->getChipSize("T3MAPS","nRows")) {
+    if (currR1 < myChips->getChipSize("T3MAPS","nRows")-2) {
       currR1++;
       currR2--;
     }
@@ -88,64 +91,46 @@ int main( int argc, char **argv ) {
       currC2--;
     }
   }
-  /*
-  // T3MAPS tree variables:
-  double t_T3MAPS_timestamp_start;
-  double t_T3MAPS_timestamp_stop;
-  std::vector<int> t_T3MAPS_hit_row;
-  std::vector<int> t_T3MAPS_hit_column;
-  
-  // FEI4 tree variables:
-  int t_FEI4_event_number;
-  double t_FEI4_timestamp_start;
-  double t_FEI4_timestamp_stop;
-  int t_FEI4_hit_row;
-  int t_FEI4_hit_column;
-  
-  // Load the TTrees for T3MAPS and FEI4 from file, set the branch addresses.
-  std::cout << "  Setting branch addresses for input TTrees." << std::endl;
-  
-  // Set the T3MAPS TTree addresses:
-  myTreeT3MAPS->SetBranchAddress("timestamp_start", &t_T3MAPS_timestamp_start);
-  myTreeT3MAPS->SetBranchAddress("timestamp_stop", &t_T3MAPS_timestamp_stop);
-  myTreeT3MAPS->SetBranchAddress("hit_row", &t_T3MAPS_hit_row);
-  myTreeT3MAPS->SetBranchAddress("hit_column", &t_T3MAPS_hit_column);
-  
-  // Load the FEI4 data tree:
-  myTreeFEI4->SetBranchAddress("event_number", &t_FEI4_event_number);
-  myTreeFEI4->SetBranchAddress("timestamp_start", &t_FEI4_timestamp_start);
-  myTreeFEI4->SetBranchAddress("timestamp_stop", &t_FEI4_timestamp_stop);
-  myTreeFEI4->SetBranchAddress("row", &t_FEI4_hit_row);
-  myTreeFEI4->SetBranchAddress("column", &t_FEI4_hit_column);
   */
+  
+  MapMaker *mapper = new MapMaker("NA","new");
+  
+  cout << "TestBeamAnalysis: Beginning loop to define maps." << endl;
   
   // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
   Long64_t entriesFEI4 = cF->fChain->GetEntries();
   Long64_t eventFEI4 = 0;
   cF->fChain->GetEntry(eventFEI4);
+  cout << "Entries in FEI4 = " << entriesFEI4 << endl;
   
   // Loop over T3MAPS tree.
   Long64_t entriesT3MAPS = cT->fChain->GetEntries();
+  cout << "Entries in T3MAPS = " << entriesT3MAPS << endl;
   for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
     
     cT->fChain->GetEntry(eventT3MAPS);
     
+    // Cut on events where T3MAPS is fully occupied.
+    if (options.Contains("CutFullEvt") && cT->nHits >= 50) {
+      continue;
+    }
+    
+    //cout << "  T3MAPS event " << eventT3MAPS << endl;
     
     // Now also advance the FEI4 tree.
     while (cF->timestamp_start < cT->timestamp_stop && 
 	   eventFEI4 < entriesFEI4) {
       
-      eventFEI4++;
-      cF->fChain->GetEntry(eventFEI4);
+      //cout << "    FEI4 event " << eventFEI4 << endl;
       
       // Only consider events with timestamp inside that of T3MAPS
       // Same as looking for time coincidence hits in FEI4 and T3MAPS
       if (cF->timestamp_start >= cT->timestamp_start &&
 	  cF->timestamp_stop <= cT->timestamp_stop) {
 	
-	PixelHit *currFEI4Hit = new PixelHit(cF->row,
-					     cF->column,
-					     false);
+	//printf("\tMATCH! FEI4( %2.2f, %2.2f ) \tT3MAPS( %2.2f, %2.2f )\n",cF->timestamp_start, cF->timestamp_stop, cT->timestamp_start, cT->timestamp_stop);
+	
+	PixelHit *currFEI4Hit = new PixelHit(cF->row, cF->column, false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
 	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
@@ -154,22 +139,39 @@ int main( int argc, char **argv ) {
 						 (*cT->hit_column)[i_h],
 						 false);
 	  
+	  /*
 	  for (int i_m = 0; i_m < nMaps; i_m++) {
 	    
 	    if (simpleMaps[i_m]->isPixelHit(0,currT3MAPSHit)) {
 	      simpleMaps[i_m]->addHitToMap(0,currFEI4Hit);
+	      //cout << "\t  For T3MAPS(" << simpleMaps[i_m]->getPixPos("row",0) << ", " << simpleMaps[i_m]->getPixPos("col",0) << "), Add FEI4(" << currFEI4Hit->getRow() << ", " << currFEI4Hit->getCol() << ") " << endl;
 	    }
 	    
 	    if (simpleMaps[i_m]->isPixelHit(1,currT3MAPSHit)) {
 	      simpleMaps[i_m]->addHitToMap(1,currFEI4Hit);
-	    }
+	      //cout << "\t  For T3MAPS(" << simpleMaps[i_m]->getPixPos("row",1) << ", " << simpleMaps[i_m]->getPixPos("col",1) << "), Add FEI4(" << currFEI4Hit->getRow() << ", " << currFEI4Hit->getCol() << ") " << endl;
+	    }	  
 	  }
+	  */
+	  
+	  mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
+	  
 	}
       }
-    }
+      
+      // then advance to the next entry
+      eventFEI4++;
+      cF->fChain->GetEntry(eventFEI4);
+      
+    }// end of loop over FEI4 entries
   }// End of loop over events
+  cout << "TestBeamAnalysis: Ending loop to define maps." << endl;
   
+  // Initialize the plotting utility
+  PlotUtil *plotter = new PlotUtil("output/",800,800);
+    
   // Collect the results of multiple maps:
+  /*
   TH1F *histMapValues[4];
   for (int i_p = 0; i_p < 4; i_p++) {
     histMapValues[i_p] = new TH1F(Form("histMapValues%i",i_p),
@@ -180,28 +182,43 @@ int main( int argc, char **argv ) {
   // Make plot of FEI4 row and col for both T3MAPS pixels (4 histograms):
   for (int i_m = 0; i_m < nMaps; i_m++) {
     simpleMaps[i_m]->createMapFromHits();
+    plotter->plotTH2D( simpleMaps[i_m]->getHitPlot(0), "row", "col", "hits",
+    		       Form("hit2D_pix%d_%d",0,i_m) );
+    plotter->plotTH2D( simpleMaps[i_m]->getHitPlot(1), "row", "col", "hits",
+    		       Form("hit2D_pix%d_%d",1,i_m) );
     
     // save map parameters in histograms:
     for (int i_p = 0; i_p < 4; i_p++) {
       histMapValues[i_p]->Fill(simpleMaps[i_m]->getMapVar(i_p));
     }
   }
+  */
   
+  mapper->createMapFromHits();
+  plotter->plotTH2D(mapper->getHitPlot(), "row", "col", "hits", "hitDiff2D");
+  
+  /*
   // Create a new "meta map" to be used for the efficiency analysis:
   ModuleMapping *combinedMap = new ModuleMapping("NA","none");
   for (int i_p = 0; i_p < 4; i_p++) {
     combinedMap->setMapVar(i_p,histMapValues[i_p]->GetMean());
     combinedMap->setMapRMS(i_p,histMapValues[i_p]->GetRMS());
+    plotter->plotTH1F(histMapValues[i_p], Form("parameter %d",i_p), "Entries",
+    		      Form("global_param%d",i_p));
   }
   combinedMap->printMapParameters();
   combinedMap->saveMapParameters(mapFileName);
+  */
+  
+  mapper->printMapParameters();
+  mapper->saveMapParameters(mapFileName);
   
   // Map has been loaded, may proceed to efficiency analysis.
   
   // in each event, run the MatchMaker class.
   // be sure FEI4 hits have same event number and are within T3MAPS time.
   // get results...
-  
+  /*
   
   map<string,int> nHitSum;
   nHitSum["FEI4_total"] = 0;
@@ -213,6 +230,7 @@ int main( int argc, char **argv ) {
   // --> THIS PART IS TRICKY!!!
   
   // Loop over TTrees in tandem again
+  cout << "TestBeamAnalysis: Beginning loop to measure efficiency." << endl;
   eventFEI4 = 0;
   cF->fChain->GetEntry(eventFEI4);
   for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
@@ -278,6 +296,7 @@ int main( int argc, char **argv ) {
       prevEvent = cF->event_number;
     }
   }
+  cout << "TestBeamAnalysis: Ending loop to measure efficiency." << endl;
   
   // Print the results:
   cout << "TestBeamAnalysis is complete. Results:" << endl;
@@ -292,4 +311,7 @@ int main( int argc, char **argv ) {
   cout << "    Ratio   = " << (((double)nHitSum["T3MAPS_matched"]) /
 			       ((double)nHitSum["T3MAPS_total"])) << endl;
   return 1;
+
+  */
+
 }
