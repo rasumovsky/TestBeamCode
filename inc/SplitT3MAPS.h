@@ -1,16 +1,16 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: LoadT3MAPS.h                                                        //
-//  Class: LoadT3MAPS.cxx                                                     //
+//  Name: SplitT3MAPS.h                                                       //
+//  Class: SplitT3MAPS.cxx                                                    //
 //                                                                            //
 //  Author: Andrew Hard                                                       //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 03/02/2015                                                          //
+//  Date: 19/02/2015                                                          //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifndef LoadT3MAPS_h
-#define LoadT3MAPS_h
+#ifndef SplitT3MAPS_h
+#define SplitT3MAPS_h
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -25,13 +25,14 @@
 
 using namespace std;
 
-class LoadT3MAPS 
+class SplitT3MAPS 
 {
   
  public:
   
-  LoadT3MAPS( std::string inFileName, std::string outFileName);
-  virtual ~LoadT3MAPS() {};
+  SplitT3MAPS( std::string inFileName, std::string outFileName,
+	       int scansPerJob, int job);
+  virtual ~SplitT3MAPS() {};
   
   // Member functions:
   int getNEvents();

@@ -89,6 +89,9 @@ class PlotUtil
   void plotTH2D(TH2D *h, TString xname, TString yname, TString zname, 
 		TString sname);
   
+  void plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname, TString yname,
+			TString sname);
+  
   /*
   void plotMultiTH1F(TH1F *h[], TString labels[], int size, TString xname, 
 		     TString yname, TString sname, double x1, double x2,

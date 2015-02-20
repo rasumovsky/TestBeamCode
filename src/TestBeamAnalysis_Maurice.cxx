@@ -46,43 +46,54 @@ int main(int argc, char **argv) {
   TTree *myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
   cF = new TreeFEI4(myTreeFEI4);
   
+  /**
+     Need to update this map-making section. First of all, it is unwise to use
+     the outside rows for mapping. Choose an interior rectangle. 
+     
+     Then, we want to have protections in place in case the chosen pixel is 
+     never hit, or has zero corresponding hits. Have the map util return 
+     something like -1, and check that in this code to prevent non-existent
+     maps from influencing the meta-map creation.
+  */
+  
   // Load the chip sizes (but use defaults!)
   myChips = new ChipDimension();
   
-  LinearMapMaker *mapper = new LinearMapMaker("","");
+  /*
+  // Initialize several ModuleMapping instances
+  int currR1 = 3;
+  int currC1 = 3;
+  int currR2 = myChips->getChipSize("T3MAPS","nRows")-2;
+  int currC2 = myChips->getChipSize("T3MAPS","nColumns")-2;
   
-  TH2D *occFEI4 = new TH2D("occFEI4","occFEI4",
-			   myChips->getChipSize("FEI4","nRows"),
-			   0.5,
-			   0.5+myChips->getChipSize("FEI4","nRows"),
-			   myChips->getChipSize("FEI4","nColumns"),
-			   0.5,
-			   0.5+myChips->getChipSize("FEI4","nColumns"));
+  for (int i = 0; i < 4; i++) {
+    histMapValues[i] = new TH1F(Form("histMapValues%i",i),
+				Form("histMapValues%i",i),
+				40,-2,2);
+  }
   
+  int const nMaps = (myChips->getChipSize("T3MAPS","nRows") +
+		     myChips->getChipSize("T3MAPS","nColumns") - 8);
   
-  TH2D *occOverFEI4 = new TH2D("occOverlapFEI4","occOverlapFEI4",
-			       myChips->getChipSize("FEI4","nRows"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nRows"),
-			       myChips->getChipSize("FEI4","nColumns"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nColumns"));
+  ModuleMapping *simpleMaps[nMaps];
+  for (int i = 0; i < nMaps; i++) {
+    
+    simpleMaps[i] = new ModuleMapping("NA","new");
+    simpleMaps[i]->designatePixelPair(currR1, currC1, currR2, currC2);
+    
+    // Advance each of the points around T3MAPS edge:
+    if (currR1 < myChips->getChipSize("T3MAPS","nRows")-2) {
+      currR1++;
+      currR2--;
+    }
+    else {
+      currC1++;
+      currC2--;
+    }
+  }
+  */
   
-  TH2D *occT3MAPS = new TH2D("occT3MAPS","occT3MAPS",
-			     myChips->getChipSize("T3MAPS","nRows"),
-			     0.5,
-			     0.5+myChips->getChipSize("T3MAPS","nRows"),
-			     myChips->getChipSize("T3MAPS","nColumns"),
-			     0.5,
-			     0.5+myChips->getChipSize("T3MAPS","nColumns"));
-  
-  TH2D *occDiffFEI4 = new TH2D("occDiffFEI4","occDiffFEI4",
-			       myChips->getChipSize("FEI4","nRows"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nRows"),
-			       myChips->getChipSize("FEI4","nColumns"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nColumns"));
+  MapMaker *mapper = new MapMaker("NA","new");
   
   cout << "TestBeamAnalysis: Beginning loop to define maps." << endl;
   
@@ -99,38 +110,23 @@ int main(int argc, char **argv) {
     
     cT->fChain->GetEntry(eventT3MAPS);
     
-    // Cut on events with no T3MAPS hits:
-    if (cT->nHits == 0) {
-      continue;
-    }
-    
-    // Cut on events where T3MAPS is fully occupied:
+    // Cut on events where T3MAPS is fully occupied.
     if (options.Contains("CutFullEvt") && cT->nHits >= 50) {
       continue;
     }
     
     //cout << "  T3MAPS event " << eventT3MAPS << endl;
     
-    // Fill occupancy plot:
-    for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
-      occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
-    }    
-    
-    // Advance position in the FEI4 tree:
-    while (cF->timestamp_start < cT->timestamp_stop && eventFEI4<entriesFEI4) {
+    // Now also advance the FEI4 tree.
+    while (cF->timestamp_start < cT->timestamp_stop && 
+	   eventFEI4 < entriesFEI4) {
       
       //cout << "    FEI4 event " << eventFEI4 << endl;
       
-      // Fill FEI4 occupancy plot:
-      occFEI4->Fill(cF->row, cF->column);
-      
       // Only consider events with timestamp inside that of T3MAPS
+      // Same as looking for time coincidence hits in FEI4 and T3MAPS
       if (cF->timestamp_start >= cT->timestamp_start &&
 	  cF->timestamp_stop <= cT->timestamp_stop) {
-	
-	// Fill overlapping FEI4 hit occupancy plot:
-	occOverFEI4->Fill(cF->row, cF->column);
-	occDiffFEI4->Fill(cF->row, cF->column, 1.0);
 	
 	//printf("\tMATCH! FEI4( %2.2f, %2.2f ) \tT3MAPS( %2.2f, %2.2f )\n",cF->timestamp_start, cF->timestamp_stop, cT->timestamp_start, cT->timestamp_stop);
 	
@@ -143,11 +139,24 @@ int main(int argc, char **argv) {
 						 (*cT->hit_column)[i_h],
 						 false);
 	  
+	  /*
+	  for (int i_m = 0; i_m < nMaps; i_m++) {
+	    
+	    if (simpleMaps[i_m]->isPixelHit(0,currT3MAPSHit)) {
+	      simpleMaps[i_m]->addHitToMap(0,currFEI4Hit);
+	      //cout << "\t  For T3MAPS(" << simpleMaps[i_m]->getPixPos("row",0) << ", " << simpleMaps[i_m]->getPixPos("col",0) << "), Add FEI4(" << currFEI4Hit->getRow() << ", " << currFEI4Hit->getCol() << ") " << endl;
+	    }
+	    
+	    if (simpleMaps[i_m]->isPixelHit(1,currT3MAPSHit)) {
+	      simpleMaps[i_m]->addHitToMap(1,currFEI4Hit);
+	      //cout << "\t  For T3MAPS(" << simpleMaps[i_m]->getPixPos("row",1) << ", " << simpleMaps[i_m]->getPixPos("col",1) << "), Add FEI4(" << currFEI4Hit->getRow() << ", " << currFEI4Hit->getCol() << ") " << endl;
+	    }	  
+	  }
+	  */
+	  
 	  mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
+	  
 	}
-      }
-      else {
-	occDiffFEI4->Fill(cF->row, cF->column, -0.2);
       }
       
       // then advance to the next entry
@@ -157,28 +166,52 @@ int main(int argc, char **argv) {
     }// end of loop over FEI4 entries
   }// End of loop over events
   cout << "TestBeamAnalysis: Ending loop to define maps." << endl;
-      
+  
+  // Initialize the plotting utility
+  PlotUtil *plotter = new PlotUtil("output/",800,800);
+    
+  // Collect the results of multiple maps:
+  /*
+  TH1F *histMapValues[4];
+  for (int i_p = 0; i_p < 4; i_p++) {
+    histMapValues[i_p] = new TH1F(Form("histMapValues%i",i_p),
+				  Form("histMapValues%i",i_p),
+				  40,-2,2);
+  }
+  
+  // Make plot of FEI4 row and col for both T3MAPS pixels (4 histograms):
+  for (int i_m = 0; i_m < nMaps; i_m++) {
+    simpleMaps[i_m]->createMapFromHits();
+    plotter->plotTH2D( simpleMaps[i_m]->getHitPlot(0), "row", "col", "hits",
+    		       Form("hit2D_pix%d_%d",0,i_m) );
+    plotter->plotTH2D( simpleMaps[i_m]->getHitPlot(1), "row", "col", "hits",
+    		       Form("hit2D_pix%d_%d",1,i_m) );
+    
+    // save map parameters in histograms:
+    for (int i_p = 0; i_p < 4; i_p++) {
+      histMapValues[i_p]->Fill(simpleMaps[i_m]->getMapVar(i_p));
+    }
+  }
+  */
+  
   mapper->createMapFromHits();
+  plotter->plotTH2D(mapper->getHitPlot(), "row", "col", "hits", "hitDiff2D");
+  
+  /*
+  // Create a new "meta map" to be used for the efficiency analysis:
+  ModuleMapping *combinedMap = new ModuleMapping("NA","none");
+  for (int i_p = 0; i_p < 4; i_p++) {
+    combinedMap->setMapVar(i_p,histMapValues[i_p]->GetMean());
+    combinedMap->setMapRMS(i_p,histMapValues[i_p]->GetRMS());
+    plotter->plotTH1F(histMapValues[i_p], Form("parameter %d",i_p), "Entries",
+    		      Form("global_param%d",i_p));
+  }
+  combinedMap->printMapParameters();
+  combinedMap->saveMapParameters(mapFileName);
+  */
+  
   mapper->printMapParameters();
   mapper->saveMapParameters(mapFileName);
-  
-
-  // Plot occupancy for FEI4 and T3MAPS:
-  PlotUtil *plotter = new PlotUtil("../TestBeamOutput",800,800);
-  plotter->plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
-		    "occupancyFEI4");
-  plotter->plotTH2D(occOverFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
-		    "occupancyOverlappingFEI4");
-  plotter->plotTH2D(occT3MAPS, "row_{T3MAPS}", "column_{T3MAPS}", "hits", 
-		    "occupancyT3MAPS");
-  plotter->plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "weights", 
-		    "occupancyDifferenceFEI4");
-  
-  
-  
-  
-  
-  
   
   // Map has been loaded, may proceed to efficiency analysis.
   

@@ -1,35 +1,31 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: LoadT3MAPS.cxx                                                      //
+//  Name: SplitT3MAPS.cxx                                                     //
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 04/02/2015                                                          //
+//  Date: 19/02/2015                                                          //
 //                                                                            //
-//  This class loads the T3MAPS output file and creates a TTree to store      //
-//  relevant event information including:                                     //
-//         - timestamp_start   (beginning of integration period)              //
-//         - timestamp_stop    (end of integration period)                    //
-//         - hit_row           (vector of hit rows)                           //
-//         - hit_column        (vector of hit columns)                        //
-//                                                                            //
-//  The class will produce an output root file.                               //
+//  This class takes the history file as an input and splits it up into       //
+//  multiple smaller files.                                                   //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "LoadT3MAPS.h"
+#include "SplitT3MAPS.h"
 
 /**
    Initialize the T3MAPS data class. Loads an input textfile, reads the data 
    into a TTree, then saves the TTree in a TFile.
 */
-LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
-  std::cout << std::endl << "LoadT3MAPS::Initializing..." << std::endl;
+SplitT3MAPS::SplitT3MAPS(std::string inFileName, std::string outFileName,
+			 int scansPerJob, int job) {
+  std::cout << std::endl << "SplitT3MAPS::Initializing..." << std::endl;
   
   nEvents = 0;
   
   gROOT->ProcessLine("#include <vector>");
   
+  int totalLineIndex = 0;
   int currLineIndex = 0;
   std::string currText;
   char *outFileNameC = (char*)outFileName.c_str();
@@ -46,51 +42,59 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   char *inFileNameC = (char*)inFileName.c_str();
   ifstream historyFile(inFileNameC);
   if (historyFile.is_open()) {
-    while (getline(historyFile, currText) ) {
+    while (getline(historyFile, currText) &&
+	   totalLineIndex < (24*job*scansPerJob)) {
       
-      // Start counting the line numbers (one run is 0-23)
-      std::size_t foundText = currText.find("BEGIN SCAN");
-      if (foundText!=std::string::npos) {
-	currLineIndex = 0;
-	hit_row.clear();
-	hit_column.clear();
-	nHits = 0;
-	if (nEvents % 100 == 0) { std::cout << currText << std::endl; }
+      if (totalLineIdex < (24*(job-1)*scansPerJob) ) {
+	totalLineIndex++;
+	continue;
       }
-      
-      // start time recorded:
-      if (currLineIndex == 2) { 
-	timestamp_start = strtod(currText.c_str(),"");
-      }
-      // stop time recorded:
-      else if (currLineIndex == 4) {
-	timestamp_stop = strtod(currText.c_str(),"");
-      }
-      
-      // get hit table information:
-      else if (currLineIndex > 4 && currLineIndex < 23) {
-	int currRow = currLineIndex - 5;
-	
-	std::vector<std::string> hitColumns = delimString(currText, " ");
-	
-	// iterate over the columns that were hit in each row:
-	for (std::vector<std::string>::iterator it = hitColumns.begin(); 
-	     it != hitColumns.end(); ++it) {
-	  int currColumn = atoi(it->c_str()) + 1;
-	  hit_row.push_back(currRow);
-	  hit_column.push_back(currColumn);
-	  nHits++;
+      else {
+	// Start counting the line numbers (one run is 0-23)
+	std::size_t foundText = currText.find("BEGIN SCAN");
+	if (foundText!=std::string::npos) {
+	  currLineIndex = 0;
+	  hit_row.clear();
+	  hit_column.clear();
+	  nHits = 0;
+	  if (nEvents % 100 == 0) { std::cout << currText << std::endl; }
 	}
+	
+	// start time recorded:
+	if (currLineIndex == 2) { 
+	  timestamp_start = strtod(currText.c_str(),"");
+	}
+	// stop time recorded:
+	else if (currLineIndex == 4) {
+	  timestamp_stop = strtod(currText.c_str(),"");
+	}
+	
+	// get hit table information:
+	else if (currLineIndex > 4 && currLineIndex < 23) {
+	  int currRow = currLineIndex - 5;
+	  
+	  std::vector<std::string> hitColumns = delimString(currText, " ");
+	  
+	  // iterate over the columns that were hit in each row:
+	  for (std::vector<std::string>::iterator it = hitColumns.begin(); 
+	       it != hitColumns.end(); ++it) {
+	    int currColumn = atoi(it->c_str()) + 1;
+	    hit_row.push_back(currRow);
+	    hit_column.push_back(currColumn);
+	    nHits++;
+	  }
+	}
+	
+	// end scan, save event information:
+	else if (currLineIndex == 23) {
+	  treeT3MAPS->Fill();
+	  nEvents++;
+	}
+	
+	// increment the line number:
+	currLineIndex++;
+	totalLineIndex++;
       }
-      
-      // end scan, save event information:
-      else if (currLineIndex == 23) {
-	treeT3MAPS->Fill();
-	nEvents++;
-      }
-            
-      // increment the line number:
-      currLineIndex++;
     }
   }
   
@@ -104,21 +108,21 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 /**
    Returns the number of events in the data.
 */
-int LoadT3MAPS::getNEvents() {
+int SplitT3MAPS::getNEvents() {
   return nEvents;
 }
 
 /**
    Returns the TTree produced from the input textfile.
 */
-TTree* LoadT3MAPS::getTree() {
+TTree* SplitT3MAPS::getTree() {
   return treeT3MAPS;
 }
 
 /**
    Close the input files and delete TTree from memory.
 */
-void LoadT3MAPS::closeFiles() {
+void SplitT3MAPS::closeFiles() {
   //treeT3MAPS->Delete();
   outputT3MAPS->Close();
 }
@@ -126,7 +130,7 @@ void LoadT3MAPS::closeFiles() {
 /**
    Splits a line of text up into the interpretable chunks.
  */
-std::vector<std::string> LoadT3MAPS::delimString( std::string line, 
+std::vector<std::string> SplitT3MAPS::delimString( std::string line, 
 						  std::string delim ) {
   // vector to return (for table)
   std::vector<std::string> result;

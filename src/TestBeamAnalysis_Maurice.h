@@ -17,7 +17,9 @@
 #include <vector>
 #include <string>
 
+#include "TCanvas.h"
 #include "TFile.h"
+#include "TH1F.h"
 #include "TString.h"
 #include "TTree.h"
 
@@ -28,14 +30,17 @@
 #include "TreeFEI4.h"
 #include "TreeT3MAPS.h"
 #include "PlotUtil.h"
-#include "LinearMapMaker.h"
+#include "MapMaker.h"
 
 using namespace std;
 
+ChipDimension *myChips;
 
 TString options;
-ChipDimension *myChips;
-TreeFEI4 *cF;
-TreeT3MAPS *cT;
 
 TH1F *histMapValues[4];
+
+TCanvas *can;
+
+TreeFEI4 *cF;
+TreeT3MAPS *cT;

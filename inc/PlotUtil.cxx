@@ -61,7 +61,6 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
   h2->GetZaxis()->SetTitle(zname);
   if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
   can->Print(Form("%s/%s.eps",outputDirectory.Data(),sname.Data()));
-  can->Print(Form("%s/%s.pdf",outputDirectory.Data(),sname.Data()));
   can->Clear();
 }
 
@@ -69,4 +68,16 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
 void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
 			TString sname) {
   plotTH2D(h2, xname, yname, zname, sname, 0, 0, 0, 0, 0, 0);
+}
+
+void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
+				TString yname, TString sname) {
+  can->cd();
+  can->Clear();
+  g->GetXaxis()->SetTitle(xname);
+  g->GetYaxis()->SetTitle(yname);
+  g->Draw("AP");
+  fit->Draw("SAME");
+  can->Print(Form("%s/%s.eps",outputDirectory.Data(),sname.Data()));
+  can->Clear();
 }
