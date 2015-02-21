@@ -23,7 +23,6 @@
 #include "TTree.h"
 #include "TROOT.h"
 
-using namespace std;
 
 class LoadT3MAPS 
 {
@@ -48,8 +47,8 @@ class LoadT3MAPS
   int nHits;
   Double_t timestamp_start;
   Double_t timestamp_stop;
-  vector<int> hit_row;
-  vector<int> hit_column;
+  std::vector<int> hit_row;
+  std::vector<int> hit_column;
   
   std::vector<std::string> delimString( std::string line, std::string delim );  
   

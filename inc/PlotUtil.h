@@ -72,10 +72,7 @@ class PlotUtil
   
   PlotUtil(TString newOutDir, int canWidth, int canHeight);
   ~PlotUtil();
-  
-  // Mutators:
-  void setOutputDirectory(TString newOutDir);
-  
+    
   // Accessors:
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, double x1,
 		double x2, double y1, double y2);
@@ -97,6 +94,11 @@ class PlotUtil
 		     TString yname, TString sname, double x1, double x2,
 		     double y1, double y2);
   */
+  
+  // Mutators:
+  TStyle* AtlasStyle();
+  void SetAtlasStyle();
+  void setOutputDirectory(TString newOutDir);
   
  private:
   

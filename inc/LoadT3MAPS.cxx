@@ -27,9 +27,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   std::cout << std::endl << "LoadT3MAPS::Initializing..." << std::endl;
   
   nEvents = 0;
-  
-  gROOT->ProcessLine("#include <vector>");
-  
+    
   int currLineIndex = 0;
   std::string currText;
   char *outFileNameC = (char*)outFileName.c_str();
@@ -39,8 +37,8 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   treeT3MAPS->Branch("nHits", &nHits, "nHits/I");
   treeT3MAPS->Branch("timestamp_start", &timestamp_start, "timestamp_start/D");
   treeT3MAPS->Branch("timestamp_stop", &timestamp_stop, "timestamp_stop/D");
-  treeT3MAPS->Branch("hit_row", &hit_row);
-  treeT3MAPS->Branch("hit_column", &hit_column);
+  treeT3MAPS->Branch("hit_row", "std::vector<int>", &hit_row);
+  treeT3MAPS->Branch("hit_column", "std::vector<int>", &hit_column);
   
   // Open input text file from T3MAPS run:
   char *inFileNameC = (char*)inFileName.c_str();
@@ -60,11 +58,13 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
       
       // start time recorded:
       if (currLineIndex == 2) { 
-	timestamp_start = strtod(currText.c_str(),"");
+	//timestamp_start = strtod(currText.c_str(),"");
+	timestamp_start = atoi((char*)currText.c_str());
       }
       // stop time recorded:
       else if (currLineIndex == 4) {
-	timestamp_stop = strtod(currText.c_str(),"");
+	//timestamp_stop = strtod(currText.c_str(),"");
+	timestamp_stop = atoi((char*)currText.c_str());
       }
       
       // get hit table information:

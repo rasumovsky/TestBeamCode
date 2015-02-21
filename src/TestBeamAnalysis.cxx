@@ -105,22 +105,19 @@ int main(int argc, char **argv) {
     }
     
     // Cut on events where T3MAPS is fully occupied:
-    if (options.Contains("CutFullEvt") && cT->nHits >= 50) {
+    if (options.Contains("CutFullEvt") && cT->nHits > 2) {
       continue;
     }
-    
-    //cout << "  T3MAPS event " << eventT3MAPS << endl;
-    
+        
     // Fill occupancy plot:
     for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
       occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
     }    
     
+    //--------------------//
     // Advance position in the FEI4 tree:
     while (cF->timestamp_start < cT->timestamp_stop && eventFEI4<entriesFEI4) {
-      
-      //cout << "    FEI4 event " << eventFEI4 << endl;
-      
+            
       // Fill FEI4 occupancy plot:
       occFEI4->Fill(cF->row, cF->column);
       
