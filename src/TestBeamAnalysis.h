@@ -9,7 +9,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-// look at CommonHead.hh to see what might be missing...
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>

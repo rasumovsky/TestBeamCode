@@ -32,11 +32,8 @@ int main(int argc, char **argv) {
   TString inputFEI4 = argv[2];
   options = argv[3];
   
-  TString mapFileName = "combined_map_output.txt";
-  
-  // Root macros:
-  //SetAtlasStyle();
-  
+  TString mapFileDir = "../TestBeamOutput";
+    
   // LoadT3MAPS and load the FEI4 TTree
   TFile *fileT3MAPS = new TFile(inputT3MAPS);
   TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
@@ -51,6 +48,7 @@ int main(int argc, char **argv) {
   
   LinearMapMaker *mapper = new LinearMapMaker("","");
   
+  // Book histograms:
   TH2D *occFEI4 = new TH2D("occFEI4","occFEI4",
 			   myChips->getChipSize("FEI4","nRows"),
 			   0.5,
@@ -84,6 +82,10 @@ int main(int argc, char **argv) {
 			       0.5,
 			       0.5+myChips->getChipSize("FEI4","nColumns"));
   
+  TH1F *hPI_T3MAPS = new TH2D("hPI_T3MAPS", "hPI_T3MAPS", 21, -0.5, 20.5);
+  TH1F *hPE_FEI4 = new TH2D("hPE_FEI4", "hPE_FEI4", 51, -0.5, 50.5);
+  TH1F *hP_OverFEI4 = new TH2D("hPI_OverFEI4", "hPI_OverFEI4", 51, -0.5, 50.5);
+  
   cout << "TestBeamAnalysis: Beginning loop to define maps." << endl;
   
   // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
@@ -105,14 +107,20 @@ int main(int argc, char **argv) {
     }
     
     // Cut on events where T3MAPS is fully occupied:
-    if (options.Contains("CutFullEvt") && cT->nHits > 2) {
+    if (options.Contains("CutFullEvt") && cT->nHits > 5) {
       continue;
     }
         
     // Fill occupancy plot:
+    hPI_T3MAPS->Fill(cT->nNits);
+    
     for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
       occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
     }    
+    
+    int nHits_OverFEI4 = 0;
+    int nHits_EvtFEI4 = 0;
+    int currEvent = 0;
     
     //--------------------//
     // Advance position in the FEI4 tree:
@@ -121,6 +129,15 @@ int main(int argc, char **argv) {
       // Fill FEI4 occupancy plot:
       occFEI4->Fill(cF->row, cF->column);
       
+      // Fill histogram of hits per events:
+      if (cF->event_number != currEvent) {
+	currEvent = cF->event_number;
+	if (currEvent != 0) {
+	  hPE_FEI4->Fill(nHits_EvtFEI4);
+	}
+	nHits_EvtFEI4 = 0;
+      }
+      
       // Only consider events with timestamp inside that of T3MAPS
       if (cF->timestamp_start >= cT->timestamp_start &&
 	  cF->timestamp_stop <= cT->timestamp_stop) {
@@ -128,9 +145,8 @@ int main(int argc, char **argv) {
 	// Fill overlapping FEI4 hit occupancy plot:
 	occOverFEI4->Fill(cF->row, cF->column);
 	occDiffFEI4->Fill(cF->row, cF->column, 1.0);
-	
-	//printf("\tMATCH! FEI4( %2.2f, %2.2f ) \tT3MAPS( %2.2f, %2.2f )\n",cF->timestamp_start, cF->timestamp_stop, cT->timestamp_start, cT->timestamp_stop);
-	
+	nHits_OverFEI4++;
+		
 	PixelHit *currFEI4Hit = new PixelHit(cF->row, cF->column, false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
@@ -152,14 +168,16 @@ int main(int argc, char **argv) {
       cF->fChain->GetEntry(eventFEI4);
       
     }// end of loop over FEI4 entries
+    
+    hP_OverFEI4->Fill(nHits_OverFEI4);
+    
   }// End of loop over events
   cout << "TestBeamAnalysis: Ending loop to define maps." << endl;
       
   mapper->createMapFromHits();
   mapper->printMapParameters();
-  mapper->saveMapParameters(mapFileName);
+  mapper->saveMapParameters(mapFileDir);
   
-
   // Plot occupancy for FEI4 and T3MAPS:
   PlotUtil *plotter = new PlotUtil("../TestBeamOutput",800,800);
   plotter->plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
@@ -171,11 +189,10 @@ int main(int argc, char **argv) {
   plotter->plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "weights", 
 		    "occupancyDifferenceFEI4");
   
-  
-  
-  
-  
-  
+  plotter->PlotTH1F(hPI_T3MAPS, "hits/integration", "entries", "hitsT3MAPS");
+  plotter->PlotTH1F(hPE_FEI4, "hits/event", "entries", "hitsFEI4");
+  plotter->PlotTH1F(hP_OverFEI4, "hits/integration", "entries", "hitsOverFEI4");
+    
   
   // Map has been loaded, may proceed to efficiency analysis.
   
