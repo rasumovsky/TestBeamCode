@@ -82,9 +82,9 @@ int main(int argc, char **argv) {
 			       0.5,
 			       0.5+myChips->getChipSize("FEI4","nColumns"));
   
-  TH1F *hPI_T3MAPS = new TH2D("hPI_T3MAPS", "hPI_T3MAPS", 21, -0.5, 20.5);
-  TH1F *hPE_FEI4 = new TH2D("hPE_FEI4", "hPE_FEI4", 51, -0.5, 50.5);
-  TH1F *hP_OverFEI4 = new TH2D("hPI_OverFEI4", "hPI_OverFEI4", 51, -0.5, 50.5);
+  TH1F *hPI_T3MAPS = new TH1F("hPI_T3MAPS", "hPI_T3MAPS", 21, -0.5, 20.5);
+  TH1F *hPE_FEI4 = new TH1F("hPE_FEI4", "hPE_FEI4", 51, -0.5, 50.5);
+  TH1F *hP_OverFEI4 = new TH1F("hPI_OverFEI4", "hPI_OverFEI4", 51, -0.5, 50.5);
   
   cout << "TestBeamAnalysis: Beginning loop to define maps." << endl;
   
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
     }
         
     // Fill occupancy plot:
-    hPI_T3MAPS->Fill(cT->nNits);
+    hPI_T3MAPS->Fill(cT->nHits);
     
     for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
       occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
@@ -189,9 +189,9 @@ int main(int argc, char **argv) {
   plotter->plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "weights", 
 		    "occupancyDifferenceFEI4");
   
-  plotter->PlotTH1F(hPI_T3MAPS, "hits/integration", "entries", "hitsT3MAPS");
-  plotter->PlotTH1F(hPE_FEI4, "hits/event", "entries", "hitsFEI4");
-  plotter->PlotTH1F(hP_OverFEI4, "hits/integration", "entries", "hitsOverFEI4");
+  plotter->plotTH1F(hPI_T3MAPS, "hits/integration", "entries", "hitsT3MAPS");
+  plotter->plotTH1F(hPE_FEI4, "hits/event", "entries", "hitsFEI4");
+  plotter->plotTH1F(hP_OverFEI4, "hits/integration", "entries", "hitsOverFEI4");
     
   
   // Map has been loaded, may proceed to efficiency analysis.

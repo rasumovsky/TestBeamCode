@@ -19,8 +19,8 @@
 ChipDimension::ChipDimension() {
   nRows["FEI4"] = 336;
   nColumns["FEI4"] = 80;
-  nRows["T3MAPS"] = 16;
-  nColumns["T3MAPS"] = 64;
+  nRows["T3MAPS"] = 64;
+  nColumns["T3MAPS"] = 16;
   return;
 }
 

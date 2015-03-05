@@ -58,25 +58,23 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
       
       // start time recorded:
       if (currLineIndex == 2) { 
-	//timestamp_start = strtod(currText.c_str(),"");
 	timestamp_start = atoi((char*)currText.c_str());
       }
       // stop time recorded:
       else if (currLineIndex == 4) {
-	//timestamp_stop = strtod(currText.c_str(),"");
 	timestamp_stop = atoi((char*)currText.c_str());
       }
       
       // get hit table information:
       else if (currLineIndex > 4 && currLineIndex < 23) {
-	int currRow = currLineIndex - 5;
+	int currColumn = currLineIndex - 5;
 	
 	std::vector<std::string> hitColumns = delimString(currText, " ");
 	
 	// iterate over the columns that were hit in each row:
 	for (std::vector<std::string>::iterator it = hitColumns.begin(); 
 	     it != hitColumns.end(); ++it) {
-	  int currColumn = atoi(it->c_str()) + 1;
+	  int currRow = atoi(it->c_str()) + 1;
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
 	  nHits++;
@@ -119,7 +117,6 @@ TTree* LoadT3MAPS::getTree() {
    Close the input files and delete TTree from memory.
 */
 void LoadT3MAPS::closeFiles() {
-  //treeT3MAPS->Delete();
   outputT3MAPS->Close();
 }
 

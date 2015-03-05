@@ -1,5 +1,5 @@
 """
-This script has different methods to convert the hdf5 hit and meta data table 
+This script has a method to convert the hdf5 hit and meta data table 
 from pyBAR into a CERN ROOT Ttree.
 """
 
@@ -240,77 +240,9 @@ def convert_hit_table_fast(input_filename, output_filename):
         out_file_root.Close()
 
 
-# def convert_table_event_based(input_filename, output_filename):
-#     ''' Creates a ROOT Tree by looping over chunks of the hdf5 table. Some pointer magic is used to increase the conversion speed. Is 40x faster than convert_hit_table.
-#
-#     Parameters
-#     ----------
-#     input_filename: string
-#         The file name of the hdf5 hit table.
-#
-#     output_filename: string
-#         The filename of the created ROOT file
-#
-#     '''
-#
-#     from analysis import analysis_utils
-#
-#     with tb.open_file(input_filename, 'r') as in_file_h5:
-#         hits_table = in_file_h5.root.Hits
-#
-#         out_file_root = TFile(output_filename, 'RECREATE')
-#
-#         tree, n_entries = init_tree_from_table(hits_table, chunk_size)
-#
-#         for index in range(0, hits_table.shape[0], chunk_size):
-#             hits = hits_table.read(start=index, stop=index + chunk_size)
-#
-# column_data = {}  # columns have to be in an additional python data container to prevent the carbage collector from deleting
-#             column_data_pointer = {}
-# for branch in tree.GetListOfBranches():  # loop over the branches
-#                 if branch.GetName() != 'n_entries':
-# column_data[branch.GetName()] = hits[branch.GetName()].view(np.recarray).copy()  # a copy has to be made to get the correct memory alignement
-#
-# hit_index = 0  # needed to access the correct posittion in the hit array
-#             for event_info in analysis_utils.get_n_cluster_in_events(hits['event_number']):
-#                 n_hits = event_info[1]
-#                 n_entries.value = n_hits
-#                 event_hits_pointer = hits[hit_index:]
-# #                 for branch in tree.GetListOfBranches():  # loop over the branches
-# #                     if branch.GetName() != 'n_entries':
-# #                         branch.SetAddress(column_data[branch.GetName()].ctypes.data_as(ctypes.POINTER(get_c_type_descriptor(column_data[branch.GetName()].dtype))))  # get the column data pointer by name and tell its address to the tree
-#                 hit_index += n_hits
-#                 tree.Fill()
-#             break
-# #
-# #         progress_bar = progressbar.ProgressBar(widgets=['', progressbar.Percentage(), ' ', progressbar.Bar(marker='*', left='|', right='|'), ' ', progressbar.ETA()], maxval=hits_table.shape[0])
-# #         progress_bar.start()
-# #
-# #         for index in range(0, hits_table.shape[0], chunk_size):
-# #             hits = hits_table.read(start=index, stop=index + chunk_size)
-# #
-# #             column_data = {}  # columns have to be in an additional python data container to prevent the carbage collector from deleting
-# #
-# #             for branch in tree.GetListOfBranches():  # loop over the branches
-# #                 if branch.GetName() != 'chunk_size_tree':
-# #                     column_data[branch.GetName()] = hits[branch.GetName()].view(np.recarray).copy()  # a copy has to be made to get the correct memory alignement
-# #                     branch.SetAddress(column_data[branch.GetName()].data)  # get the column data pointer by name and tell its address to the tree
-# #
-# #             if index + chunk_size > hits_table.shape[0]:  # decrease tree leave size for the last chunk
-# #                 chunk_size_tree.value = hits_table.shape[0] - index
-# #
-# #             tree.Fill()
-# #             progress_bar.update(index)
-#
-#         out_file_root.Write()
-#         out_file_root.Close()
-
-
 if __name__ == "__main__":
     # chose this parameter as big as possible to increase speed, but not too 
     # big otherwise program crashed:
     chunk_size = 50000  
-    
-    #convert_hit_table_fast('/home/minipix/pybar/host/pybar/module_930403/52_module_930403_fei4_self_trigger_scan_interpreted.h5', '/home/minipix/pybar/host/pybar/module_930403/output_fast.root')
     convert_two_hit_tables('/home/minipix/pybar/host/pybar/module_930403/52_module_930403_fei4_self_trigger_scan_interpreted.h5', '/home/minipix/pybar/host/pybar/module_930403/output_fast.root')
     
