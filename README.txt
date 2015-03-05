@@ -7,7 +7,18 @@ This package is designed to analyze data for the T3MAPS chip and the FE-I4 chip
 from the SLAC test beam and correlate hits between the two. Several classes are
 included, and a short description of each is provided below.
 
+
+----- Main Classes -----
   
+FormatT3MAPS.cxx
+  This program is designed to load the T3MAPS data from text file and 
+  efficiently convert it into a ROOT TTree. 
+
+  Outline:
+  - splits the text file into many smaller parts (SplitT3MAPS)
+  - creates a TTree for each of the smaller text files (LoadT3MAPS)
+  - combines the TTrees via hadd.
+
 TestBeamAnalysis.cxx
   This is the main method for the analysis. All loops over the TTrees take place
   within this main method. It makes calls to the LoadT3MAPS, to get the T3MAPS
@@ -16,18 +27,20 @@ TestBeamAnalysis.cxx
   PixelCluster, PixelHit.
   
   Outline:
-  - LoadT3MAPS and load the FEI4 TTree
-  - Initialize several ModuleMapping instances
+  - Load the FEI4 and T3MAPS TTrees
+  - Initialize LinearMapMaker class
   - Iterate over the two trees in tandem
-  - add data to the ModuleMapping objects
+  - add data to the LinearMapMaker
   - finish loop
-  - Calculate maps for each ModuleMapping object
-  - Average the results and create a new ModuleMapping object, and save
+  - Calculate map based on input data
+  - Plot mapping data, compare results with chip specs
   - Loop over TTrees in tandem again
   - in each event, run the MatchMaker class.
   - be sure FEI4 hits have same event number and are within T3MAPS time.
   - get results...
   
+
+----- Supporting Classes -----
 
 ChipDimension.cxx
   This is a very basic container that stores the dimensions of the FEI4 and 
@@ -37,17 +50,6 @@ ChipDimension.cxx
 LoadT3MAPS.cxx
   This program is designed to load the T3MAPS history.txt output textfile and 
   produce and save a TTree that is ROOT-readable. 
-
-  >> root -l
-  >> gROOT->ProcessLine("#include <vector>");
-  >> .L inc/LoadT3MAPS.cxx
-  >> LoadT3MAPS("T3MAPS_17_2_2015.txt","T3MAPS_17_2_2015.root")
-
-  gives an error, but works:
-    (const class LoadT3MAPS)140497680912480
-    Error: ~LoadT3MAPS() declared but not defined inc/LoadT3MAPS.cxx:41:
-    *** Interpreter error recovered ***
- 
 
 MatchMaker.cxx
   This class is designed to search for matches between hits in FEI4 and T3MAPS.
