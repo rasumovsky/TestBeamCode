@@ -14,41 +14,160 @@
 #include "ChipDimension.h"
 
 /**
-   Initialize the class with default values:
+   Initialize the class with default values for FEI4 and T3MAPS.
  */
 ChipDimension::ChipDimension() {
-  nRows["FEI4"] = 336;
-  nColumns["FEI4"] = 80;
-  nRows["T3MAPS"] = 64;
-  nColumns["T3MAPS"] = 16;
+  setNCol("FEI4", 80);
+  setNRow("FEI4", 336);
+  setColPitch("FEI4", 250.0);
+  setRowPitch("FEI4", 50.0);
+  setThickness("FEI4", 200.0);
+  setNCol("T3MAPS", 16);
+  setNRow("T3MAPS", 64);
+  setColPitch("T3MAPS", 250.0);
+  setRowPitch("T3MAPS", 50.0);
+  setThickness("T3MAPS", 200.0);
   return;
 }
 
 /**
-   Mutator to change the dimensions of the given chip ("FEI4" or "T3MAPS"):
+   Returns the number of columns for the given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @returns - the number of columns in the chip.
  */
-void ChipDimension::setChipSize(std::string chip, std::string pos, int val) {
-  if (pos == "nColumns") nColumns[chip] = val;
-  else if (pos == "nRows") nRows[chip] = val;
+int ChipDimension::getNCol(std::string chipName) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    return numCol[chipName];
+  }
+  else {
+    std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
+    return 0;
+  }
 }
 
 /**
-   Returns the number of columns or rows for the "FEI4" or the "T3MAPS" chip.
+   Returns the number of rows for the given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @returns - the number of rows in the chip.
  */
-int ChipDimension::getChipSize(std::string chip, std::string pos) {
-  if (pos == "nColumns") return nColumns[chip];
-  else if (pos == "nRows") return nRows[chip];
-  else return -1;
+int ChipDimension::getNRow(std::string chipName) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    return numRow[chipName];
+  }
+  else {
+    std::cout << "Chip Dimension: Bad chip name " << chipName << std::endl;
+    return 0;
+  }
+}
+
+/**
+   Returns the column pitch for the given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @returns - the column pitch.
+ */
+int ChipDimension::getColPitch(std::string chipName) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    return colPitch[chipName];
+  }
+  else {
+    std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
+    return 0;
+  }
+}
+
+/**
+   Returns the row pitch for the given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @returns - the row pitch.
+ */
+int ChipDimension::getRowPitch(std::string chipName) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    return rowPitch[chipName];
+  }
+  else {
+    std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
+    return 0;
+  }
+}
+
+/**
+   Returns the thickness for the given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @returns - the chip thickness.
+*/
+int ChipDimension::getThickness(std::string chipName) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    return thickness[chipName];
+  }
+  else {
+    std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
+    return 0;
+  }
 }
 
 /**
    Checks to see whether a given row and column are compatible with given chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param row - the the chip row.
+   @param col - the column of the chip, starting at 1
  */
-bool ChipDimension::isInChip(std::string chip, int row, int col) {
-  if (row > 0 && row < nRows[chip] && col > 0 && col < nColumns[chip]) {
-    return true;
+bool ChipDimension::isInChip(std::string chipName, int row, int col) {
+  if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
+    if (row >= 0 && row < numRow[chipName] &&
+	col >= 0 && col < numCol[chipName]) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
   else {
+    std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
     return false;
   }
+}
+
+/**
+   Set the number of columns in the chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param val - the new column number value.
+*/
+void ChipDimension::setNCol(std::string chipName, int val) {
+  numCol[chipName] = val;
+}
+
+/**
+   Set the number of rows in the chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param val - the new row number value.
+*/
+void ChipDimension::setNRow(std::string chipName, int val) {
+  numRow[chipName] = val;
+}
+
+/**
+   Set the column pitch in the chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param val - the new column pitch value.
+*/
+void ChipDimension::setColPitch(std::string chipName, double val) {
+  colPitch[chipName] = val;
+}
+
+/**
+   Set the row pitch in the chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param val - the new row pitch value.
+*/
+void ChipDimension::setRowPitch(std::string chipName, double val) {
+  rowPitch[chipName] = val;
+}
+
+/**
+   Set the thickness of the chip.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param val - the new thickness value.
+*/
+void ChipDimension::setThickness(std::string chipName, double val) {
+  thickness[chipName] = val;
 }

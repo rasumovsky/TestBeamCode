@@ -20,25 +20,36 @@ class PixelHit
   
  public:
   
-  PixelHit(int row, int col, bool match);
+  PixelHit(int row, int col, int LVL1, int TOT, bool match);
   ~PixelHit();
   
   // Mutators:
   void setRow(int row);
   void setCol(int col);
+  void setLVL1(int LVL1);
+  void setTOT(int TOT);
   void setMatched(bool matched);
- 
+  
   // Accessors:
+  bool equalTo(PixelHit* hit);
   int getRow();
   int getCol();
+  int getLVL1();
+  int getTOT();
+  int hitDistanceCol(PixelHit* hit);
+  int hitDistanceRow(PixelHit* hit);
   bool isHitMatched();
   bool hitIsAdjacent(PixelHit* hit);
-
+  bool hitIsSamePos(PixelHit* hit);
+  void printHit();
+  
  private:
   
   // Member objects:
   int hitRow;
   int hitCol;
+  int hit LVL1;
+  int hitTOT;
   bool hitMatched;
   
 };

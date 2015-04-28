@@ -22,9 +22,12 @@
 /**
    Initialize the T3MAPS data class. Loads an input textfile, reads the data 
    into a TTree, then saves the TTree in a TFile.
+   @param inFileName - the input text file with the T3MAPS hit tables.
+   @param outFileName - the name of the file in which the TTree will be saved. 
 */
 LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
-  std::cout << std::endl << "LoadT3MAPS::Initializing..." << std::endl;
+  std::cout << "\nLoadT3MAPS: Initializing..." << "\n\tLoading " << inFileName
+	    << "\n\tReturning " << outFileName << std::endl;
   
   nEvents = 0;
     
@@ -74,7 +77,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
 	// iterate over the columns that were hit in each row:
 	for (std::vector<std::string>::iterator it = hitColumns.begin(); 
 	     it != hitColumns.end(); ++it) {
-	  int currRow = atoi(it->c_str()) + 1;
+	  int currRow = atoi(it->c_str());// + 1;
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
 	  nHits++;
@@ -96,6 +99,7 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
   treeT3MAPS->Write();
   outputT3MAPS->Close();
   
+  std::cout << "\nLoadT3MAPS: Initialized successfully!" << std::endl;
   return;
 }
 
@@ -122,9 +126,12 @@ void LoadT3MAPS::closeFiles() {
 
 /**
    Splits a line of text up into the interpretable chunks.
+   @param line - the line of input text.
+   @param delim - the delimiter for the text (typically " " or ",").
+   @returns - a vetor of strings that were separated by the delim.
  */
-std::vector<std::string> LoadT3MAPS::delimString( std::string line, 
-						  std::string delim ) {
+std::vector<std::string> LoadT3MAPS::delimString(std::string line, 
+						  std::string delim) {
   // vector to return (for table)
   std::vector<std::string> result;
   result.clear();

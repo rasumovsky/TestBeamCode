@@ -26,18 +26,29 @@ class ChipDimension
   ~ChipDimension();
   
   // Accessors:
-  int getChipSize(std::string chip, std::string pos);
+  int getNCol(std::string chipName);
+  int getNRow(std::string chipName);
+  double getColPitch(std::string chipName);
+  double getRowPitch(std::string chipName);
+  double getThickness(std::string chipName);
   bool isInChip(std::string chip, int row, int col);
   
   // Mutators:
-  void setChipSize(std::string chip, std::string pos, int val);
+  void setNCol(std::string chipName, int val);
+  void setNRow(std::string chipName, int val);
+  void setColPitch(std::string chipName, double val);
+  void setRowPitch(std::string chipName, double val);
+  void setThickness(std::string chipName, double val);
   
  private:
   
   // Member objects:
-  std::map<std::string,int> nRows;
-  std::map<std::string,int> nColumns;
-
+  std::map<std::string,int> numCol;
+  std::map<std::string,int> numRow;
+  std::map<std::string,double> colPitch;
+  std::map<std::string,double> rowPitch;
+  std::map<std::string,double> thickness;
+ 
 };
 
 #endif
