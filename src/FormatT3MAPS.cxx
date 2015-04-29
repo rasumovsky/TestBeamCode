@@ -10,23 +10,36 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "FormatT3MAPS.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+#include "TFile.h"
+#include "TString.h"
+#include "TTree.h"
+
+#include "SplitT3MAPS.h"
+#include "LoadT3MAPS.h"
 
 int main(int argc, char **argv) {
   
   // Check arguments:
   if (argc < 2) {
-    printf("\nUsage: %s <inputT3MAPS.txt> \n\n",argv[0]); 
+    std::cout << "\nUsage: " << argv[0] << " <file.txt>\n" << std::endl;
     exit(0);
   }
   
   std::system("mkdir -vp formOutput/*");
   std::string inputT3MAPS = argv[1];
   
-  std::cout << "Running tool to split up single text file." << std::endl;
+  std::cout << "FormatT3MAPS: Running tool to split single file." << std::endl;
   SplitT3MAPS *sT = new SplitT3MAPS(inputT3MAPS, 500);
   int numFiles = sT->getNFiles();
-  std::cout << "Success! Split into " << numFiles << " files." << std::endl;
+  std::cout << "FormatT3MAPS: Success! Split into " << numFiles
+	    << " files." << std::endl;
   
   std::vector<std::string> inFileList = sT->getFileNames();
   std::vector<std::string> outFileList;
@@ -45,5 +58,5 @@ int main(int argc, char **argv) {
   
   std::system("hadd -f T3MAPS_new.root formOutput/*.root");
   std::system("rm -rf formOutput");
-  std::cout << "\nFile location is T3MAPS_new.root!\n" << std::endl;
+  std::cout << "\nFormatT3MAPS: File location T3MAPS_new.root\n" << std::endl;
 }

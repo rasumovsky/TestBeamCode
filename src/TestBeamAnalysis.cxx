@@ -18,81 +18,94 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "TestBeamAnalysis.h"
+// C++ includes:
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <string>
+
+// ROOT includes:
+#include "TFile.h"
+#include "TString.h"
+#include "TTree.h"
+
+// Package includes:
+#include "ChipDimension.h"
+#include "MatchMaker.h"
+#include "PixelCluster.h"
+#include "PixelHit.h"
+#include "TreeFEI4.h"
+#include "TreeT3MAPS.h"
+#include "PlotUtil.h"
+#include "LinearMapMaker.h"
+
+using namespace std;
 
 int main(int argc, char **argv) {
   
   // Check arguments:
   if (argc < 4) {
-    printf("\nUsage: %s <inputT3MAPS> <inputFEI4> <options>\n\n",argv[0]); 
+    std::cout << "\nUsage: " << argv[0]
+	      << " <inputT3MAPS> <inputFEI4> <options>" << std::endl; 
     exit(0);
   }
   
   TString inputT3MAPS = argv[1];
   TString inputFEI4 = argv[2];
-  options = argv[3];
+  TString options = argv[3];
   
   TString mapFileDir = "../TestBeamOutput";
     
   // LoadT3MAPS and load the FEI4 TTree
   TFile *fileT3MAPS = new TFile(inputT3MAPS);
   TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
-  cT = new TreeT3MAPS(myTreeT3MAPS);
+  TreeT3MAPS *cT = new TreeT3MAPS(myTreeT3MAPS);
   
   TFile *fileFEI4 = new TFile(inputFEI4);
   TTree *myTreeFEI4 = (TTree*)fileFEI4->Get("Table");
-  cF = new TreeFEI4(myTreeFEI4);
+  TreeFEI4 *cF = new TreeFEI4(myTreeFEI4);
   
   // Load the chip sizes (but use defaults!)
-  myChips = new ChipDimension();
+  ChipDimension *chips = new ChipDimension();
   
   LinearMapMaker *mapper = new LinearMapMaker("","");
   
   // Book histograms:
-  TH2D *occFEI4 = new TH2D("occFEI4","occFEI4",
-			   myChips->getChipSize("FEI4","nRows"),
-			   0.5,
-			   0.5+myChips->getChipSize("FEI4","nRows"),
-			   myChips->getChipSize("FEI4","nColumns"),
-			   0.5,
-			   0.5+myChips->getChipSize("FEI4","nColumns"));
-  
-  
-  TH2D *occOverFEI4 = new TH2D("occOverlapFEI4","occOverlapFEI4",
-			       myChips->getChipSize("FEI4","nRows"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nRows"),
-			       myChips->getChipSize("FEI4","nColumns"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nColumns"));
-  
-  TH2D *occT3MAPS = new TH2D("occT3MAPS","occT3MAPS",
-			     myChips->getChipSize("T3MAPS","nRows"),
-			     0.5,
-			     0.5+myChips->getChipSize("T3MAPS","nRows"),
-			     myChips->getChipSize("T3MAPS","nColumns"),
-			     0.5,
-			     0.5+myChips->getChipSize("T3MAPS","nColumns"));
-  
-  TH2D *occDiffFEI4 = new TH2D("occDiffFEI4","occDiffFEI4",
-			       myChips->getChipSize("FEI4","nRows"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nRows"),
-			       myChips->getChipSize("FEI4","nColumns"),
-			       0.5,
-			       0.5+myChips->getChipSize("FEI4","nColumns"));
+  TH2D *occFEI4 = new TH2D("occFEI4", "occFEI4", 
+			   chips->getNRow("FEI4"), -0.5,
+			   (chips->getNRow("FEI4") - 0.5),
+			   chips->getNCol("FEI4"), -0.5,
+			   (chips->getNCol("FEI4") - 0.5));
+  TH2D *occOverFEI4 = new TH2D("occOverlapFEI4", "occOverlapFEI4",
+			       chips->getNRow("FEI4"), -0.5,
+			       (chips->getNRow("FEI4") - 0.5),
+			       chips->getNCol("FEI4"), 0.5,
+			       (chips->getNCol("FEI4") - 0.5));
+  TH2D *occT3MAPS = new TH2D("occT3MAPS", "occT3MAPS",
+			     chips->getNRow("T3MAPS"), -0.5,
+			     (chips->getNRow("T3MAPS") - 0.5),
+			     chips->getNCol("T3MAPS"), -0.5,
+			     (chips->getNCol("T3MAPS") - 0.5));
+  TH2D *occDiffFEI4 = new TH2D("occDiffFEI4", "occDiffFEI4",
+			       chips->getNRow("FEI4"), -0.5,
+			       (chips->getNRow("FEI4") - 0.5),
+			       chips->getNCol("FEI4"), -0.5,
+			       (chips->getNCol("FEI4") - 0.5));
   
   TH1F *hPI_T3MAPS = new TH1F("hPI_T3MAPS", "hPI_T3MAPS", 21, -0.5, 20.5);
   TH1F *hPE_FEI4 = new TH1F("hPE_FEI4", "hPE_FEI4", 51, -0.5, 50.5);
   TH1F *hP_OverFEI4 = new TH1F("hPI_OverFEI4", "hPI_OverFEI4", 51, -0.5, 50.5);
   
-  cout << "TestBeamAnalysis: Beginning loop to define maps." << endl;
+  // Define the map from T3MAPS <--> FEI4
+  std::cout << "TestBeamAnalysis: Beginning loop to define maps." << std::endl;
   
   // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
   Long64_t entriesFEI4 = cF->fChain->GetEntries();
   Long64_t eventFEI4 = 0;
   cF->fChain->GetEntry(eventFEI4);
-  cout << "Entries in FEI4 = " << entriesFEI4 << endl;
+  std::cout << "TestBeamAnalysis: FEI4 entries = " << entriesFEI4 << std::endl;
   
   // Loop over T3MAPS tree.
   Long64_t entriesT3MAPS = cT->fChain->GetEntries();
@@ -106,8 +119,8 @@ int main(int argc, char **argv) {
       continue;
     }
     
-    // Cut on events where T3MAPS is fully occupied:
-    if (options.Contains("CutFullEvt") && cT->nHits > 5) {
+    // Cut on events where T3MAPS is saturated:
+    if (options.Contains("CutFullEvt") && cT->nHits > 100) {
       continue;
     }
         
@@ -147,14 +160,15 @@ int main(int argc, char **argv) {
 	occDiffFEI4->Fill(cF->row, cF->column, 1.0);
 	nHits_OverFEI4++;
 		
-	PixelHit *currFEI4Hit = new PixelHit(cF->row, cF->column, false);
+	PixelHit *currFEI4Hit = new PixelHit(cF->row, cF->column, cF->LVL1ID,
+					     cF->tot, false);
 	
 	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
 	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
 	  
 	  PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h], 
 						 (*cT->hit_column)[i_h],
-						 false);
+						 1, 1, false);
 	  
 	  mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
 	}
@@ -172,14 +186,14 @@ int main(int argc, char **argv) {
     hP_OverFEI4->Fill(nHits_OverFEI4);
     
   }// End of loop over events
-  cout << "TestBeamAnalysis: Ending loop to define maps." << endl;
-      
+  std::cout << "TestBeamAnalysis: Ending loop to define maps." << std::endl;
+  
   mapper->createMapFromHits();
   mapper->printMapParameters();
   mapper->saveMapParameters(mapFileDir);
   
   // Plot occupancy for FEI4 and T3MAPS:
-  PlotUtil *plotter = new PlotUtil("../TestBeamOutput",800,800);
+  PlotUtil *plotter = new PlotUtil("../TestBeamOutput", 800, 800);
   plotter->plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
 		    "occupancyFEI4");
   plotter->plotTH2D(occOverFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
@@ -188,7 +202,6 @@ int main(int argc, char **argv) {
 		    "occupancyT3MAPS");
   plotter->plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "weights", 
 		    "occupancyDifferenceFEI4");
-  
   plotter->plotTH1F(hPI_T3MAPS, "hits/integration", "entries", "hitsT3MAPS");
   plotter->plotTH1F(hPE_FEI4, "hits/event", "entries", "hitsFEI4");
   plotter->plotTH1F(hP_OverFEI4, "hits/integration", "entries", "hitsOverFEI4");
