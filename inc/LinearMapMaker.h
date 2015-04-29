@@ -71,7 +71,7 @@ class LinearMapMaker {
   
   bool sameOrientation;
   
-  TF1* createFit(TString name, TGraphErrors *g, double xlow, double xhigh);
+  TF1* createFit(TString name, TGraphErrors *graph, double xlow, double xhigh);
 
 };
 
