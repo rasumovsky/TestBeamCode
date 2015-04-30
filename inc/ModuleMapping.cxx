@@ -52,13 +52,10 @@ ModuleMapping::ModuleMapping(TString fileDir, TString option) {
   // Initialize the 2D histogram for correlation calculations.
   for (int i = 0; i < 2; i++) {
     hist2dFEI4Pix[i] = new TH2D(Form("FEI4Pix%i2d",i),Form("FEI4Pix%i2d",i),
-				myChips->getChipSize("FEI4","nRows"),0.5,
-				((double)myChips->getChipSize("FEI4","nRows"))
-				+0.5,
-				myChips->getChipSize("FEI4","nColumns"),0.5,
-				((double)myChips->getChipSize("FEI4",
-							      "nColumns"))
-				+0.5);
+				myChips->getNRow("FEI4"), -0.5,
+				((double)myChips->getNRow("FEI4")) - 0.5,
+				myChips->getNCol("FEI4"), -0.5,
+				((double)myChips->getNCol("FEI4")) - 0.5);
   }
   
   //saveMapParameters(outputDir);//Save parameters to file

@@ -1,4 +1,4 @@
-obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
+obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/stdlib.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/Availability.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/AvailabilityInternal.h \
@@ -27,7 +27,7 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_size_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_uid_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/resource.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/stdint.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/stdint.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/stdint.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_int8_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_int16_t.h \
@@ -67,7 +67,7 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/iosfwd \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/wchar.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_mbstate_t.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/stdarg.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/stdarg.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/time.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_clock_t.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_time_t.h \
@@ -93,7 +93,7 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/algorithm \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/initializer_list \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/cstddef \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/stddef.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/stddef.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/type_traits \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/utility \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tuple \
@@ -108,6 +108,7 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/iterator \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__functional_base \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__functional_base_03 \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__debug \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/tuple \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/stdexcept \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/mutex \
@@ -116,7 +117,7 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/ctime \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/ratio \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/climits \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/limits.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/limits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/limits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/machine/limits.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/i386/limits.h \
@@ -236,33 +237,10 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
-  inc/ChipDimension.h inc/MatchMaker.h inc/PixelHit.h inc/PixelCluster.h \
-  inc/ModuleMapping.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH1.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TAxis.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TAttAxis.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TArrayC.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TArrayS.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TArrayF.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/Foption.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.0/include/float.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TFitResultPtr.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h \
-  inc/TreeFEI4.h /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TChain.h \
-  inc/TreeT3MAPS.h inc/PlotUtil.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/sstream \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/list \
+  inc/ChipDimension.h inc/MatchMaker.h inc/PixelHit.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/cmath \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/math.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TMath.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TError.h \
+  inc/PixelCluster.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TCanvas.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TPad.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualPad.h \
@@ -274,15 +252,40 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TQObject.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TAttCanvas.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TCanvasImp.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH2F.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/THStack.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TBox.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TLegend.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TPave.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TF1.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TFormula.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TBits.h \
   /Users/andrewhard/root-v5-34-00-patches/include/Math/ParamFunctor.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraph.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFitResultPtr.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH1.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAxis.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttAxis.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayC.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayS.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TArrayF.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Foption.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/float.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2F.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h \
+  inc/ModuleMapping.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h inc/TreeFEI4.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TChain.h \
+  inc/TreeT3MAPS.h inc/PlotUtil.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/sstream \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/list \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMath.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TError.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/THStack.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBox.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TLegend.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPave.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TProfile.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TStyle.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TLine.h \
@@ -311,7 +314,6 @@ obj/TestBeamAnalysis.o: src/TestBeamAnalysis.cxx src/TestBeamAnalysis.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TTimer.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TSysEvtHandler.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TTime.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TGraph.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TGraphErrors.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TGraph2D.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualHistPainter.h \

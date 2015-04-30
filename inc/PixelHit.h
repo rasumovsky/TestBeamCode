@@ -14,6 +14,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <cmath>
 
 class PixelHit 
 {
@@ -48,7 +50,7 @@ class PixelHit
   // Member objects:
   int hitRow;
   int hitCol;
-  int hit LVL1;
+  int hitLVL1;
   int hitTOT;
   bool hitMatched;
   

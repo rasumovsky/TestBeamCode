@@ -12,6 +12,7 @@
 #ifndef PixelCluster_h
 #define PixelCluster_h
 
+// C++ includes:
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -21,11 +22,18 @@
 #include <vector>
 #include <cmath>
 
-#include "PixelHit.h"
-#inlcude "ChipDimension.h"
+// ROOT includes:
+#include "TCanvas.h"
+#include "TF1.h"
+#include "TGraph.h"
+#include "TH1.h"
+#include "TH2F.h"
 
-class PixelCluster 
-{
+// Package includes:
+#include "PixelHit.h"
+#include "ChipDimension.h"
+
+class PixelCluster {
   
  public:
   
@@ -39,7 +47,7 @@ class PixelCluster
   void clearCluster();
   void fillHistogram();
   void fitTracklet();
-  void setClusterCentroid();
+  void setClusterCentroid(double row, double col);
   
   // Accessors:
   void drawClusterHist(TString fileName);
@@ -57,6 +65,7 @@ class PixelCluster
   bool containsHit(PixelHit *hit);
   bool isAdjacent(PixelCluster *cluster);
   bool isOverlapping(PixelCluster *cluster);
+  bool isMatched();
   bool clustersCanMerge(PixelCluster *cluster);
 
  private:
@@ -67,7 +76,7 @@ class PixelCluster
   double clusterPathLength;
   std::vector<PixelHit*> clusterHits;
   std::vector<PixelHit*> clusterMasks;
-  std::pair<double,double> clusterCentroid;
+  std::pair<double,double> centerOfCharge;
   
   TH2F *clusterHist;
   TF1 *tracklet;

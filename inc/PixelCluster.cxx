@@ -30,16 +30,13 @@ void PixelCluster::addCluster(PixelCluster *cluster) {
   
   std::vector<PixelHit*> newClusterHits = cluster->getHits();
   std::vector<PixelHit*> newClusterMasks = cluster->getMasks();
-  
-  // Iterate over hits:
-  for (std::vector<PixelHit*>::iterator iterHit = newClusterHits.begin();
-       iterHit != newClusterHits.end(); iterHit++) {
-    addHit(iterHit);// addHit also adds the TOT and charge.
+  // Loop over hits:
+  for (int i_h = 0; i_h < (int)newClusterHits.size(); i_h++) {
+    addHit(newClusterHits[i_h]);// addHit also adds to the TOT sum.
   }
-  // Iterate over masked pixels:
-  for (std::vector<PixelHit*>::iterator iterMask = newClusterMasks.begin();
-       iterMask != newClusterMasks.end(); iterMask++) {
-    addMask(iterMask);
+  // Loop over masked pixels:
+  for (int i_m = 0; i_m < (int)newClusterMasks.size(); i_m++) {
+    addMask(newClusterMasks[i_m]);
   }
 }
 
@@ -50,16 +47,16 @@ void PixelCluster::addCluster(PixelCluster *cluster) {
 void PixelCluster::addHit(PixelHit *hit) {
   // Only proceed if the hit is not already included in the cluster.
   if (!containsHit(hit)) {
-    if (hit.getTOT() > 15) {
+    if (hit->getTOT() > 15) {
       std::cout << "PixelCluster::addHit Error - Invalid TOT." << std::endl;
     }
     // Don't add TOT=14 (delayed) or TOT=15 (no hit) in the sum:
-    if (hit.getTOT() >= 0 && hit.getTOT() < 14) {
+    if (hit->getTOT() >= 0 && hit->getTOT() < 14) {
       clusterTOTSum += hit->getTOT();
       clusterHits.push_back(hit);
     }
     // Add to list of delayed hits:
-    else if (hit.getTOT() == 14) {
+    else if (hit->getTOT() == 14) {
       std::cout << "PixelCluster: found delayed hit." << std::endl;
     }
   }
@@ -83,8 +80,8 @@ void PixelCluster::clearCluster() {
   clusterPathLength = 0.0;
   clusterHits.clear();
   clusterMasks.clear();
-  clusterCentroid.first = 0.0;
-  clusterCentroid.second = 0.0;
+  centerOfCharge.first = 0.0;
+  centerOfCharge.second = 0.0;
   clusterHist = NULL;
   tracklet = NULL;
 }
@@ -97,23 +94,36 @@ void PixelCluster::fillHistogram() {
   float colLo(80), colHi(0), rowLo(336), rowHi(0);
   
   // loop over the hits:
-  for (std::vector<PixelHit*>::iterator iterHit = clusterHits.begin();
-       iterHit != clusterHits.end(); iterHit++) {
-    if (iterHits->getCol() < colLo) colLo = iterHit->getCol();
-    if (iterHits->getCol() > colHi) colHi = iterHit->getCol();
-    if (iterHits->getRow() < rowLo) rowLo = iterHit->getRow();
-    if (iterHits->getRow() > rowHi) rowHi = iterHit->getRow();
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
+    if (clusterHits[i_h]->getCol() < colLo) {
+      colLo = clusterHits[i_h]->getCol();
+    }
+    if (clusterHits[i_h]->getCol() > colHi) {
+      colHi = clusterHits[i_h]->getCol();
+    }
+    if (clusterHits[i_h]->getRow() < rowLo) {
+      rowLo = clusterHits[i_h]->getRow();
+    }
+    if (clusterHits[i_h]->getRow() > rowHi) {
+      rowHi = clusterHits[i_h]->getRow();
+    }
   }
   
   // loop over the masks:
-  for (std::vector<PixelHit*>::iterator iterMask = clusterMasks.begin();
-       iterMask != clusterMasks.end(); iterMask++) {
-    if (iterMask->getCol() < colLo) colLo = iterMask->getCol();
-    if (iterMask->getCol() > colHi) colHi = iterMask->getCol();
-    if (iterMask->getRow() < rowLo) rowLo = iterMask->getRow();
-    if (iterMask->getRow() > rowHi) rowHi = iterMask->getRow();
+  for (int i_m = 0; i_m < (int)clusterMasks.size(); i_m++) {
+    if (clusterMasks[i_m]->getCol() < colLo) {
+      colLo = clusterMasks[i_m]->getCol();
+    }
+    if (clusterMasks[i_m]->getCol() > colHi) {
+      colHi = clusterMasks[i_m]->getCol();
+    }
+    if (clusterMasks[i_m]->getRow() < rowLo) {
+      rowLo = clusterMasks[i_m]->getRow();
+    }
+    if (clusterMasks[i_m]->getRow() > rowHi) {
+      rowHi = clusterMasks[i_m]->getRow();
+    }
   }
-  
   colLo -= 1.5;
   colHi += 1.5;
   rowLo -= 1.5;
@@ -124,16 +134,16 @@ void PixelCluster::fillHistogram() {
 			 (rowHi - rowLo), rowLo, rowHi);
   
   // Fill histogram with hit and weight according to TOT:
-  for (std::vector<PixelHit*>::iterator iterHit = clusterHits.begin();
-       iterHit != clusterHits.end(); iterHit++) {
-    double currWeight = iterHit->getTOT + 1;
-    clusterHist->Fill(iterHit->getCol(), iterHit->getRow(), currWeight);
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
+    double currWeight = clusterHits[i_h]->getTOT() + 1;
+    clusterHist->Fill(clusterHits[i_h]->getCol(),
+		      clusterHits[i_h]->getRow(), currWeight);
   }
   
   // Fill histogram with mask and weight -1:
-  for (std::vector<PixelHit*>::iterator iterMask = clusterMasks.begin();
-       iterMask != clusterMasks.end(); iterMask++) {
-    clusterHist->Fill(iterMask->getCol(), iterMask->getRow(), -1);
+  for (int i_m = 0; i_m < (int)clusterMasks.size(); i_m++) {
+    clusterHist->Fill(clusterMasks[i_m]->getCol(),
+		      clusterMasks[i_m]->getRow(), -1);
   }
 }
 
@@ -152,22 +162,23 @@ void PixelCluster::fitTracklet() {
 
   // Least-squares method
   int counter = 0;
-  float weight(0);
+  float currWeight(0);
   float sumCol(0), sumRow(0), sumColCol(0), sumColRow(0);
   
-  // Iterate over hits:
-  for (std::vector<PixelHit*>::iterator iterHit = clusterHits.begin();
-       iterHit != clusterHits.end(); iterHit++) {
+  // Loop over hits:
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
     
     // Use the weighted average of TOT (update to charge eventually):
-    currWeight = iterHit->getTOT() + 1;
+    currWeight = clusterHits[i_h]->getTOT() + 1;
     
     counter += currWeight;
     
-    sumCol += iterHit->getCol() * currWeight;
-    sumRow += iterHit->getRow() * currWeight;
-    sumColCol += iterHit->getCol() * iterHit->getCol() * currWeight;
-    sumColRow += iterHit->getCol() * iterHit->getRow() * currWeight;
+    sumCol += clusterHits[i_h]->getCol() * currWeight;
+    sumRow += clusterHits[i_h]->getRow() * currWeight;
+    sumColCol += (clusterHits[i_h]->getCol() * clusterHits[i_h]->getCol()
+		  * currWeight);
+    sumColRow += (clusterHits[i_h]->getCol() * clusterHits[i_h]->getRow()
+		  * currWeight);
   }
   
   float meanCol = sumCol / counter;
@@ -221,8 +232,8 @@ void PixelCluster::fitTracklet() {
   // this is for planar modules (thickness of 230 for 3D modules)
   ChipDimension *cd = new ChipDimension();
   float thickness = cd->getThickness(chipName);// microns
-  float row_pitch =  cd->getRowPitch(chipName);// microns
-  float col_pitch = cd->getColPitch(chipName); // microns
+  float rowPitch =  cd->getRowPitch(chipName);// microns
+  float colPitch = cd->getColPitch(chipName); // microns
   
   clusterPathLength = sqrt(pow((exitRow - entryRow) * rowPitch, 2) +
 			   pow((exitCol - entryCol) * colPitch, 2) +
@@ -234,9 +245,9 @@ void PixelCluster::fitTracklet() {
    @param row - the new centroid row.
    @param col - the new centroid column.
 */
-void setClusterCentroid(double row, double col) {
-  clusterCentroid.first = row;
-  clusterCentroid.second = col;
+void PixelCluster::setClusterCentroid(double row, double col) {
+  centerOfCharge.first = row;
+  centerOfCharge.second = col;
 }
 
 /**
@@ -258,7 +269,7 @@ void PixelCluster::drawClusterHist(TString fileName) {
   tracklet->Draw("Lsame");
   
   TGraph *centroidGraph = new TGraph(1);
-  centroidGraph->SetPoint(0, centreOfCharge.second, centreOfCharge.first);
+  centroidGraph->SetPoint(0, centerOfCharge.second, centerOfCharge.first);
   centroidGraph->SetMarkerStyle(2);
   centroidGraph->SetMarkerSize(3);
   centroidGraph->Draw("Psame");
@@ -269,7 +280,7 @@ void PixelCluster::drawClusterHist(TString fileName) {
    Get the center of the cluster.
 */
 std::pair<double,double> PixelCluster::getClusterCentroid() {
-  return clusterCentroid;
+  return centerOfCharge;
 }
 
 /**
@@ -279,19 +290,19 @@ std::pair<double,double> PixelCluster::getClusterCentroid() {
 double PixelCluster::getClusterSeparation(PixelCluster *cluster) {
   double minSeparation = 10000.0;
   //loop over hits in this cluster
+
   // Iterate over hits in input cluster:
   std::vector<PixelHit*> currClusterHits = cluster->getHits();
-  for (std::vector<PixelHit*>::iterator iterHit1 = currClusterHits.begin();
-       iterHit1 != currClusterHits.end(); iterHit1++) {
+  for (int i_h1 = 0; i_h1 < (int)currClusterHits.size(); i_h1++) {
     
     // Iterate over hits in this cluster:
-    for (std::vector<PixelHit*>::iterator iterHit2 = clusterHits.begin();
-	 iterHit2 != clusterHits.end(); iterHit2++) {
+    for (int i_h2 = 0; i_h2 < (int)clusterHits.size(); i_h2++) {
       
-      double currSeparation = sqrt((iterHit1->hitDistanceRow(iterHit2) * 
-				    iterHit1->hitDistanceRow(iterHit2)) +
-				   (iterHit1->hitDistanceCol(iterHit2) * 
-				    iterHit1->hitDistanceCol(iterHit2)));
+      double currSeparation
+	= sqrt((currClusterHits[i_h1]->hitDistanceRow(clusterHits[i_h2]) * 
+		currClusterHits[i_h1]->hitDistanceRow(clusterHits[i_h2])) +
+	       (currClusterHits[i_h1]->hitDistanceCol(clusterHits[i_h2]) * 
+		currClusterHits[i_h1]->hitDistanceCol(clusterHits[i_h2])));
       if (currSeparation < minSeparation) {
 	minSeparation = currSeparation;
       }
@@ -308,7 +319,7 @@ TH2F* PixelCluster::getClusterHist() {
     return clusterHist;
   }
   else {
-    fillClusterHist();
+    fillHistogram();
     return clusterHist;
   }
 }
@@ -379,14 +390,14 @@ TF1* PixelCluster::getTracklet() {
 /**
    Get the list of cluster hits.
 */
-vector<PixelHit*> PixelCluster::getHits() {
+std::vector<PixelHit*> PixelCluster::getHits() {
   return clusterHits;
 }
 
 /**
    Get the list of cluster masks.
 */
-vector<PixelHit*> PixelCluster::getMasks() {
+std::vector<PixelHit*> PixelCluster::getMasks() {
   return clusterMasks;
 }
 
@@ -396,16 +407,14 @@ vector<PixelHit*> PixelCluster::getMasks() {
 */
 bool PixelCluster::containsHit(PixelHit *hit) {
   // Iterate over hits:
-  for (std::vector<PixelHit*>::iterator iterHit = clusterHits.begin();
-       iterHit != clusterHits.end(); iterHit++) {
-    if (iterHit.equalTo(hit)) {
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
+    if (clusterHits[i_h]->equalTo(hit)) {
       return true;
     }
   }
   // Iterate over masked pixels:
-  for (std::vector<PixelHit*>::iterator iterMask = clusterMasks.begin();
-       iterMask != clusterMasks.end(); iterMask++) {
-    if (iterMask.equalTo(hit)) {
+  for (int i_m = 0; i_m < (int)clusterMasks.size(); i_m++) {
+    if (clusterMasks[i_m]->equalTo(hit)) {
       return true;
     }
   }
@@ -423,8 +432,9 @@ bool PixelCluster::isAdjacent(PixelCluster *cluster) {
     PixelHit *currHit1 = clusterHits[i];
     
     // Loop over input cluster:
-    for (int j = 0; j < cluster->getNHits(); j++) {
-      PixelHit *currHit2 = cluster->getHit(j);
+    std::vector<PixelHit*> currClusterHits = cluster->getHits();
+    for (int j = 0; j < (int)currClusterHits.size(); j++) {
+      PixelHit *currHit2 = currClusterHits[j];
       if (currHit1->hitIsAdjacent(currHit2)) {
 	return true;
       }
@@ -438,16 +448,28 @@ bool PixelCluster::isAdjacent(PixelCluster *cluster) {
 */
 bool PixelCluster::isOverlapping(PixelCluster *cluster) {
   // Iterate over hits:
-  for (std::vector<PixelHit*>::iterator iterHit = clusterHits.begin();
-       iterHit != clusterHits.end(); iterHit++) {
-    if (cluster->containsHit(iterHit)) {
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
+    if (cluster->containsHit(clusterHits[i_h])) {
       return true;
     }
   }
   // Iterate over masked pixels:
-  for (std::vector<PixelHit*>::iterator iterMask = clusterMasks.begin();
-       iterMask != clusterMasks.end(); iterMask++) {
-    if (cluster->containsHit(iterMask)) {
+  for (int i_m = 0; i_m < (int)clusterMasks.size(); i_m++) {
+    if (cluster->containsHit(clusterMasks[i_m])) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+   Check whether any of the hits in this cluster have been matched to any hits
+   in another chip.
+*/
+bool PixelCluster::isMatched() {
+  // Loop over hits.
+  for (int i_h = 0; i_h < (int)clusterHits.size(); i_h++) {
+    if (clusterHits[i_h]->isHitMatched()) {
       return true;
     }
   }

@@ -17,6 +17,7 @@
    Initialize the class with default values for FEI4 and T3MAPS.
  */
 ChipDimension::ChipDimension() {
+  std::cout << "ChipDimesion: Initializing..." << std::endl;
   setNCol("FEI4", 80);
   setNRow("FEI4", 336);
   setColPitch("FEI4", 250.0);
@@ -27,6 +28,7 @@ ChipDimension::ChipDimension() {
   setColPitch("T3MAPS", 250.0);
   setRowPitch("T3MAPS", 50.0);
   setThickness("T3MAPS", 200.0);
+  std::cout << "ChipDimesion: Initialized with default values." << std::endl;
   return;
 }
 
@@ -65,13 +67,13 @@ int ChipDimension::getNRow(std::string chipName) {
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @returns - the column pitch.
  */
-int ChipDimension::getColPitch(std::string chipName) {
+double ChipDimension::getColPitch(std::string chipName) {
   if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
     return colPitch[chipName];
   }
   else {
     std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
-    return 0;
+    return 0.0;
   }
 }
 
@@ -80,13 +82,13 @@ int ChipDimension::getColPitch(std::string chipName) {
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @returns - the row pitch.
  */
-int ChipDimension::getRowPitch(std::string chipName) {
+double ChipDimension::getRowPitch(std::string chipName) {
   if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
     return rowPitch[chipName];
   }
   else {
     std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
-    return 0;
+    return 0.0;
   }
 }
 
@@ -95,13 +97,13 @@ int ChipDimension::getRowPitch(std::string chipName) {
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @returns - the chip thickness.
 */
-int ChipDimension::getThickness(std::string chipName) {
+double ChipDimension::getThickness(std::string chipName) {
   if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
     return thickness[chipName];
   }
   else {
     std::cout << "ChipDimension: Bad chip name " << chipName << std::endl;
-    return 0;
+    return 0.0;
   }
 }
 

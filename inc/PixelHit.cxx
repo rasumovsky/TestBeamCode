@@ -60,8 +60,6 @@ void PixelHit::setLVL1(int LVL1) {
 */
 void PixelHit::setTOT(int TOT) {
   hitTOT = TOT;
-  // set charge at the same time as TOT:
-  setCharge(calculateQ(TOT));
 }
 
 /**
@@ -120,7 +118,8 @@ int PixelHit::getTOT() {
    @returns - the column separation of the two hits.
 */
 int PixelHit::hitDistanceCol(PixelHit* hit) {
-  return fabs(hitCol - hit->getCol());
+  int distance = (int)(fabs((double)(hitCol - hit->getCol())));
+  return distance;
 }
 
 /**
@@ -128,8 +127,9 @@ int PixelHit::hitDistanceCol(PixelHit* hit) {
    @param hit - the hit to measure against this one.
    @returns - the row separation of the two hits.
 */
-double PixelHit::hitDistanceRow(PixelHit* hit) {
-  return fabs(hitRow - hit->getRow());
+int PixelHit::hitDistanceRow(PixelHit* hit) {
+  int distance = (int)(fabs((double)(hitRow - hit->getRow())));
+  return distance;
 }
 
 /**

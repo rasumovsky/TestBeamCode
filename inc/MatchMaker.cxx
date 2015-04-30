@@ -149,7 +149,7 @@ std::vector<PixelCluster*> MatchMaker::mergeClusters(std::vector<PixelCluster*>
     // check to see if we can merge:
     bool couldMerge = false;
     for (int j = 0; j < (int)result.size(); j++) {
-      if (result[j]->clusterIsAdjacent(inList[i])) {
+      if (result[j]->isAdjacent(inList[i])) {
 	result[j]->addCluster(inList[i]);
 	couldMerge = true;
 	break;
@@ -182,7 +182,8 @@ void MatchMaker::buildFEI4Clusters() {
   
   // loop over hits in FEI4 and add a new cluster for each:
   for (int hitIndex = 0; hitIndex < (int)hitsFEI4.size(); hitIndex++) {
-    PixelCluster *currCluster = new PixelCluster(hitsFEI4[hitIndex]);
+    PixelCluster *currCluster = new PixelCluster("FEI4");
+    currCluster->addHit(hitsFEI4[hitIndex]);
     clustersFEI4.push_back(currCluster);
   }
   
@@ -196,7 +197,7 @@ void MatchMaker::buildFEI4Clusters() {
   
   // Finally, count the number of matched clusters.
   for (int i = 0; i < (int)clustersFEI4.size(); i++) {
-    if (clustersFEI4[i]->isClusterMatched()) {
+    if (clustersFEI4[i]->isMatched()) {
       nMatchedClusters["FEI4"]++;
     }
   }
@@ -212,7 +213,8 @@ void MatchMaker::buildT3MAPSClusters() {
   
   // loop over hits in T3MAPS and add a new cluster for each:
   for (int hitIndex = 0; hitIndex < (int)hitsT3MAPS.size(); hitIndex++) {
-    PixelCluster *currCluster = new PixelCluster(hitsT3MAPS[hitIndex]);
+    PixelCluster *currCluster = new PixelCluster("T3MAPS");
+    currCluster->addHit(hitsT3MAPS[hitIndex]);
     clustersT3MAPS.push_back(currCluster);
   }
   
@@ -226,7 +228,7 @@ void MatchMaker::buildT3MAPSClusters() {
   
   // Finally, count the number of matched clusters.
   for (int i = 0; i < (int)clustersT3MAPS.size(); i++) {
-    if (clustersT3MAPS[i]->isClusterMatched()) {
+    if (clustersT3MAPS[i]->isMatched()) {
       nMatchedClusters["T3MAPS"]++;
     }
   }
