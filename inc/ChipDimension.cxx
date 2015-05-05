@@ -20,14 +20,14 @@ ChipDimension::ChipDimension() {
   std::cout << "ChipDimesion: Initializing..." << std::endl;
   setNCol("FEI4", 80);
   setNRow("FEI4", 336);
-  setColPitch("FEI4", 250.0);
-  setRowPitch("FEI4", 50.0);
-  setThickness("FEI4", 200.0);
-  setNCol("T3MAPS", 16);
+  setColPitch("FEI4", 250.0);//micrometers
+  setRowPitch("FEI4", 50.0);//micrometers
+  setThickness("FEI4", 200.0);//micrometers
+  setNCol("T3MAPS", 18);
   setNRow("T3MAPS", 64);
-  setColPitch("T3MAPS", 250.0);
-  setRowPitch("T3MAPS", 50.0);
-  setThickness("T3MAPS", 200.0);
+  setColPitch("T3MAPS", 225.0);//micrometers
+  setRowPitch("T3MAPS", 22.0);//micrometers
+  setThickness("T3MAPS", 13.0);//micrometers
   std::cout << "ChipDimesion: Initialized with default values." << std::endl;
   return;
 }
@@ -108,11 +108,31 @@ double ChipDimension::getThickness(std::string chipName) {
 }
 
 /**
+   Returns the distance away from column 0, in micrometers. 
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param col - the column number.
+   @returns - the distance away from row 0 in micrometers.
+*/
+double ChipDimension::getColPosition(std::string chipName, int col) {
+  return ((double)col * getColPitch(chipName));
+}
+
+/**
+   Returns the distance away from row 0, in micrometers.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param row - the row number.
+   @returns - the distance away from column 0 in micrometers.
+*/
+double ChipDimension::getRowPosition(std::string chipName, int row) {
+  return ((double)row * getRowPitch(chipName));
+}
+
+/**
    Checks to see whether a given row and column are compatible with given chip.
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @param row - the the chip row.
    @param col - the column of the chip, starting at 1
- */
+*/
 bool ChipDimension::isInChip(std::string chipName, int row, int col) {
   if (chipName.compare("FEI4") == 0 || chipName.compare("T3MAPS") == 0) {
     if (row >= 0 && row < numRow[chipName] &&

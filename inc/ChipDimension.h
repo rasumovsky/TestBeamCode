@@ -31,7 +31,9 @@ class ChipDimension {
   double getColPitch(std::string chipName);
   double getRowPitch(std::string chipName);
   double getThickness(std::string chipName);
-  bool isInChip(std::string chip, int row, int col);
+  double getColPosition(std::string chipName, int col);
+  double getRowPosition(std::string chipName, int row);
+  bool isInChip(std::string chipName, int row, int col);  
   
   // Mutators:
   void setNCol(std::string chipName, int val);

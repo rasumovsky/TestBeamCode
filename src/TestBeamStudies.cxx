@@ -39,7 +39,7 @@
 #include "TreeFEI4.h"
 #include "TreeT3MAPS.h"
 #include "PlotUtil.h"
-#include "LinearMapMaker.h"
+#include "MapParameters.h"
 
 using namespace std;
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   // Load the chip sizes (but use defaults!)
   ChipDimension *chips = new ChipDimension();
   
-  LinearMapMaker *mapper = new LinearMapMaker("","");
+  MapParameters *mapper = new MapParameters("","");
   
   // Book histograms:
   TH2D *occFEI4 = new TH2D("occFEI4", "occFEI4", 
@@ -192,8 +192,8 @@ int main(int argc, char **argv) {
   std::cout << "TestBeamAnalysis: Ending loop to define maps." << std::endl;
   
   mapper->createMapFromHits();
-  mapper->printMapParameters();
-  mapper->saveMapParameters(mapFileDir);
+  //mapper->printMapParameters();
+  //mapper->saveMapParameters(mapFileDir);
   
   // Plot occupancy for FEI4 and T3MAPS:
   PlotUtil *plotter = new PlotUtil("../TestBeamOutput", 800, 800);
