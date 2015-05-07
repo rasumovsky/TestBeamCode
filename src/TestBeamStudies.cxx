@@ -96,16 +96,18 @@ int main(int argc, char **argv) {
   // For analysis of scanning window:
   TGraph *graphMapVar[4][4];
   TGraph *graphMapErr[4][4];
-  TGraph *graphDiffMax[4][4];
+  TGraph *graphDiffMax[4];
   for (int i_h = 0; i_h < 4; i_h++) {
     for (int i_p = 0; i_p < 4; i_p++) {
       graphMapVar[i_h][i_p] = new TGraph();
       graphMapErr[i_h][i_p] = new TGraph();
-      graphDiffMax[i_h][i_p] = new TGraph();
     }
+    graphDiffMax[i_h] = new TGraph();
   }
   TH1F *histMax = new TH1F("histMax", "histMax", 50, 0.0, 0.001);
   TH1F *histDev = new TH1F("histMax", "histMax", 100, -0.001, 0.001);
+  
+  std::vector<std::string> significantPoint; significantPoint.clear();
   
   // Loop over scan timing offsets:
   int graphPoint = 0;
@@ -170,7 +172,7 @@ int main(int argc, char **argv) {
 	  }
 	}
 	// If timestamps don't match up, use as background estimate:
-	else {
+	else {	  
 	  PixelHit *currFEI4Hit = new PixelHit(cF->row-1, cF->column-1,
 					       cF->LVL1ID, cF->tot, false);
 	  // Loop over T3MAPS hits:
@@ -202,14 +204,19 @@ int main(int argc, char **argv) {
 					mapper->getMapVar(i_p));
 	graphMapErr[i_h][i_p]->SetPoint(graphPoint, timeOffset, 
 					mapper->getMapErr(i_p));
-	TH2D *tempDiffHist = (TH2D*)mapper->getParamPlot("diff");
-	graphDiffMax[i_h][i_p]->SetPoint(graphPoint, timeOffset,
-					 tempDiffHist->GetMaximum()); 
-	histMax->Fill(tempDiffHist->GetMaximum());
-	
-	for (int i_x = 1; i_x <= tempDiffHist->GetNbinsX(); i_x++) {
-	  for (int i_y = 1; i_y <= tempDiffHist->GetNbinsY(); i_y++) {
-	    histDev->Fill(tempDiffHist->GetBinContent(i_x,i_y));
+      }
+
+      TH2D *tempDiffHist = (TH2D*)mapper->getParamPlot("diff");
+      graphDiffMax[i_h]->SetPoint(graphPoint, timeOffset,
+				  tempDiffHist->GetMaximum()); 
+      histMax->Fill(tempDiffHist->GetMaximum());
+      
+      for (int i_x = 1; i_x <= tempDiffHist->GetNbinsX(); i_x++) {
+	for (int i_y = 1; i_y <= tempDiffHist->GetNbinsY(); i_y++) {
+	  double diffVal = tempDiffHist->GetBinContent(i_x,i_y);
+	  histDev->Fill(diffVal);
+	  if (diffVal > 0.0007) {
+	    significantPoint.push_back((std::string)Form("orient%d_x%d_y%d",i_h,i_x,i_y));
 	  }
 	}
       }
@@ -218,10 +225,7 @@ int main(int argc, char **argv) {
     graphPoint++;
   }
   std::cout << "TestBeamStudies: Finished timing scan." << std::endl;
-  
-  //PlotUtil::finishAnimation("../TestBeamOutput/paraOffset");
-  //PlotUtil::finishAnimation("../TestBeamOutput/perpOffset");
-  
+    
   for (int i_h = 0; i_h < 4; i_h++) {
     for (int i_p = 0; i_p < 4; i_p++) {
       PlotUtil::plotTGraph(graphMapVar[i_h][i_p], "time offset [s]",
@@ -230,10 +234,10 @@ int main(int argc, char **argv) {
       PlotUtil::plotTGraph(graphMapErr[i_h][i_p], "time offset [s]",
 			   Form("error %d",i_p),
 			   Form("../TestBeamOutput/mapErr%d_orient%d",i_p,i_h));
-      PlotUtil::plotTGraph(graphDiffMax[i_h][i_p], "time offset [s]",
-			   Form("Difference Maximum %d",i_p),
-			   Form("../TestBeamOutput/mapDiffMax%d_orient%d",i_p,i_h));
     }
+    PlotUtil::plotTGraph(graphDiffMax[i_h], "time offset [s]",
+			 "Difference Maximum",
+			 Form("../TestBeamOutput/mapDiffMax_orient%d",i_h));
   }
   
   // Plot occupancy for FEI4 and T3MAPS:
@@ -249,6 +253,11 @@ int main(int argc, char **argv) {
   PlotUtil::plotTH1F(histMax, "maximum value of (s-b)", "entries", 
 		     "../TestBeamOutput/histMax");
   PlotUtil::plotTH1F(histDev, "(s-b)", "entries", 
-		     "../TestBeamOutput/histDeviations");
+		     "../TestBeamOutput/histDeviations",true);
+  
+  // Then print the most significant point:
+  std::cout << "Printing a list of significant points" << std::endl;
+  for (int i_s = 0; i_s < (int)significantPoint.size(); i_s++) {
+    std::cout << significantPoint[i_s] << std::endl;
+  }
 }
-

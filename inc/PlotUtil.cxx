@@ -117,21 +117,35 @@ void PlotUtil::finishAnimation(TString sname) {
 }
 
 void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
-			double x1=0, double x2=0, double y1=0, double y2=0) {
+			double x1, double x2, double y1, double y2, bool log) {
   TCanvas *can = new TCanvas("can","can",800,800);
   can->cd();
   can->Clear();
   h->Draw();
+  h->GetXaxis()->SetNoExponent(false);
+  if (log) gPad->SetLogy();
   h->GetXaxis()->SetTitle(xname);
   if (x1 != 0 || x2 != 0) h->GetXaxis()->SetRangeUser(x1,x2);
   h->GetYaxis()->SetTitle(yname);
   if (y1 != 0 || y2 != 0) h->GetYaxis()->SetRangeUser(y1,y2);
   can->Print(Form("%s.eps", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
+  if (log) gPad->SetLogy(false);
+}
+
+
+void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
+			double x1, double x2, double y1, double y2) {
+  PlotUtil::plotTH1F(h, xname, yname, sname, x1, x2, y1, y2, false);
+}
+
+void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname,
+			bool log) {
+  plotTH1F(h, xname, yname, sname, 0, 0, 0, 0, log);
 }
 
 void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname) {
-  plotTH1F(h, xname, yname, sname, 0, 0, 0, 0);
+  plotTH1F(h, xname, yname, sname, false);
 }
 
 void PlotUtil::plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 

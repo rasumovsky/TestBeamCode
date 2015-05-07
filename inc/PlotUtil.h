@@ -76,8 +76,12 @@ namespace PlotUtil {
   void finishAnimation(TString sname);
   
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, double x1,
+		double x2, double y1, double y2, bool log);
+
+  void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, double x1,
 		double x2, double y1, double y2);
   
+  void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, bool log);
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname);
   
   void plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 

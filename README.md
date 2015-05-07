@@ -16,7 +16,13 @@ classes are included, and a short description of each is provided below.
   - creates a TTree for each of the smaller text files (LoadT3MAPS)
   - combines the TTrees via hadd.
 
-##### TestBeamAnalysis.cxx
+##### TestBeamStudies.cxx
+  This is the main class for testing the mapping software. Unfortunately, it is very
+  difficult to locate T3MAPS’s position relative to FEI4, so we are having to test many
+  possible techniques. This program calls the MapParameters class and attempts to uncover
+  the linear mapping of FEI4 pixels to T3MAPS pixels.
+
+##### TestBeamAnalysis.cxx (deprecated)
   This is the main method for the analysis. All loops over the TTrees take place
   within this main method. It makes calls to the LoadT3MAPS, to get the T3MAPS
   TTree, and it loads the FEI4 TTree. It makes either direct or indirect calls
@@ -53,7 +59,7 @@ classes are included, and a short description of each is provided below.
   It starts by searching for matches between individual pixel hits, then builds
   clusters that are either matched or not matched.
 
-##### ModuleMapping.cxx
+##### MapParameters.cxx
   This program computes a geometrical mapping between the T3MAPS and FEI4 chips.
   It can load previously calculated mapping data. It can also be called during 
   a loop over TTrees to add events, and then create a new mapping. It also 
