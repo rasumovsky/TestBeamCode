@@ -126,7 +126,7 @@ void LinearMapMaker::createMapFromHits() {
   std::cout << "LinearMapMaker: Create map from imported hits." << std::endl;
   
   // Initialize the plotting utility
-  PlotUtil *plotter = new PlotUtil("../TestBeamOutput", 800, 800);
+  //PlotUtil *plotter = new PlotUtil("../TestBeamOutput", 800, 800);
   
   // loop over row histograms and add points to corresponding graph:
   double r_T3MAPS[100] = {0};
@@ -143,8 +143,8 @@ void LinearMapMaker::createMapFromHits() {
     r2c_FEI4[i_r] = rowHist2dFEI4[i_r]->ProjectionY()->GetMean();
     e_r2r_FEI4[i_r] = rowHist2dFEI4[i_r]->ProjectionX()->GetRMS();
     e_r2c_FEI4[i_r] = rowHist2dFEI4[i_r]->ProjectionY()->GetRMS();
-    plotter->plotTH2D(rowHist2dFEI4[i_r], "row", "column", "hits",
-		      Form("hit2D_row%i",i_r));
+    //plotter->plotTH2D(rowHist2dFEI4[i_r], "row", "column", "hits",
+    //		      Form("hit2D_row%i",i_r));
   }
   
   // loop over column histograms and add points to corresponding graph:
@@ -162,8 +162,8 @@ void LinearMapMaker::createMapFromHits() {
     c2c_FEI4[i_c] = colHist2dFEI4[i_c]->ProjectionY()->GetMean();
     e_c2r_FEI4[i_c] = colHist2dFEI4[i_c]->ProjectionX()->GetRMS();
     e_c2c_FEI4[i_c] = colHist2dFEI4[i_c]->ProjectionY()->GetRMS();
-    plotter->plotTH2D(colHist2dFEI4[i_c], "row", "column", "hits",
-		      Form("hit2D_col%i",i_c));
+    //plotter->plotTH2D(colHist2dFEI4[i_c], "row", "column", "hits",
+    //		      Form("hit2D_col%i",i_c));
   }
   
   // create TGraphs:
@@ -183,6 +183,7 @@ void LinearMapMaker::createMapFromHits() {
   TF1 *fit_c2c = createFit("fit_c2c", g_c2c, 1, myChips->getNCol("T3MAPS"));
   
   // Plot the linear relations:
+  /*
   plotter->plotTGraphErrFit(g_r2r, fit_r2r, "row_{T3MAPS}", "row_{FEI4}",
 			    "fit_r2r");
   plotter->plotTGraphErrFit(g_r2c, fit_r2c, "row_{T3MAPS}", "column_{FEI4}", 
@@ -191,7 +192,8 @@ void LinearMapMaker::createMapFromHits() {
 			    "fit_c2r");
   plotter->plotTGraphErrFit(g_c2c, fit_c2c, "column_{T3MAPS}", "column_{FEI4}",
 			    "fit_c2c");
-  
+  */
+
   // Choose the fit variables:
   if ((fabs(fit_r2r->GetParameter(0)) > fabs(fit_r2c->GetParameter(0))) &&
       (fabs(fit_c2c->GetParameter(0)) > fabs(fit_c2r->GetParameter(0)))) {

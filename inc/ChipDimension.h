@@ -33,7 +33,10 @@ class ChipDimension {
   double getThickness(std::string chipName);
   double getColPosition(std::string chipName, int col);
   double getRowPosition(std::string chipName, int row);
+  int getColFromPos(std::string chipName, double colPos);
+  int getRowFromPos(std::string chipName, double rowPos);
   bool isInChip(std::string chipName, int row, int col);  
+  
   
   // Mutators:
   void setNCol(std::string chipName, int val);

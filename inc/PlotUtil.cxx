@@ -4,82 +4,15 @@
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 10/02/2015                                                          //
+//  Date: 06/05/2015                                                          //
 //                                                                            //
-//  This class stores ROOT plotting code that is reused in many places.       //
+//  This namespace stores ROOT plotting code that is reused in many places.   //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "PlotUtil.h"
 
-/**
-   Initialize a hit:
- */
-PlotUtil::PlotUtil(TString newOutDir, int canWidth=800, int canHeight=800) {
-  outputDirectory = newOutDir;
-  SetAtlasStyle();
-  can = new TCanvas("can","can",canWidth,canHeight);
-  can->cd();
-  return;
-}
-
-void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
-			double x1=0, double x2=0, double y1=0, double y2=0) {
-  
-  can->cd();
-  can->Clear();
-  h->Draw();
-  h->GetXaxis()->SetTitle(xname);
-  if (x1 != 0 || x2 != 0) h->GetXaxis()->SetRangeUser(x1,x2);
-  h->GetYaxis()->SetTitle(yname);
-  if (y1 != 0 || y2 != 0) h->GetYaxis()->SetRangeUser(y1,y2);
-  can->Print(Form("%s/%s.eps",outputDirectory.Data(),sname.Data()));
-  can->Print(Form("%s/%s.pdf",outputDirectory.Data(),sname.Data()));
-  can->Clear();
-}
-
-
-void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname) {
-  plotTH1F(h, xname, yname, sname, 0, 0, 0, 0);
-}
-
-void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
-			TString sname, double x1=0, double x2=0, double y1=0,
-			double y2=0, double z1=0, double z2=0) {
-  
-  can->cd();
-  can->Clear();
-  gPad->SetRightMargin(0.15);
-  h2->Draw("colz");
-  h2->GetXaxis()->SetTitle(xname);
-  if (x1 != 0 || x2 != 0) h2->GetXaxis()->SetRangeUser(x1,x2);
-  h2->GetYaxis()->SetTitle(yname);
-  if (y1 != 0 || y2 != 0) h2->GetYaxis()->SetRangeUser(y1,y2);
-  h2->GetZaxis()->SetTitle(zname);
-  if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
-  can->Print(Form("%s/%s.eps",outputDirectory.Data(),sname.Data()));
-  can->Clear();
-}
-
-
-void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
-			TString sname) {
-  plotTH2D(h2, xname, yname, zname, sname, 0, 0, 0, 0, 0, 0);
-}
-
-void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
-				TString yname, TString sname) {
-  can->cd();
-  can->Clear();
-  g->GetXaxis()->SetTitle(xname);
-  g->GetYaxis()->SetTitle(yname);
-  g->Draw("AP");
-  fit->Draw("SAME");
-  can->Print(Form("%s/%s.eps",outputDirectory.Data(),sname.Data()));
-  can->Clear();
-}
-
-TStyle* PlotUtil::AtlasStyle() {
+TStyle* PlotUtil::atlasStyle() {
   TStyle *atlasStyle = new TStyle("ATLAS","Atlas style");
 
   // use plain black on white colors
@@ -155,13 +88,115 @@ TStyle* PlotUtil::AtlasStyle() {
   return atlasStyle;
 }
 
-void PlotUtil::SetAtlasStyle() {
+void PlotUtil::setAtlasStyle() {
   std::cout << "\nPlotUtil: Applying ATLAS style settings...\n" << std::endl;
-  TStyle* atlasStyle = AtlasStyle();
+  TStyle *atlasStyle = PlotUtil::atlasStyle();
   gROOT->SetStyle("ATLAS");
   gROOT->ForceStyle();
 }
 
-void PlotUtil::setOutputDirectory(TString newOutDir) {
-  outputDirectory = newOutDir;
+void PlotUtil::animateTH2D(TH2D *h2, TString xname, TString yname,
+			    TString zname, TString sname) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  gPad->SetRightMargin(0.15);
+  h2->Draw("colz");
+  h2->GetXaxis()->SetTitle(xname);
+  h2->GetYaxis()->SetTitle(yname);
+  h2->GetZaxis()->SetTitle(zname);
+  can->Print(Form("%s.gif+5", sname.Data()));
+}
+
+void PlotUtil::finishAnimation(TString sname) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  TLatex text; text.SetNDC(); text.SetTextColor(1);
+  text.DrawLatex(0.4, 0.45, "END");
+  can->Print(Form("%s.gif++", sname.Data()));
+}
+
+void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
+			double x1=0, double x2=0, double y1=0, double y2=0) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  h->Draw();
+  h->GetXaxis()->SetTitle(xname);
+  if (x1 != 0 || x2 != 0) h->GetXaxis()->SetRangeUser(x1,x2);
+  h->GetYaxis()->SetTitle(yname);
+  if (y1 != 0 || y2 != 0) h->GetYaxis()->SetRangeUser(y1,y2);
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.gif+5", sname.Data()));
+}
+
+void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname) {
+  plotTH1F(h, xname, yname, sname, 0, 0, 0, 0);
+}
+
+void PlotUtil::plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 
+			    TString sname, bool normalize) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  if (normalize) {
+    h1->Scale(1.0/h1->GetSumOfWeights());
+    h2->Scale(1.0/h2->GetSumOfWeights());
+  }
+  h1->Draw();
+  h1->GetXaxis()->SetTitle(xname);
+  h1->GetYaxis()->SetTitle(yname);
+  h2->Draw("SAME");
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.gif+5", sname.Data()));
+}
+
+void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
+			TString sname, double x1=0, double x2=0, double y1=0,
+			double y2=0, double z1=0, double z2=0) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  gPad->SetRightMargin(0.15);
+  h2->Draw("colz");
+  h2->GetXaxis()->SetTitle(xname);
+  if (x1 != 0 || x2 != 0) h2->GetXaxis()->SetRangeUser(x1,x2);
+  h2->GetYaxis()->SetTitle(yname);
+  if (y1 != 0 || y2 != 0) h2->GetYaxis()->SetRangeUser(y1,y2);
+  h2->GetZaxis()->SetTitle(zname);
+  if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.gif+5", sname.Data()));
+  can->Clear();
+}
+
+
+void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
+			TString sname) {
+  plotTH2D(h2, xname, yname, zname, sname, 0, 0, 0, 0, 0, 0);
+}
+
+void PlotUtil::plotTGraph(TGraph *g, TString xname, TString yname, 
+			  TString sname) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  g->GetXaxis()->SetTitle(xname);
+  g->GetYaxis()->SetTitle(yname);
+  g->Draw("ALP");
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Clear();
+}
+
+void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
+				TString yname, TString sname) {
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->cd();
+  can->Clear();
+  g->GetXaxis()->SetTitle(xname);
+  g->GetYaxis()->SetTitle(yname);
+  g->Draw("AP");
+  fit->Draw("SAME");
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Clear();
 }

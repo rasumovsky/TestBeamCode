@@ -65,26 +65,32 @@
 #include <TH2Poly.h>
 #include <TGaxis.h>
 
-class PlotUtil 
-{
+namespace PlotUtil {
   
- public:
+  TStyle* atlasStyle();
   
-  PlotUtil(TString newOutDir, int canWidth, int canHeight);
-  ~PlotUtil();
-    
-  // Accessors:
+  void setAtlasStyle();
+  
+  void animateTH2D(TH2D *h2, TString xname, TString yname, TString zname, 
+		    TString sname);
+  void finishAnimation(TString sname);
+  
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, double x1,
 		double x2, double y1, double y2);
   
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname);
   
+  void plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 
+		    TString sname, bool normalize);
+
   void plotTH2D(TH2D *h, TString xname, TString yname, TString zname, 
 		TString sname, double x1, double x2, double y1, double y2,
 		double z1, double z2);
   
   void plotTH2D(TH2D *h, TString xname, TString yname, TString zname, 
 		TString sname);
+
+  void plotTGraph(TGraph *g, TString xname, TString yname, TString sname);
   
   void plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname, TString yname,
 			TString sname);
@@ -94,16 +100,6 @@ class PlotUtil
 		     TString yname, TString sname, double x1, double x2,
 		     double y1, double y2);
   */
-  
-  // Mutators:
-  TStyle* AtlasStyle();
-  void SetAtlasStyle();
-  void setOutputDirectory(TString newOutDir);
-  
- private:
-  
-  TCanvas *can;
-  TString outputDirectory;
   
 };
 

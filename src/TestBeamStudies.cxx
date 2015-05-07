@@ -52,12 +52,13 @@ int main(int argc, char **argv) {
     exit(0);
   }
   
+  PlotUtil::setAtlasStyle();
+  
   TString inputT3MAPS = argv[1];
   TString inputFEI4 = argv[2];
   TString options = argv[3];
-  
   TString mapFileDir = "../TestBeamOutput";
-    
+  
   // LoadT3MAPS and load the FEI4 TTree
   TFile *fileT3MAPS = new TFile(inputT3MAPS);
   TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
@@ -70,8 +71,6 @@ int main(int argc, char **argv) {
   // Load the chip sizes (but use defaults!)
   ChipDimension *chips = new ChipDimension();
   
-  MapParameters *mapper = new MapParameters("","");
-  
   // Book histograms:
   TH2D *occFEI4 = new TH2D("occFEI4", "occFEI4", 
 			   chips->getNRow("FEI4"), -0.5,
@@ -83,232 +82,173 @@ int main(int argc, char **argv) {
 			       (chips->getNRow("FEI4") - 0.5),
 			       chips->getNCol("FEI4"), 0.5,
 			       (chips->getNCol("FEI4") - 0.5));
+  TH2D *occOnlyHitFEI4 = new TH2D("occOnlyHitFEI4", "occOnlyHitFEI4",
+				  chips->getNRow("FEI4"), -0.5,
+				  (chips->getNRow("FEI4") - 0.5),
+				  chips->getNCol("FEI4"), 0.5,
+				  (chips->getNCol("FEI4") - 0.5));
   TH2D *occT3MAPS = new TH2D("occT3MAPS", "occT3MAPS",
 			     chips->getNRow("T3MAPS"), -0.5,
 			     (chips->getNRow("T3MAPS") - 0.5),
 			     chips->getNCol("T3MAPS"), -0.5,
 			     (chips->getNCol("T3MAPS") - 0.5));
-  TH2D *occDiffFEI4 = new TH2D("occDiffFEI4", "occDiffFEI4",
-			       chips->getNRow("FEI4"), -0.5,
-			       (chips->getNRow("FEI4") - 0.5),
-			       chips->getNCol("FEI4"), -0.5,
-			       (chips->getNCol("FEI4") - 0.5));
   
-  TH1F *hPI_T3MAPS = new TH1F("hPI_T3MAPS", "hPI_T3MAPS", 21, -0.5, 20.5);
-  TH1F *hPE_FEI4 = new TH1F("hPE_FEI4", "hPE_FEI4", 51, -0.5, 50.5);
-  TH1F *hP_OverFEI4 = new TH1F("hPI_OverFEI4", "hPI_OverFEI4", 51, -0.5, 50.5);
-  
-  
-  
-  
-  // Define the map from T3MAPS <--> FEI4
-  std::cout << "TestBeamAnalysis: Beginning loop to define maps." << std::endl;
-  
-  // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
-  Long64_t entriesFEI4 = cF->fChain->GetEntries();
-  Long64_t eventFEI4 = 0;
-  cF->fChain->GetEntry(eventFEI4);
-  std::cout << "TestBeamAnalysis: FEI4 entries = " << entriesFEI4 << std::endl;
-  
-  // Loop over T3MAPS tree.
-  Long64_t entriesT3MAPS = cT->fChain->GetEntries();
-  cout << "Entries in T3MAPS = " << entriesT3MAPS << endl;
-  for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
-    
-    cT->fChain->GetEntry(eventT3MAPS);
-    
-    // Cut on events with no T3MAPS hits:
-    if (cT->nHits == 0) {
-      continue;
-    }
-    
-    // Cut on events where T3MAPS is saturated:
-    if (options.Contains("CutFullEvt") && cT->nHits > 100) {
-      continue;
-    }
-        
-    // Fill occupancy plot:
-    hPI_T3MAPS->Fill(cT->nHits);
-    
-    for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
-      occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
-    }    
-    
-    int nHits_OverFEI4 = 0;
-    int nHits_EvtFEI4 = 0;
-    int currEvent = 0;
-    
-    //--------------------//
-    // Advance position in the FEI4 tree:
-    while (cF->timestamp_start < cT->timestamp_stop && eventFEI4<entriesFEI4) {
-            
-      // Fill FEI4 occupancy plot:
-      occFEI4->Fill(cF->row, cF->column);
-      
-      // Fill histogram of hits per events:
-      if (cF->event_number != currEvent) {
-	currEvent = cF->event_number;
-	if (currEvent != 0) {
-	  hPE_FEI4->Fill(nHits_EvtFEI4);
-	}
-	nHits_EvtFEI4 = 0;
-      }
-      
-      // Only consider events with timestamp inside that of T3MAPS
-      if (cF->timestamp_start >= cT->timestamp_start &&
-	  cF->timestamp_stop <= cT->timestamp_stop) {
-	
-	// Fill overlapping FEI4 hit occupancy plot:
-	occOverFEI4->Fill(cF->row, cF->column);
-	occDiffFEI4->Fill(cF->row, cF->column, 1.0);
-	nHits_OverFEI4++;
-		
-	PixelHit *currFEI4Hit = new PixelHit(cF->row, cF->column, cF->LVL1ID,
-					     cF->tot, false);
-	
-	// Loop over T3MAPS hits to see if any of the mapping pixels were hit:
-	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
-	  
-	  PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h], 
-						 (*cT->hit_column)[i_h],
-						 1, 1, false);
-	  
-	  mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
-	}
-      }
-      else {
-	occDiffFEI4->Fill(cF->row, cF->column, -0.2);
-      }
-      
-      // then advance to the next entry
-      eventFEI4++;
-      cF->fChain->GetEntry(eventFEI4);
-      
-    }// end of loop over FEI4 entries
-    
-    hP_OverFEI4->Fill(nHits_OverFEI4);
-    
-  }// End of loop over events
-  std::cout << "TestBeamAnalysis: Ending loop to define maps." << std::endl;
-  
-  mapper->createMapFromHits();
-  //mapper->printMapParameters();
-  //mapper->saveMapParameters(mapFileDir);
-  
-  // Plot occupancy for FEI4 and T3MAPS:
-  PlotUtil *plotter = new PlotUtil("../TestBeamOutput", 800, 800);
-  plotter->plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
-		    "occupancyFEI4");
-  plotter->plotTH2D(occOverFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
-		    "occupancyOverlappingFEI4");
-  plotter->plotTH2D(occT3MAPS, "row_{T3MAPS}", "column_{T3MAPS}", "hits", 
-		    "occupancyT3MAPS");
-  plotter->plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "weights", 
-		    "occupancyDifferenceFEI4");
-  plotter->plotTH1F(hPI_T3MAPS, "hits/integration", "entries", "hitsT3MAPS");
-  plotter->plotTH1F(hPE_FEI4, "hits/event", "entries", "hitsFEI4");
-  plotter->plotTH1F(hP_OverFEI4, "hits/integration", "entries", "hitsOverFEI4");
-    
-  
-  // Map has been loaded, may proceed to efficiency analysis.
-  
-  // in each event, run the MatchMaker class.
-  // be sure FEI4 hits have same event number and are within T3MAPS time.
-  // get results...
-  /*
-  
-  map<string,int> nHitSum;
-  nHitSum["FEI4_total"] = 0;
-  nHitSum["FEI4_matched"] = 0;
-  nHitSum["T3MAPS_total"] = 0;
-  nHitSum["T3MAPS_matched"] = 0;
-  
-  ///// FOR FEI4, chiech that they have the same event number before reco clusters and hits.
-  // --> THIS PART IS TRICKY!!!
-  
-  // Loop over TTrees in tandem again
-  cout << "TestBeamAnalysis: Beginning loop to measure efficiency." << endl;
-  eventFEI4 = 0;
-  cF->fChain->GetEntry(eventFEI4);
-  for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
-    
-    cT->fChain->GetEntry(eventT3MAPS);
-    
-    MatchMaker *myMatch;
-    
-    // Now also advance the FEI4 tree.
-    int prevEvent = -1;
-    while (cF->timestamp_start < cT->timestamp_stop && 
-	   eventFEI4 < entriesFEI4) {
-      
-      eventFEI4++;
-      cF->fChain->GetEntry(eventFEI4);
-      
-      if (cF->event_number != prevEvent) {
-	
-	// Save information on previous match.
-	if (prevEvent != -1) {
-	  myMatch->buildAndMatchClusters();
-	  
-	  nHitSum["FEI4_total"] += myMatch->getNHits("FEI4","");
-	  nHitSum["FEI4_matched"] += myMatch->getNHits("FEI4","matched");
-	  nHitSum["T3MAPS_total"] += myMatch->getNHits("T3MAPS","");
-	  nHitSum["T3MAPS_matched"] += myMatch->getNHits("T3MAPS","matched");
-	  
-	}
-	
-	myMatch = new MatchMaker(combinedMap);
-	// Loop over T3MAPS hits.
-	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
-	  PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h],
-						 (*cT->hit_column)[i_h],
-						 false);
-	  myMatch->addHitInT3MAPS(currT3MAPSHit);
-	}
-	
-	// Only consider events with timestamp inside that of T3MAPS
-	// Same as looking for time coincidence hits in FEI4 and T3MAPS
-	if (cF->timestamp_start >= cT->timestamp_start &&
-	    cF->timestamp_stop <= cT->timestamp_stop) {
-	  
-	  PixelHit *currFEI4Hit = new PixelHit(cF->row,
-					       cF->column,
-					       false);
-	  myMatch->addHitInFEI4(currFEI4Hit);
-	}
-      }
-      else {// just add new FEI4 hit.
-	// Only consider events with timestamp inside that of T3MAPS
-	// Same as looking for time coincidence hits in FEI4 and T3MAPS
-	if (cF->timestamp_start >= cT->timestamp_start &&
-	    cF->timestamp_stop <= cT->timestamp_stop) {
-	  
-	  PixelHit *currFEI4Hit = new PixelHit(cF->row,
-					       cF->column,
-					       false);
-	  myMatch->addHitInFEI4(currFEI4Hit);
-	}
-      }
-      
-      prevEvent = cF->event_number;
+  // For analysis of scanning window:
+  TGraph *graphMapVar[4][4];
+  TGraph *graphMapErr[4][4];
+  TGraph *graphDiffMax[4][4];
+  for (int i_h = 0; i_h < 4; i_h++) {
+    for (int i_p = 0; i_p < 4; i_p++) {
+      graphMapVar[i_h][i_p] = new TGraph();
+      graphMapErr[i_h][i_p] = new TGraph();
+      graphDiffMax[i_h][i_p] = new TGraph();
     }
   }
-  cout << "TestBeamAnalysis: Ending loop to measure efficiency." << endl;
+  TH1F *histMax = new TH1F("histMax", "histMax", 50, 0.0, 0.001);
+  TH1F *histDev = new TH1F("histMax", "histMax", 100, -0.001, 0.001);
   
-  // Print the results:
-  cout << "TestBeamAnalysis is complete. Results:" << endl;
-  cout << "  FEI4 Hits:" << endl;
-  cout << "    Matched = " << nHitSum["FEI4_matched"] << endl;
-  cout << "    Total   = " << nHitSum["FEI4_total"] << endl;
-  cout << "    Ratio   = " << (((double)nHitSum["FEI4_matched"]) /
-			       ((double)nHitSum["FEI4_total"])) << endl << endl;
-  cout << "  T3MAPS Hits:" << endl;
-  cout << "    Matched = " << nHitSum["T3MAPS_matched"] << endl;
-  cout << "    Total   = " << nHitSum["T3MAPS_total"] << endl;
-  cout << "    Ratio   = " << (((double)nHitSum["T3MAPS_matched"]) /
-			       ((double)nHitSum["T3MAPS_total"])) << endl;
-  return 1;
+  // Loop over scan timing offsets:
+  int graphPoint = 0;
+  std::cout << "TestBeamStudies: Beginning loop over time offset." << std::endl;
+  for (double timeOffset = -5.0; timeOffset < 5.0; timeOffset+=0.1) {
+    std::cout << "TestBeamStudies: timeOffset=" << timeOffset << std::endl;    
+        
+    MapParameters *mapper = new MapParameters("","");
+    
+    // Define the map from T3MAPS <--> FEI4
+    std::cout << "TestBeamStudies: Entering loop to define maps." << std::endl;
+    
+    // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
+    Long64_t entriesFEI4 = cF->fChain->GetEntries();
+    Long64_t eventFEI4 = 0;
+    cF->fChain->GetEntry(eventFEI4);
+    std::cout << "TestBeamStudies: FEI4 entries = " << entriesFEI4 << std::endl;
+    
+    // Loop over T3MAPS tree.
+    Long64_t entriesT3MAPS = cT->fChain->GetEntries();
+    cout << "Entries in T3MAPS = " << entriesT3MAPS << endl;
+    for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
+      
+      cT->fChain->GetEntry(eventT3MAPS);
+      
+      // Cut on events with no T3MAPS hits:
+      if (cT->nHits == 0) continue;
+      
+      // Cut on events where T3MAPS is saturated:
+      if (options.Contains("CutFullEvt") && cT->nHits > 100) continue;
+      
+      if (graphPoint == 0) {
+	for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
+	  occT3MAPS->Fill((*cT->hit_row)[i_h], (*cT->hit_column)[i_h]);
+	}    
+      }
 
-  */
-
+      // Advance position in the FEI4 tree:
+      while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
+	     eventFEI4 < entriesFEI4) {
+	
+	// Fill FEI4 occupancy plot:
+	if (graphPoint == 0) occFEI4->Fill(cF->row, cF->column);
+	
+	// Only consider events with timestamp inside that of T3MAPS
+	if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
+	    cF->timestamp_stop <= (cT->timestamp_stop+timeOffset)) {
+	  
+	  // Fill overlapping FEI4 hit occupancy plot:
+	  if (graphPoint == 0) { 
+	    occOverFEI4->Fill(cF->row-1, cF->column-1);
+	  }
+	  
+	  PixelHit *currFEI4Hit = new PixelHit(cF->row-1, cF->column-1,
+					       cF->LVL1ID, cF->tot, false);
+	  // Loop over T3MAPS hits:
+	  for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
+	    PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h], 
+						   (*cT->hit_column)[i_h],
+						   1, 1, false);
+	    mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
+	  }
+	}
+	// If timestamps don't match up, use as background estimate:
+	else {
+	  PixelHit *currFEI4Hit = new PixelHit(cF->row-1, cF->column-1,
+					       cF->LVL1ID, cF->tot, false);
+	  // Loop over T3MAPS hits:
+	  for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
+	    PixelHit *currT3MAPSHit = new PixelHit((*cT->hit_row)[i_h], 
+						   (*cT->hit_column)[i_h],
+						   1, 1, false);
+	    mapper->addPairToBkg(currFEI4Hit, currT3MAPSHit);
+	  }
+	}
+	
+	// then advance to the next entry
+	eventFEI4++;
+	cF->fChain->GetEntry(eventFEI4);
+	
+      }// End of loop over FEI4 hits
+    }// End of loop over T3MAPS events
+    std::cout << "TestBeamStudies: Ending loop to define maps." << std::endl;
+    
+    mapper->createMapFromHits();
+    //mapper->printMapParameters();
+    mapper->saveMapParameters(mapFileDir);
+    
+    // Loop over 4 orientations:
+    for (int i_h = 0; i_h < 4; i_h++) {
+      mapper->setOrientation(i_h);
+      for (int i_p = 0; i_p < 4; i_p++) {
+	graphMapVar[i_h][i_p]->SetPoint(graphPoint, timeOffset,
+					mapper->getMapVar(i_p));
+	graphMapErr[i_h][i_p]->SetPoint(graphPoint, timeOffset, 
+					mapper->getMapErr(i_p));
+	TH2D *tempDiffHist = (TH2D*)mapper->getParamPlot("diff");
+	graphDiffMax[i_h][i_p]->SetPoint(graphPoint, timeOffset,
+					 tempDiffHist->GetMaximum()); 
+	histMax->Fill(tempDiffHist->GetMaximum());
+	
+	for (int i_x = 1; i_x <= tempDiffHist->GetNbinsX(); i_x++) {
+	  for (int i_y = 1; i_y <= tempDiffHist->GetNbinsY(); i_y++) {
+	    histDev->Fill(tempDiffHist->GetBinContent(i_x,i_y));
+	  }
+	}
+      }
+    }
+    
+    graphPoint++;
+  }
+  std::cout << "TestBeamStudies: Finished timing scan." << std::endl;
+  
+  //PlotUtil::finishAnimation("../TestBeamOutput/paraOffset");
+  //PlotUtil::finishAnimation("../TestBeamOutput/perpOffset");
+  
+  for (int i_h = 0; i_h < 4; i_h++) {
+    for (int i_p = 0; i_p < 4; i_p++) {
+      PlotUtil::plotTGraph(graphMapVar[i_h][i_p], "time offset [s]",
+			   Form("parameter %d",i_p),
+			   Form("../TestBeamOutput/mapVal%d_orient%d",i_p,i_h));
+      PlotUtil::plotTGraph(graphMapErr[i_h][i_p], "time offset [s]",
+			   Form("error %d",i_p),
+			   Form("../TestBeamOutput/mapErr%d_orient%d",i_p,i_h));
+      PlotUtil::plotTGraph(graphDiffMax[i_h][i_p], "time offset [s]",
+			   Form("Difference Maximum %d",i_p),
+			   Form("../TestBeamOutput/mapDiffMax%d_orient%d",i_p,i_h));
+    }
+  }
+  
+  // Plot occupancy for FEI4 and T3MAPS:
+  PlotUtil::plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
+		    "../TestBeamOutput/occupancyFEI4");
+  PlotUtil::plotTH2D(occOverFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
+		    "../TestBeamOutput/occupancyOverlappingFEI4");
+  PlotUtil::plotTH2D(occT3MAPS, "row_{T3MAPS}", "column_{T3MAPS}", "hits", 
+		    "../TestBeamOutput/occupancyT3MAPS");
+  PlotUtil::plotTH2D(occOnlyHitFEI4, "row_{FEI4}", "column_{FEI4}", "hits", 
+		     "../TestBeamOutput/occupancyOnlyFEI4");
+  
+  PlotUtil::plotTH1F(histMax, "maximum value of (s-b)", "entries", 
+		     "../TestBeamOutput/histMax");
+  PlotUtil::plotTH1F(histDev, "(s-b)", "entries", 
+		     "../TestBeamOutput/histDeviations");
 }
+
