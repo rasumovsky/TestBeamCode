@@ -23,14 +23,14 @@
 #include "ChipDimension.h"
 #include "PixelHit.h"
 #include "PixelCluster.h"
-#include "ModuleMapping.h"
+#include "MapParameters.h"
 
 class MatchMaker 
 {
  
  public:
   
-  MatchMaker(ModuleMapping* mapper);
+  MatchMaker(MapParameters* mapper);
   ~MatchMaker();
   
   // Mutators:
@@ -60,7 +60,7 @@ class MatchMaker
   std::vector<PixelCluster*> clustersFEI4;
   std::vector<PixelCluster*> clustersT3MAPS;
   
-  ModuleMapping *myMapper;
+  MapParameters *myMapper;
   ChipDimension *myChips;
 
 };

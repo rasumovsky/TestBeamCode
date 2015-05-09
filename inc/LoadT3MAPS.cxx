@@ -70,14 +70,14 @@ LoadT3MAPS::LoadT3MAPS(std::string inFileName, std::string outFileName) {
       
       // get hit table information:
       else if (currLineIndex > 4 && currLineIndex < 23) {
-	int currColumn = currLineIndex - 5;
+	int currRow = currLineIndex - 5;
 	
-	std::vector<std::string> hitColumns = delimString(currText, " ");
+	std::vector<std::string> hitRows = delimString(currText, " ");
 	
 	// iterate over the columns that were hit in each row:
-	for (std::vector<std::string>::iterator it = hitColumns.begin(); 
-	     it != hitColumns.end(); ++it) {
-	  int currRow = atoi(it->c_str());// + 1;
+	for (std::vector<std::string>::iterator it = hitRows.begin(); 
+	     it != hitRows.end(); ++it) {
+	  int currColumn = atoi(it->c_str());// + 1;
 	  hit_row.push_back(currRow);
 	  hit_column.push_back(currColumn);
 	  nHits++;

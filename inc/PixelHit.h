@@ -23,7 +23,7 @@ class PixelHit
  public:
   
   PixelHit(int row, int col, int LVL1, int TOT, bool match);
-  ~PixelHit();
+  virtual ~PixelHit() {};
   
   // Mutators:
   void setRow(int row);

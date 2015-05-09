@@ -14,7 +14,7 @@
 //        col_FEI4 = mVar[2] * col_T3MAPS + mVar[3];                          //
 //                                                                            //
 //  Typical run:                                                              //
-//    1. MapParameters() initialize, either by loading or not.               //
+//    1. MapParameters() initialize, either by loading or not.                //
 //    if not from file:                                                       //
 //      3. addHitToMap() to add hits for calculation                          //
 //           ->this should be done inside some loop over TTrees in main class //
@@ -51,17 +51,28 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   
   // Set relative orientations of FEI4 and T3MAPS:
   orientation = 0;
-  h2Sig[0] = new TH2D("h2Sig0", "h2Sig0", 50, -3.2, 16.8, 50, -4.5, 20.0);
-  h2Bkg[0] = new TH2D("h2Bkg0", "h2Bkg0", 50, -3.2, 16.8, 50, -4.5, 20.0);
-  h2Sig[1] = new TH2D("h2Sig1", "h2Sig1", 50, -3.2, 16.8, 50, 0.0, 24.5);
-  h2Bkg[1] = new TH2D("h2Bkg1", "h2Bkg1", 50, -3.2, 16.8, 50, 0.0, 24.5);
-  h2Sig[2] = new TH2D("h2Sig2", "h2Sig2", 50, 0.0, 20.0, 50, -4.5, 20.0);
-  h2Bkg[2] = new TH2D("h2Bkg2", "h2Bkg2", 50, 0.0, 20.0, 50, -4.5, 20.0);
-  h2Sig[3] = new TH2D("h2Sig3", "h2Sig3", 50, 0.0, 20.0, 50, 0.0, 24.5);
-  h2Bkg[3] = new TH2D("h2Bkg3", "h2Bkg3", 50, 0.0, 20.0, 50, 0.0, 24.5);
+  h2Sig[0] = new TH2D("h2Sig0", "h2Sig0", nBins, -3.2, 16.8, nBins, -4.5, 20.0);
+  h2Bkg[0] = new TH2D("h2Bkg0", "h2Bkg0", nBins, -3.2, 16.8, nBins, -4.5, 20.0);
+  h2Sig[1] = new TH2D("h2Sig1", "h2Sig1", nBins, -3.2, 16.8, nBins, 0.0, 24.5);
+  h2Bkg[1] = new TH2D("h2Bkg1", "h2Bkg1", nBins, -3.2, 16.8, nBins, 0.0, 24.5);
+  h2Sig[2] = new TH2D("h2Sig2", "h2Sig2", nBins, 0.0, 20.0, nBins, -4.5, 20.0);
+  h2Bkg[2] = new TH2D("h2Bkg2", "h2Bkg2", nBins, 0.0, 20.0, nBins, -4.5, 20.0);
+  h2Sig[3] = new TH2D("h2Sig3", "h2Sig3", nBins, 0.0, 20.0, nBins, 0.0, 24.5);
+  h2Bkg[3] = new TH2D("h2Bkg3", "h2Bkg3", nBins, 0.0, 20.0, nBins, 0.0, 24.5);
   
   std::cout << "MapParameters: Successfully initialized!" << std::endl;
 }
+/*
+MapParameters::~MapParameters() {
+  std::cout << "MapParameters: Destructing..." << std::endl;
+  for (int i_h = 0; i_h < 4; i_h++) {
+    delete h2Sig[i_h];
+    delete h2Bkg[i_h];
+    delete h2Diff[i_h];
+  }
+  std::cout << "MapParameters: self destructed." << std::endl;
+}
+*/
 
 /**
    Add the hit to the histograms corresponding to the T3MAPS row and column.
@@ -179,14 +190,12 @@ void MapParameters::createMapFromHits() {
 
   // Loop over 4 orientations:
   for (int i_h = 0; i_h < 4; i_h++) {
-    PlotUtil::plotTH2D(h2Sig[i_h], "row offset [mm]", "column offset [mm]",
-		       "hits", Form("../TestBeamOutput/sig_paraOff%d",i_h));
+    PlotUtil::plotTH2D(h2Sig[i_h], "row offset [mm]", "column offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/sig_paraOff%d",i_h));
     
-    PlotUtil::plotTH2D(h2Bkg[i_h], "row offset [mm]", "column offset [mm]",
-		       "hits", Form("../TestBeamOutput/bkg_paraOff%d",i_h));
+    PlotUtil::plotTH2D(h2Bkg[i_h], "row offset [mm]", "column offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/bkg_paraOff%d",i_h));
     
     h2Diff[i_h] = new TH2D(Form("h2Diff%d",i_h), Form("h2Diff%d",i_h),
-			   50, -3.2, 16.8, 50, -4.5, 20.0);
+			   nBins, -3.2, 16.8, nBins, -4.5, 20.0);
     
     for (int i_x = 1; i_x <= h2Diff[i_h]->GetNbinsX(); i_x++) {
       for (int i_y = 1; i_y <= h2Diff[i_h]->GetNbinsY(); i_y++) {
@@ -198,16 +207,8 @@ void MapParameters::createMapFromHits() {
       }
     }
     
-    PlotUtil::plotTH2D(h2Diff[i_h], "row offset [mm]", "column offset [mm]",
-		       "hits", Form("../TestBeamOutput/diff_paraOff%d",i_h));
-    
-    /*
-      double valRowOff_para = histRowOff_para->GetMean();
-      double valColOff_para = histColOff_para->GetMean();
-      double errRowOff_para = histRowOff_para->GetMeanError();
-      double errColOff_para = histColOff_para->GetMeanError();
-    */
-    
+    PlotUtil::plotTH2D(h2Diff[i_h], "row offset [mm]", "column offset [mm]", "Sig-Bkg", Form("../TestBeamOutput/MapParameters/diff_paraOff%d",i_h));
+        
     // Multiplicative factors
     double rowFactor = (i_h == 0 || i_h == 1) ? 1.0 : -1.0;
     double colFactor = (i_h == 0 || i_h == 2) ? 1.0 : -1.0;
@@ -227,10 +228,8 @@ void MapParameters::createMapFromHits() {
     mErr[i_h][3] = projColOff[i_h]->GetRMS();
     
     // Plot the profiles. 
-    PlotUtil::plotTH1F(projRowOff[i_h], "row offset [mm]", "hits",
-		       Form("../TestBeamOutput/projRowOff%d",i_h));
-    PlotUtil::plotTH1F(projColOff[i_h], "col offset [mm]", "hits",
-		       Form("../TestBeamOutput/projColOff%d",i_h));
+    PlotUtil::plotTH1F(projRowOff[i_h], "row offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/projRowOff%d",i_h));
+    PlotUtil::plotTH1F(projColOff[i_h], "col offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/projColOff%d",i_h));
   }
   hasMap = true;
 }
@@ -241,7 +240,7 @@ void MapParameters::createMapFromHits() {
 */
 void MapParameters::loadMapParameters(TString inputDir) {
   ifstream inputFile;
-  inputFile.open(Form("%s/mapParameters.txt",inputDir.Data()));
+  inputFile.open(Form("%s/MapParameters/mapParameters.txt",inputDir.Data()));
   if (!inputFile) {
     std::cout << "MapParameters: Map file nonexistent!" << std::endl;
     exit(0);
@@ -270,7 +269,7 @@ void MapParameters::loadMapParameters(TString inputDir) {
 */
 void MapParameters::saveMapParameters(TString outputDir) {
   ofstream outputFile;
-  outputFile.open(Form("%s/mapParameters.txt",outputDir.Data()));
+  outputFile.open(Form("%s/MapParameters/mapParameters.txt",outputDir.Data()));
   for (int i_p = 0; i_p < 4; i_p++) {
     outputFile << "parameter" << i_p;
     for (int i_h = 0; i_h < 4; i_h++) {

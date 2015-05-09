@@ -23,10 +23,10 @@ ChipDimension::ChipDimension() {
   setColPitch("FEI4", 0.250);//mm
   setRowPitch("FEI4", 0.050);//mm
   setThickness("FEI4", 0.200);//mm
-  setNCol("T3MAPS", 18);
-  setNRow("T3MAPS", 64);
-  setColPitch("T3MAPS", 0.225);//mm
-  setRowPitch("T3MAPS", 0.022);//mm
+  setNCol("T3MAPS", 64);
+  setNRow("T3MAPS", 18);
+  setColPitch("T3MAPS", 0.022);//mm
+  setRowPitch("T3MAPS", 0.225);//mm
   setThickness("T3MAPS", 0.013);//mm
   std::cout << "ChipDimesion: Initialized with default values." << std::endl;
   return;

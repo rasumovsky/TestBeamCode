@@ -1,4 +1,4 @@
-obj/ModuleMapping.o: inc/ModuleMapping.cxx inc/ModuleMapping.h \
+obj/TestBeamStudiesTwo.o: src/TestBeamStudiesTwo.cxx \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/stdlib.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/Availability.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/AvailabilityInternal.h \
@@ -189,8 +189,9 @@ obj/ModuleMapping.o: inc/ModuleMapping.cxx inc/ModuleMapping.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/fstream \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/vector \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__split_buffer \
-  /Users/andrewhard/root-v5-34-00-patches/include/TTree.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TBranch.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFile.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TDirectoryFile.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TDirectory.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TNamed.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TObject.h \
   /Users/andrewhard/root-v5-34-00-patches/include/Rtypes.h \
@@ -210,10 +211,18 @@ obj/ModuleMapping.o: inc/ModuleMapping.cxx inc/ModuleMapping.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TBuffer.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TString.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMathBase.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TObjArray.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TList.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TSeqCollection.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TCollection.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TIterator.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TDatime.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TUUID.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMap.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/THashTable.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TUrl.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TTree.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBranch.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TObjArray.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TAttFill.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TDataType.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TDictionary.h \
@@ -228,7 +237,30 @@ obj/ModuleMapping.o: inc/ModuleMapping.cxx inc/ModuleMapping.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualFFT.h \
+  inc/ChipDimension.h inc/MatchMaker.h inc/PixelHit.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/cmath \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/math.h \
+  inc/PixelCluster.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TCanvas.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPad.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualPad.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttPad.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualX.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttText.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/GuiTypes.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Buttons.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TQObject.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAttCanvas.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TCanvasImp.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TF1.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFormula.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBits.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Math/ParamFunctor.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraph.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFitResultPtr.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TH1.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TAxis.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TAttAxis.h \
@@ -236,14 +268,61 @@ obj/ModuleMapping.o: inc/ModuleMapping.cxx inc/ModuleMapping.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TArrayS.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TArrayF.h \
   /Users/andrewhard/root-v5-34-00-patches/include/Foption.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/6.1.0/include/float.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TFitResultPtr.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2F.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h \
-  inc/ChipDimension.h inc/PixelHit.h \
-  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/cmath \
-  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/math.h
+  inc/MapParameters.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraphErrors.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h inc/PlotUtil.h \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/sstream \
+  /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/list \
+  /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMath.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TError.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/THStack.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBox.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TLegend.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPave.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TProfile.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TStyle.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TLine.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFrame.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TWbox.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TColor.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPaveText.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TText.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TLatex.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TSystem.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/fcntl.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/fcntl.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_o_sync.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_o_dsync.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_seek_set.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_s_ifmt.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_filesec_t.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/unistd.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/unistd.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_posix_vdisable.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/select.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_select.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/sys/_types/_uuid_t.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/gethostuuid.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TInetAddress.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TTimer.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TSysEvtHandler.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TTime.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraph2D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TVirtualHistPainter.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TMultiGraph.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraphAsymmErrors.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPaveStats.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TPolyLine3D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TAtt3D.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2Poly.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGaxis.h \
+  inc/TreeFEI4.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TChain.h \
+  inc/TreeT3MAPS.h

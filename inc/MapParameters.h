@@ -38,6 +38,8 @@ class MapParameters {
   MapParameters(TString fileDir, TString option);
   virtual ~MapParameters() {};
   
+  static const int nBins = 50;
+  
   // Mutators:
   void addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void addPairToBkg(PixelHit *hitFEI4, PixelHit *hitT3MAPS);

@@ -272,14 +272,13 @@ obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
   /Users/andrewhard/root-v5-34-00-patches/include/TH2.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMatrixFBasefwd.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMatrixDBasefwd.h \
-  inc/ModuleMapping.h \
+  inc/MapParameters.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TGraphErrors.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TH1F.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h inc/TreeFEI4.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TChain.h \
-  inc/TreeT3MAPS.h inc/PlotUtil.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TH2D.h inc/PlotUtil.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/sstream \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/list \
+  /Users/andrewhard/root-v5-34-00-patches/include/TROOT.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMath.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TError.h \
   /Users/andrewhard/root-v5-34-00-patches/include/THStack.h \
@@ -314,7 +313,6 @@ obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
   /Users/andrewhard/root-v5-34-00-patches/include/TTimer.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TSysEvtHandler.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TTime.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TGraphErrors.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TGraph2D.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualHistPainter.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TMultiGraph.h \
@@ -324,4 +322,6 @@ obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
   /Users/andrewhard/root-v5-34-00-patches/include/TAtt3D.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TH2Poly.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TGaxis.h \
-  inc/MapParameters.h
+  inc/TreeFEI4.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TChain.h \
+  inc/TreeT3MAPS.h

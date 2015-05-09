@@ -23,7 +23,7 @@
    All that is necessary for initializing the class is a mapping from the FEI4
    chip to the T3MAPS chip. 
 */
-MatchMaker::MatchMaker(ModuleMapping *mapper) {
+MatchMaker::MatchMaker(MapParameters *mapper) {
   std::cout << std::endl << "MatchMaker::Initializing..." << std::endl;
   
   clustersFEI4.clear();

@@ -106,6 +106,7 @@ void PlotUtil::animateTH2D(TH2D *h2, TString xname, TString yname,
   h2->GetYaxis()->SetTitle(yname);
   h2->GetZaxis()->SetTitle(zname);
   can->Print(Form("%s.gif+5", sname.Data()));
+  delete can;
 }
 
 void PlotUtil::finishAnimation(TString sname) {
@@ -114,6 +115,7 @@ void PlotUtil::finishAnimation(TString sname) {
   TLatex text; text.SetNDC(); text.SetTextColor(1);
   text.DrawLatex(0.4, 0.45, "END");
   can->Print(Form("%s.gif++", sname.Data()));
+  delete can;
 }
 
 void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
@@ -131,8 +133,8 @@ void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname,
   can->Print(Form("%s.eps", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
   if (log) gPad->SetLogy(false);
+  delete can;
 }
-
 
 void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
 			double x1, double x2, double y1, double y2) {
@@ -163,6 +165,7 @@ void PlotUtil::plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname,
   h2->Draw("SAME");
   can->Print(Form("%s.eps", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
+  delete can;
 }
 
 void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
@@ -179,9 +182,10 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
   if (y1 != 0 || y2 != 0) h2->GetYaxis()->SetRangeUser(y1,y2);
   h2->GetZaxis()->SetTitle(zname);
   if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
-  can->Print(Form("%s.eps", sname.Data()));
+  //can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.root", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
-  can->Clear();
+  delete can;
 }
 
 
@@ -199,7 +203,7 @@ void PlotUtil::plotTGraph(TGraph *g, TString xname, TString yname,
   g->GetYaxis()->SetTitle(yname);
   g->Draw("ALP");
   can->Print(Form("%s.eps", sname.Data()));
-  can->Clear();
+  delete can;
 }
 
 void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
@@ -212,5 +216,5 @@ void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
   g->Draw("AP");
   fit->Draw("SAME");
   can->Print(Form("%s.eps", sname.Data()));
-  can->Clear();
+  delete can;
 }
