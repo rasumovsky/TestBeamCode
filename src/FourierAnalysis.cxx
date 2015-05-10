@@ -31,6 +31,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "TVirtualFFT.h"
+#include "TF1.h"
 
 // Package includes:
 #include "ChipDimension.h"
@@ -61,32 +62,69 @@ double GetFFTValue(TH1F *h) {
 }
 
 int main(int argc, char **argv) {
-  
+  /*
   // Check arguments:
   if (argc < 4) {
     std::cout << "\nUsage: " << argv[0]
 	      << " <inputT3MAPS> <inputFEI4> <options>" << std::endl; 
     exit(0);
   }
-  
+  */
   PlotUtil::setAtlasStyle();
-  
-  // HERE IS THE TIME OFFSET INFORMATION:
-  double timeOffsetMin = -5.0;
-  double timeOffsetMax = 5.0;
-  double timeOffsetInterval = 0.4;
-  int nTimeBins = (int)((timeOffsetMax - timeOffsetMin)/timeOffsetInterval);
-  
-  TString inputT3MAPS = argv[1];
-  TString inputFEI4 = argv[2];
-  TString options = argv[3];
-  TString mapFileDir = "../TestBeamOutput";
-  
-  // LoadT3MAPS and load the FEI4 TTree
-  TFile *fileT3MAPS = new TFile(inputT3MAPS);
-  TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
-  TreeT3MAPS *cT = new TreeT3MAPS(myTreeT3MAPS);
     
+  TCanvas *can = new TCanvas("can","can",800,800);
+  can->Divide(2,2);
+  can->cd(1);
+  
+  
+  double intervalSize = 20;
+  int n = 1000;
+
+  TF1 *fsin = new TF1("fsin", "sin(2.6*2*3.1415*x)", 0, intervalSize);
+  //fsin->Draw();
+  TH1F *hsin = new TH1F("hsin","hsin",n+1,0,intervalSize);
+  double x;
+  for (int i = 0; i < n; i++) {
+    x = ((double)i)/((double)n) * intervalSize;
+    hsin->SetBinContent(i+1,fsin->Eval(x));
+  }
+  hsin->Draw();
+  
+  can->cd(2);
+  
+  TH1 *hm = 0;
+  TVirtualFFT::SetTransform(0);
+  hm = hsin->FFT(hm, "MAG");
+  hm->SetTitle("Magnitude of the 1st transform");
+  hm->Scale(1.0/hm->Integral());// GetNbinsX()));
+  hm->Draw();
+  
+  // angular frequency of 2*pi = frequency of 1hz
+  double position = (2.6*
+		     (hsin->GetXaxis()->GetXmax()-hsin->GetXaxis()->GetXmin()));
+  std::cout << "position = " << position << std::endl;
+
+  int bin;		      
+  for (int i_b = 1; i_b < hm->GetNbinsX(); i_b++) {
+    std::cout << i_b << " " << hm->GetBinCenter(i_b) << " " << hm->GetBinWidth(i_b) << std::endl;
+    if ((hm->GetBinCenter(i_b)+(0.5*hm->GetBinWidth(i_b)) > position) &&
+	(hm->GetBinCenter(i_b)-(0.5*hm->GetBinWidth(i_b)) <= position)) {
+      bin = i_b;
+      break;
+    }
+  }
+  
+  double magnitude = hm->GetBinContent(bin);
+  std::cout << "The bin content is: " << magnitude << " for bin " << bin << std::endl;
+  can->Print("test.eps");
+  
+    
+  // LoadT3MAPS and load the FEI4 TTree
+  //TFile *fileT3MAPS = new TFile(inputT3MAPS);
+  //TTree *myTreeT3MAPS = (TTree*)fileT3MAPS->Get("TreeT3MAPS");
+  
+  
+  
     
   /*
   // Graphs for FFTs:
@@ -98,7 +136,7 @@ int main(int argc, char **argv) {
       }
     }
   }
-  */
+  
   
 	  // Add to plot for FFT:
 	  hTime[i_h][i_x][i_y]->SetBinContent(timeOffset, diffVal);
@@ -127,4 +165,6 @@ int main(int argc, char **argv) {
 		       "FFT Magnitude",
 		       Form("../TestBeamOutput/FFTMagnitude_orient%d",i_h));
   }
+  */
+  return 0;
 }

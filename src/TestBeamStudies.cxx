@@ -30,6 +30,7 @@
 #include "TFile.h"
 #include "TString.h"
 #include "TTree.h"
+#include "TVirtualFFT.h"
 
 // Package includes:
 #include "ChipDimension.h"
@@ -42,6 +43,28 @@
 #include "MapParameters.h"
 
 using namespace std;
+
+double GetFFTValue(TH1F *h, double frequency) {
+  //double intervalSize;
+  int n = h->GetNbinsX()-1;
+  TH1 *hm = 0; 
+  TVirtualFFT::SetTransform(0);
+  hm = h->FFT(hm, "MAG");
+  hm->SetTitle("magnitude of the 1st FFT");
+  hm->Scale(1.0/hm->Integral());
+  double position = (frequency *
+		     (h->GetXaxis()->GetXmax() - h->GetXaxis()->GetXmin()));
+  int bin;
+  for (int i_b = 1; i_b <= hm->GetNbinsX(); i_b++) {
+    if ((hm->GetBinCenter(i_b)+(0.5*hm->GetBinWidth(i_b)) > position) &&
+	(hm->GetBinCenter(i_b)-(0.5*hm->GetBinWidth(i_b)) <= position)) {
+      bin = i_b;
+      break;
+    }
+  }
+  double magnitude = hm->GetBinContent(bin);
+  return magnitude;
+}
 
 int main(int argc, char **argv) {
   
@@ -61,8 +84,8 @@ int main(int argc, char **argv) {
   int nTimeBins = (int)((timeOffsetMax - timeOffsetMin)/timeOffsetInterval);
   
   int saturationT3MAPS = 10;
+  double frequency = 2.0;
   
-
   TString inputT3MAPS = argv[1];
   TString inputFEI4 = argv[2];
   TString options = argv[3];
@@ -119,8 +142,20 @@ int main(int argc, char **argv) {
     }
     graphDiffMax[i_h] = new TGraph();
   }
-  TH1F *histMax = new TH1F("histMax", "histMax", 50, 0.0, 0.002);
-  TH1F *histDev = new TH1F("histMax", "histMax", 100, -0.002, 0.002);
+  TH1F *histMax = new TH1F("histMax", "histMax", 50, 0.0, 0.003);
+  TH1F *histDev = new TH1F("histMax", "histMax", 100, -0.003, 0.003);
+  
+  
+   // Graphs for FFTs:
+  TH1F *hTime[4][MapParameters::nBins][MapParameters::nBins];
+  for (int i_h = 0; i_h < 4; i_h++) {
+    for (int i_x = 0; i_x < MapParameters::nBins; i_x++) {
+      for (int i_y = 0; i_y < MapParameters::nBins; i_y++) {
+	hTime[i_h][i_x][i_y] = new TH1F(Form("hTime_%d_%d_%d",i_h,i_x,i_y),Form("hTime_%d_%d_%d",i_h,i_x,i_y),nTimeBins,timeOffsetMin,timeOffsetMax);
+      }
+    }
+  }
+  
   
   std::vector<std::string> significantPoint; significantPoint.clear();
     
@@ -244,7 +279,8 @@ int main(int argc, char **argv) {
 	for (int i_y = 1; i_y <= tempDiffHist->GetNbinsY(); i_y++) {
 	  double diffVal = tempDiffHist->GetBinContent(i_x,i_y);
 	  histDev->Fill(diffVal);
-	  if (diffVal > 0.001) {
+	  hTime[i_h][i_x-1][i_y-1]->SetBinContent(timeOffset, diffVal);
+	  if (diffVal > 0.0025) {
 	    significantPoint.push_back((std::string)Form("time%f_orient%d_x%d_y%d",timeOffset,i_h,i_x,i_y));
 	  }
 	}
@@ -273,6 +309,32 @@ int main(int argc, char **argv) {
   
   PlotUtil::plotTH1F(histMax, "maximum value of (s-b)", "entries", "../TestBeamOutput/TestBeamStudies/histMax");
   PlotUtil::plotTH1F(histDev, "(s-b)", "entries", "../TestBeamOutput/TestBeamStudies/histDeviations", true);
+  
+  // Fourier analysis:
+  TH2D *hFFT[4];  
+  hFFT[0] = new TH2D("hFFT0", "hFFT0", MapParameters::nBins, -3.2, 16.8, 
+		     MapParameters::nBins, -4.5, 20.0);
+  hFFT[1] = new TH2D("hFFT1", "hFFT1", MapParameters::nBins, -3.2, 16.8, 
+		     MapParameters::nBins, -4.5, 20.0);
+  hFFT[2] = new TH2D("hFFT2", "hFFT2", MapParameters::nBins, -3.2, 16.8, 
+		     MapParameters::nBins, 0.0, 24.5);
+  hFFT[3] = new TH2D("hFFT3", "hFFT3", MapParameters::nBins, -3.2, 16.8, 
+		     MapParameters::nBins, 0.0, 24.5);
+  
+  // NOW TAKE CARE OF THE FFT:
+  std::cout << "Starting the discrete fourier transforms" << std::endl;
+  for (int i_h = 0; i_h < 4; i_h++) {
+    for (int i_x = 0; i_x < MapParameters::nBins; i_x++) {
+      for (int i_y = 0; i_y < MapParameters::nBins; i_y++) {
+	double valueFFT = GetFFTValue(hTime[i_h][i_x][i_y], frequency);
+	hFFT[i_h]->SetBinContent(i_x+1, i_y+1, valueFFT);
+      }
+    }
+    
+    PlotUtil::plotTH2D(hFFT[i_h], "row offset [mm]", "column offset [mm]",
+		       "FFT Magnitude",
+		       Form("../TestBeamOutput/FFTMagnitude_orient%d",i_h));
+  }
   
   // Then print the most significant point:
   std::cout << "\nPrinting a list of significant points" << std::endl;

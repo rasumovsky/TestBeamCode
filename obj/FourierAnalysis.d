@@ -1,4 +1,4 @@
-obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
+obj/FourierAnalysis.o: src/FourierAnalysis.cxx \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/stdlib.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/Availability.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/AvailabilityInternal.h \
@@ -238,6 +238,10 @@ obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/__tree \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualTreePlayer.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVirtualFFT.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TF1.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TFormula.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/TBits.h \
+  /Users/andrewhard/root-v5-34-00-patches/include/Math/ParamFunctor.h \
   inc/ChipDimension.h inc/MatchMaker.h inc/PixelHit.h \
   /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1/cmath \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/math.h \
@@ -253,10 +257,6 @@ obj/TestBeamStudies.o: src/TestBeamStudies.cxx \
   /Users/andrewhard/root-v5-34-00-patches/include/TQObject.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TAttCanvas.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TCanvasImp.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TF1.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TFormula.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/TBits.h \
-  /Users/andrewhard/root-v5-34-00-patches/include/Math/ParamFunctor.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TGraph.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVectorFfwd.h \
   /Users/andrewhard/root-v5-34-00-patches/include/TVectorDfwd.h \
