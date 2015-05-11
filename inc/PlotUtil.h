@@ -84,6 +84,9 @@ namespace PlotUtil {
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname, bool log);
   void plotTH1F(TH1F *h, TString xname, TString yname, TString sname);
   
+  void plotTH1FAndFit(TH1F *h, TF1 *f, TString xname, TString yname,
+		      TString sname, bool log);
+  
   void plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 
 		    TString sname, bool normalize);
 

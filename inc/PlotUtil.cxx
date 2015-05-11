@@ -97,7 +97,7 @@ void PlotUtil::setAtlasStyle() {
 
 void PlotUtil::animateTH2D(TH2D *h2, TString xname, TString yname,
 			    TString zname, TString sname) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   gPad->SetRightMargin(0.15);
@@ -110,7 +110,7 @@ void PlotUtil::animateTH2D(TH2D *h2, TString xname, TString yname,
 }
 
 void PlotUtil::finishAnimation(TString sname) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   TLatex text; text.SetNDC(); text.SetTextColor(1);
   text.DrawLatex(0.4, 0.45, "END");
@@ -120,7 +120,7 @@ void PlotUtil::finishAnimation(TString sname) {
 
 void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname, 
 			double x1, double x2, double y1, double y2, bool log) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   h->Draw();
@@ -150,9 +150,27 @@ void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname) {
   plotTH1F(h, xname, yname, sname, false);
 }
 
+void PlotUtil::plotTH1FAndFit(TH1F *h, TF1 *f, TString xname, TString yname,
+			      TString sname, bool log) {
+  TCanvas *can = new TCanvas("can","can",800,600);
+  can->cd();
+  can->Clear();
+  h->Draw();
+  h->GetXaxis()->SetNoExponent(false);
+  if (log) gPad->SetLogy();
+  h->GetXaxis()->SetTitle(xname);
+  h->GetYaxis()->SetTitle(yname);
+  f->SetLineColor(kRed);
+  f->Draw("SAME");
+  can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.gif+5", sname.Data()));
+  if (log) gPad->SetLogy(false);
+  delete can;
+}
+
 void PlotUtil::plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname, 
 			    TString sname, bool normalize) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   if (normalize) {
@@ -171,7 +189,7 @@ void PlotUtil::plotTwoTH1Fs(TH1F *h1, TH1F *h2, TString xname, TString yname,
 void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
 			TString sname, double x1=0, double x2=0, double y1=0,
 			double y2=0, double z1=0, double z2=0) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   gPad->SetRightMargin(0.15);
@@ -196,7 +214,7 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
 
 void PlotUtil::plotTGraph(TGraph *g, TString xname, TString yname, 
 			  TString sname) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   g->GetXaxis()->SetTitle(xname);
@@ -208,7 +226,7 @@ void PlotUtil::plotTGraph(TGraph *g, TString xname, TString yname,
 
 void PlotUtil::plotTGraphErrFit(TGraphErrors *g, TF1 *fit, TString xname,
 				TString yname, TString sname) {
-  TCanvas *can = new TCanvas("can","can",800,800);
+  TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
   g->GetXaxis()->SetTitle(xname);
