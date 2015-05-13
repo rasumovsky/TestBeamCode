@@ -123,6 +123,8 @@ void PlotUtil::plotTH1F(TH1F *h, TString xname, TString yname, TString sname,
   TCanvas *can = new TCanvas("can","can",800,600);
   can->cd();
   can->Clear();
+  h->SetFillColor(kBlue-10);
+  h->SetLineColor(kBlue+4);
   h->Draw();
   h->GetXaxis()->SetNoExponent(false);
   if (log) gPad->SetLogy();
@@ -200,7 +202,7 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
   if (y1 != 0 || y2 != 0) h2->GetYaxis()->SetRangeUser(y1,y2);
   h2->GetZaxis()->SetTitle(zname);
   if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
-  //can->Print(Form("%s.eps", sname.Data()));
+  can->Print(Form("%s.eps", sname.Data()));
   can->Print(Form("%s.root", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
   delete can;
