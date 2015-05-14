@@ -38,12 +38,17 @@ class MapParameters {
   MapParameters(TString fileDir, TString option);
   virtual ~MapParameters() {};
   
-  static const int nBins = 50;
+  static const int nRBin = 89;
+  static const int nCBin = 48;//48;
   
   // Mutators:
   void addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void addPairToBkg(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void createMapFromHits();
+  double getColOffset(int colFEI4, int colT3MAPS, int orientation);
+  double getRowOffset(int rowFEI4, int rowT3MAPS, int orientation);
+  double getColSlope(int orientation);
+  double getRowSlope(int orientation);
   void loadMapParameters(TString inputDir);
   void saveMapParameters(TString outputDir);
   void setOrientation(int orientation);
@@ -66,10 +71,20 @@ class MapParameters {
   double mErr[4][4];
   bool hasMap;
   
-  int orientation;// 0 = ++, 1 = +-, 2 = -+, 3 = -- in (r,c)
+  // Maps of parameters:
   TH2D *h2Sig[4];
   TH2D *h2Bkg[4];
   TH2D *h2Diff[4];
+  
+  // Hit counters:
+  int nBkgHits;
+  int nSigHits;
+  
+  // Chip relative orientation information:
+  int orientation;// 0 = ++, 1 = +-, 2 = -+, 3 = -- in (r,c)
+  double colSign[4];
+  double rowSign[4];
+  
 };
 
 #endif

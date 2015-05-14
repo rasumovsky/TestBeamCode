@@ -203,7 +203,6 @@ void PlotUtil::plotTH2D(TH2D *h2, TString xname, TString yname, TString zname,
   h2->GetZaxis()->SetTitle(zname);
   if (z1 != 0 || z2 != 0) h2->GetZaxis()->SetRangeUser(z1,z2);
   can->Print(Form("%s.eps", sname.Data()));
-  can->Print(Form("%s.root", sname.Data()));
   can->Print(Form("%s.gif+5", sname.Data()));
   delete can;
 }

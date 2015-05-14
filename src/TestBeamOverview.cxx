@@ -46,17 +46,20 @@
 
 using namespace std;
 
+/**
+   The main method just requires an option to run. 
+   @param option - "RunI" or "RunII" to select the desired dataset.
+   @returns - 0. Prints plots to TestBeamOutput/TestBeamOverview/ directory.
+*/
 int main(int argc, char **argv) {
   // Check arguments:
   if (argc < 2) {
     std::cout << "\nUsage: " << argv[0] << " <option>" << std::endl; 
     exit(0);
   }
-  
   TString options = argv[1];
-  TString mapFileDir = "../TestBeamOverview";
   
-  // IMPORTANT JOB SETTINGS:
+  // Fundamental job settings:
   TString inputT3MAPS = options.Contains("RunII") ?
     "../TestBeamData/TestBeamData_May9/T3MAPS_May9_RunI.root" :
     "../TestBeamData/TestBeamData_May3/T3MAPS_May3_RunI.root";
@@ -406,4 +409,5 @@ int main(int argc, char **argv) {
   
   PlotUtil::plotTH2D(cutOccFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamOverview/cutOccupancyFEI4");
   PlotUtil::plotTH2D(cutOccT3MAPS, "row_{T3MAPS}", "column_{T3MAPS}", "hits", "../TestBeamOutput/TestBeamOverview/cutOccupancyT3MAPS");
+  return 0;
 }

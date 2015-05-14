@@ -49,30 +49,52 @@ MapParameters::MapParameters(TString fileDir, TString option) {
     hasMap = false;
   }
   
-  // Set relative orientations of FEI4 and T3MAPS:
-  orientation = 0;
-  h2Sig[0] = new TH2D("h2Sig0", "h2Sig0", nBins, -3.2, 16.8, nBins, -4.5, 20.0);
-  h2Bkg[0] = new TH2D("h2Bkg0", "h2Bkg0", nBins, -3.2, 16.8, nBins, -4.5, 20.0);
-  h2Sig[1] = new TH2D("h2Sig1", "h2Sig1", nBins, -3.2, 16.8, nBins, 0.0, 24.5);
-  h2Bkg[1] = new TH2D("h2Bkg1", "h2Bkg1", nBins, -3.2, 16.8, nBins, 0.0, 24.5);
-  h2Sig[2] = new TH2D("h2Sig2", "h2Sig2", nBins, 0.0, 20.0, nBins, -4.5, 20.0);
-  h2Bkg[2] = new TH2D("h2Bkg2", "h2Bkg2", nBins, 0.0, 20.0, nBins, -4.5, 20.0);
-  h2Sig[3] = new TH2D("h2Sig3", "h2Sig3", nBins, 0.0, 20.0, nBins, 0.0, 24.5);
-  h2Bkg[3] = new TH2D("h2Bkg3", "h2Bkg3", nBins, 0.0, 20.0, nBins, 0.0, 24.5);
+  // Set counters to zero:
+  nBkgHits = 0;
+  nSigHits = 0;
   
+  // Define the relative orientation possibilities for the chips:
+  orientation = 0;
+  rowSign[0] =  1.0;  colSign[0] =  1.0;
+  rowSign[1] =  1.0;  colSign[1] = -1.0;
+  rowSign[2] = -1.0;  colSign[2] =  1.0;
+  rowSign[3] = -1.0;  colSign[3] = -1.0;
+  
+  // Calculate the min and max possibilities:
+  double rMin1 = (-1.0 * getRowSlope(0) * 
+		  myChips->getRowPosition("T3MAPS",myChips->getNRow("T3MAPS")));
+  double rMax1 = myChips->getRowPosition("FEI4",myChips->getNRow("FEI4"));
+  double rMax2 = rMax1 - rMin1;
+  double cMin1 = (-1.0 * getColSlope(0) *
+		  myChips->getColPosition("T3MAPS",myChips->getNCol("T3MAPS")));
+  double cMax1 = myChips->getColPosition("FEI4",myChips->getNCol("FEI4"));
+  double cMax2 = cMax1 - cMin1;
+  h2Sig[0] = new TH2D("h2Sig0","h2Sig0",nRBin,rMin1,rMax1,nCBin,cMin1,cMax1);
+  h2Bkg[0] = new TH2D("h2Bkg0","h2Bkg0",nRBin,rMin1,rMax1,nCBin,cMin1,cMax1);
+  h2Diff[0] = new TH2D("h2Diff0","h2Diff0",nRBin,rMin1,rMax1,nCBin,cMin1,cMax1);
+  h2Sig[1] = new TH2D("h2Sig1","h2Sig1",nRBin,rMin1,rMax1,nCBin,0.0,cMax2);
+  h2Bkg[1] = new TH2D("h2Bkg1","h2Bkg1",nRBin,rMin1,rMax1,nCBin,0.0,cMax2);
+  h2Diff[1] = new TH2D("h2Diff1","h2Diff1",nRBin,rMin1,rMax1,nCBin,0.0,cMax2);
+  h2Sig[2] = new TH2D("h2Sig2","h2Sig2",nRBin,0.0,rMax2,nCBin,cMin1,cMax1);
+  h2Bkg[2] = new TH2D("h2Bkg2","h2Bkg2",nRBin,0.0,rMax2,nCBin,cMin1,cMax1);
+  h2Diff[2] = new TH2D("h2Diff2","h2Diff2",nRBin,0.0,rMax2,nCBin,cMin1,cMax1);
+  h2Sig[3] = new TH2D("h2Sig3","h2Sig3",nRBin,0.0,rMax2,nCBin,0.0,cMax2);
+  h2Bkg[3] = new TH2D("h2Bkg3","h2Bkg3",nRBin,0.0,rMax2,nCBin,0.0,cMax2);
+  h2Diff[3] = new TH2D("h2Diff3","h2Diff3",nRBin,0.0,rMax2,nCBin,0.0,cMax2);
+  
+  // Set relative orientations of FEI4 and T3MAPS:
+  /*
+  h2Sig[0] = new TH2D("h2Sig0", "h2Sig0", nRBin, -3.2, 16.8, nCBin, -4.5, 20.0);
+  h2Bkg[0] = new TH2D("h2Bkg0", "h2Bkg0", nRBin, -3.2, 16.8, nCBin, -4.5, 20.0);
+  h2Sig[1] = new TH2D("h2Sig1", "h2Sig1", nRBin, -3.2, 16.8, nCBin, 0.0, 24.5);
+  h2Bkg[1] = new TH2D("h2Bkg1", "h2Bkg1", nRBin, -3.2, 16.8, nCBin, 0.0, 24.5);
+  h2Sig[2] = new TH2D("h2Sig2", "h2Sig2", nRBin, 0.0, 20.0, nCBin, -4.5, 20.0);
+  h2Bkg[2] = new TH2D("h2Bkg2", "h2Bkg2", nRBin, 0.0, 20.0, nCBin, -4.5, 20.0);
+  h2Sig[3] = new TH2D("h2Sig3", "h2Sig3", nRBin, 0.0, 20.0, nCBin, 0.0, 24.5);
+  h2Bkg[3] = new TH2D("h2Bkg3", "h2Bkg3", nRBin, 0.0, 20.0, nCBin, 0.0, 24.5);
+  */
   std::cout << "MapParameters: Successfully initialized!" << std::endl;
 }
-/*
-MapParameters::~MapParameters() {
-  std::cout << "MapParameters: Destructing..." << std::endl;
-  for (int i_h = 0; i_h < 4; i_h++) {
-    delete h2Sig[i_h];
-    delete h2Bkg[i_h];
-    delete h2Diff[i_h];
-  }
-  std::cout << "MapParameters: self destructed." << std::endl;
-}
-*/
 
 /**
    Add the hit to the histograms corresponding to the T3MAPS row and column.
@@ -80,49 +102,24 @@ MapParameters::~MapParameters() {
    @param hitT3MAPS - the hit in T3MAPS to add to the map construction.
 */
 void MapParameters::addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
-  // row 1 corresponds to entry 0 in the vector, did have -1 in T3MAPS
-  int rowFEI4 = hitFEI4->getRow();
-  int colFEI4 = hitFEI4->getCol();
-  int rowT3MAPS = hitT3MAPS->getRow();
-  int colT3MAPS = hitT3MAPS->getCol();
-    
-  if (rowT3MAPS < 0 || rowT3MAPS >= myChips->getNRow("T3MAPS")) {
-    std::cout << "MapParameters: T3MAPS Row index error = " << rowT3MAPS
-	      << std::endl;
-    exit(0);
-  }
-  else if (colT3MAPS < 0 || colT3MAPS >= myChips->getNCol("T3MAPS")) {
-    std::cout << "MapParameters: T3MAPS Column index error =" << colT3MAPS
-	      << std::endl; 
+  
+  // Check that hits are in the chips:
+  if (!myChips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
+      !myChips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
+    std::cout << "MapParameters: Index Error!" << std::endl;
+    hitFEI4->printHit();
+    hitT3MAPS->printHit();
     exit(0);
   }
   
-  else if (rowFEI4 < 0 || rowFEI4 >= myChips->getNRow("FEI4")) {
-  std::cout << "MapParameters: FEI4 Row index error = " << rowFEI4
-	      << std::endl;
-    exit(0);
+  // Only fill if it falls within defined chip area:
+  else {
+    for (int i_h = 0; i_h < 4; i_h++) {
+      h2Sig[i_h]->Fill(getRowOffset(hitFEI4->getRow(),hitT3MAPS->getRow(),i_h),
+		       getColOffset(hitFEI4->getCol(),hitT3MAPS->getCol(),i_h));
+    }
   }
-  else if (colFEI4 < 0 || colFEI4 >= myChips->getNCol("FEI4")) {
-    std::cout << "MapParameters: FEI4 Column index error =" << colFEI4
-	      << std::endl; 
-    exit(0);
-  }
-  else { // only fill if it falls within defined vector element:
-    double rowPosFEI4 = myChips->getRowPosition("FEI4", rowFEI4);
-    double colPosFEI4 = myChips->getColPosition("FEI4", colFEI4);
-    double rowPosT3MAPS = myChips->getRowPosition("T3MAPS", rowT3MAPS);
-    double colPosT3MAPS = myChips->getColPosition("T3MAPS", colT3MAPS);
-    
-    double rowOffAlign = (rowPosFEI4 - ((myChips->getRowPitch("FEI4") / myChips->getRowPitch("T3MAPS")) * rowPosT3MAPS));
-    double colOffAlign = (colPosFEI4 - ((myChips->getColPitch("FEI4") / myChips->getColPitch("T3MAPS")) * colPosT3MAPS));
-    double rowOffAntiAlign = (rowPosFEI4 - (-1.0 * (myChips->getRowPitch("FEI4") / myChips->getRowPitch("T3MAPS")) * rowPosT3MAPS));
-    double colOffAntiAlign = (colPosFEI4 - (-1.0 * (myChips->getColPitch("FEI4") / myChips->getColPitch("T3MAPS")) * colPosT3MAPS));
-        
-    h2Sig[0]->Fill(rowOffAlign, colOffAlign);
-    h2Sig[1]->Fill(rowOffAlign, colOffAntiAlign);
-    h2Sig[2]->Fill(rowOffAntiAlign, colOffAlign);
-    h2Sig[3]->Fill(rowOffAntiAlign, colOffAntiAlign);
-  }
+  nSigHits++;
 }
 
 /**
@@ -131,72 +128,42 @@ void MapParameters::addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
    @param hitT3MAPS - the hit in T3MAPS to add to the map construction.
 */
 void MapParameters::addPairToBkg(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
-  // row 1 corresponds to entry 0 in the vector, did have -1 in T3MAPS
-  int rowFEI4 = hitFEI4->getRow();
-  int colFEI4 = hitFEI4->getCol();
-  int rowT3MAPS = hitT3MAPS->getRow();
-  int colT3MAPS = hitT3MAPS->getCol();
-    
-  if (rowT3MAPS < 0 || rowT3MAPS >= myChips->getNRow("T3MAPS")) {
-    std::cout << "MapParameters: T3MAPS Row index error = " << rowT3MAPS
-	      << std::endl;
-    exit(0);
-  }
-  else if (colT3MAPS < 0 || colT3MAPS >= myChips->getNCol("T3MAPS")) {
-    std::cout << "MapParameters: T3MAPS Column index error =" << colT3MAPS
-	      << std::endl; 
+ 
+  // Check that hits are in the chips:
+  if (!myChips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
+      !myChips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
+    std::cout << "MapParameters: Index Error!" << std::endl;
+    hitFEI4->printHit();
+    hitT3MAPS->printHit();
     exit(0);
   }
   
-  else if (rowFEI4 < 0 || rowFEI4 >= myChips->getNRow("FEI4")) {
-  std::cout << "MapParameters: FEI4 Row index error = " << rowFEI4
-	      << std::endl;
-    exit(0);
+  // Only fill if it falls within defined chip area:
+  else {
+    for (int i_h = 0; i_h < 4; i_h++) {
+      h2Bkg[i_h]->Fill(getRowOffset(hitFEI4->getRow(),hitT3MAPS->getRow(),i_h),
+		       getColOffset(hitFEI4->getCol(),hitT3MAPS->getCol(),i_h));
+    }
   }
-  else if (colFEI4 < 0 || colFEI4 >= myChips->getNCol("FEI4")) {
-    std::cout << "MapParameters: FEI4 Column index error =" << colFEI4
-	      << std::endl; 
-    exit(0);
-  }
-  else { // only fill if it falls within defined vector element:
-    double rowPosFEI4 = myChips->getRowPosition("FEI4", rowFEI4);
-    double colPosFEI4 = myChips->getColPosition("FEI4", colFEI4);
-    double rowPosT3MAPS = myChips->getRowPosition("T3MAPS", rowT3MAPS);
-    double colPosT3MAPS = myChips->getColPosition("T3MAPS", colT3MAPS);
-    
-    double rowOffAlign = (rowPosFEI4 - ((myChips->getRowPitch("FEI4") / myChips->getRowPitch("T3MAPS")) * rowPosT3MAPS));
-    double colOffAlign = (colPosFEI4 - ((myChips->getColPitch("FEI4") / myChips->getColPitch("T3MAPS")) * colPosT3MAPS));
-    double rowOffAntiAlign = (rowPosFEI4 - (-1.0 * (myChips->getRowPitch("FEI4") / myChips->getRowPitch("T3MAPS")) * rowPosT3MAPS));
-    double colOffAntiAlign = (colPosFEI4 - (-1.0 * (myChips->getColPitch("FEI4") / myChips->getColPitch("T3MAPS")) * colPosT3MAPS));
-        
-    h2Bkg[0]->Fill(rowOffAlign, colOffAlign);
-    h2Bkg[1]->Fill(rowOffAlign, colOffAntiAlign);
-    h2Bkg[2]->Fill(rowOffAntiAlign, colOffAlign);
-    h2Bkg[3]->Fill(rowOffAntiAlign, colOffAntiAlign);
-  }
+  nBkgHits++;
 }
 
 /**
    Extract linear map from linear fits to data.
 */
 void MapParameters::createMapFromHits() {
-  std::cout << "MapParameters: Create map from imported hits." << std::endl;
+  std::cout << "MapParameters: Create map from " << nBkgHits << " bkg hits and "
+	    << nSigHits << " sig hits." << std::endl;
   
   // Initialize the plotting utility
   PlotUtil::setAtlasStyle();
   
   TH1F *projRowOff[4];
   TH1F *projColOff[4];
-
   // Loop over 4 orientations:
   for (int i_h = 0; i_h < 4; i_h++) {
     PlotUtil::plotTH2D(h2Sig[i_h], "row offset [mm]", "column offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/sig_paraOff%d",i_h));
-    
     PlotUtil::plotTH2D(h2Bkg[i_h], "row offset [mm]", "column offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/bkg_paraOff%d",i_h));
-    
-    h2Diff[i_h] = new TH2D(Form("h2Diff%d",i_h), Form("h2Diff%d",i_h),
-			   nBins, -3.2, 16.8, nBins, -4.5, 20.0);
-    
     for (int i_x = 1; i_x <= h2Diff[i_h]->GetNbinsX(); i_x++) {
       for (int i_y = 1; i_y <= h2Diff[i_h]->GetNbinsY(); i_y++) {
 	double para_weight = ((h2Sig[i_h]->GetBinContent(i_x,i_y) /
@@ -209,21 +176,17 @@ void MapParameters::createMapFromHits() {
     
     PlotUtil::plotTH2D(h2Diff[i_h], "row offset [mm]", "column offset [mm]", "Sig-Bkg", Form("../TestBeamOutput/MapParameters/diff_paraOff%d",i_h));
         
-    // Multiplicative factors
-    double rowFactor = (i_h == 0 || i_h == 1) ? 1.0 : -1.0;
-    double colFactor = (i_h == 0 || i_h == 2) ? 1.0 : -1.0;
-    
-    // For the parallel orientation:
+    // Slope parameters derived from chip geometry:
     projRowOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionX();
     projColOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionY();
-    mVar[i_h][0] = rowFactor * (myChips->getRowPitch("FEI4") / 
-				myChips->getRowPitch("T3MAPS"));
-    mErr[i_h][0] = 0.05 * (mVar[i_h][0]);// 5% of calculated slope?
+    mVar[i_h][0] = getRowSlope(i_h);
+    mErr[i_h][0] = getRowSlope(i_h) * 0.05;// 5% of calculated slope?
+    mVar[i_h][2] = getColSlope(i_h);
+    mErr[i_h][2] = getColSlope(i_h) * 0.05;// 5% of calculated slope?
+  
+    // Offset parameters from the maps:
     mVar[i_h][1] = projRowOff[i_h]->GetMean();
     mErr[i_h][1] = projRowOff[i_h]->GetRMS();
-    mVar[i_h][2] = colFactor * (myChips->getColPitch("FEI4") / 
-				myChips->getColPitch("T3MAPS"));
-    mErr[i_h][2] = 0.05 * (mVar[i_h][2]);// 5% of calculated slope?
     mVar[i_h][3] = projColOff[i_h]->GetMean();
     mErr[i_h][3] = projColOff[i_h]->GetRMS();
     
@@ -233,6 +196,68 @@ void MapParameters::createMapFromHits() {
   }
   hasMap = true;
 }
+
+/**
+   Get the column offset parameter (in mm) using column indices and orientation.
+   @param colFEI4 - the FEI4 column index.
+   @param colT3MAPS - the T3MAPS column index.
+   @param orientation - the chip orientation index.
+   @returns - the column offset parameter value.
+*/
+double MapParameters::getColOffset(int colFEI4, int colT3MAPS, 
+				   int orientation) {
+  
+  double colPosFEI4 = myChips->getColPosition("FEI4", colFEI4);
+  double colPosT3MAPS = myChips->getColPosition("T3MAPS", colT3MAPS);
+  double colOffset = (colPosFEI4 - (getColSlope(orientation) * colPosT3MAPS));
+  return colOffset;
+}
+
+/**
+   Get the row offset parameter (in mm) using row indices and orientation.
+   @param rowFEI4 - the FEI4 row index.
+   @param rowT3MAPS - the T3MAPS row index.
+   @param orientation - the chip orientation index.
+   @returns - the row offset parameter value.
+*/
+double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
+				   int orientation) {
+  double rowPosFEI4 = myChips->getRowPosition("FEI4", rowFEI4);
+  double rowPosT3MAPS = myChips->getRowPosition("T3MAPS", rowT3MAPS);
+  double rowOffset = (rowPosFEI4 - (getRowSlope(orientation) * rowPosT3MAPS));
+  return rowOffset;
+}
+
+/**
+   Get the slope of the column mapping.
+   @param orientation - the chip orientation index.
+   @returns - the slope of the column mapping.
+*/
+double MapParameters::getColSlope(int orientation) {
+  double colSlope = colSign[orientation] * (myChips->getColPitch("FEI4") / 
+					    myChips->getColPitch("T3MAPS"));
+  return colSlope;
+}
+
+/**
+   Get the slope of the row mapping.
+   @param orientation - the chip orientation index.
+   @returns - the slope of the row mapping.
+*/
+double MapParameters::getRowSlope(int orientation) {
+  double rowSlope = rowSign[orientation] * (myChips->getRowPitch("FEI4") / 
+					    myChips->getRowPitch("T3MAPS"));
+  return rowSlope;
+}
+
+
+
+//  Linear map format:                                                        //
+//        row_FEI4 = mVar[0] * row_T3MAPS + mVar[1];                          //
+//        col_FEI4 = mVar[2] * col_T3MAPS + mVar[3];                          //
+
+
+
 
 /**
    Load parameters from previous mapping from file.
@@ -306,8 +331,11 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
   if (mapExists()) {
     // Row value:
     if (valName.Contains("row")) {
-      int rowVal = (int)(mVar[orientation][0] * ((double)valT3MAPS) + mVar[orientation][1]);
-      int rowSigma = (int)((mVar[orientation][0]+mErr[orientation][0]) * ((double)valT3MAPS) + (mVar[orientation][1]+mErr[orientation][1])) - rowVal;
+      int rowVal = (int)(mVar[orientation][0] * ((double)valT3MAPS) +
+			 mVar[orientation][1]);
+      int rowSigma = (int)((mVar[orientation][0]+mErr[orientation][0]) *
+			   ((double)valT3MAPS) +
+			   (mVar[orientation][1]+mErr[orientation][1]))-rowVal;
       if (rowSigma < 0) rowSigma = -1 * rowSigma;
       if (myChips->isInChip("FEI4", rowVal, 1)) {
 	if (valName.Contains("Val")) return rowVal;
@@ -320,8 +348,11 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
     }
     // Column value:
     else if (valName.Contains("col")) {
-      int colVal = (int)(mVar[orientation][2] * ((double)valT3MAPS) + mVar[orientation][3]);
-      int colSigma = (int)((mVar[orientation][2]+mErr[orientation][2]) * ((double)valT3MAPS) + (mVar[orientation][3]+mErr[orientation][3])) - colVal;
+      int colVal = (int)(mVar[orientation][2] * ((double)valT3MAPS) +
+			 mVar[orientation][3]);
+      int colSigma = (int)((mVar[orientation][2]+mErr[orientation][2]) *
+			   ((double)valT3MAPS) +
+			   (mVar[orientation][3]+mErr[orientation][3]))-colVal;
       if (colSigma < 0) colSigma = -1 * colSigma;
       if (myChips->isInChip("FEI4", 1, colVal)) {
 	if (valName.Contains("Val")) return colVal;
@@ -346,8 +377,11 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
 int MapParameters::getT3MAPSfromFEI4(TString valName, int valFEI4) {
   if (mapExists()) {
     if (valName.Contains("row")) {
-      int rowVal = (int)((((double)valFEI4) - mVar[orientation][1]) / mVar[orientation][0]);
-      int rowSigma = (int)((((double)valFEI4) - (mVar[orientation][1]+mErr[orientation][1])) / (mVar[orientation][0]-mErr[orientation][0]));
+      int rowVal = (int)((((double)valFEI4) - mVar[orientation][1]) /
+			 mVar[orientation][0]);
+      int rowSigma = (int)((((double)valFEI4) -
+			    (mVar[orientation][1]+mErr[orientation][1])) /
+			   (mVar[orientation][0]-mErr[orientation][0]));
       if (rowSigma < 0) rowSigma = -1 * rowSigma;
       if (myChips->isInChip("T3MAPS", rowVal, 1)) {
 	if (valName.Contains("Val")) return rowVal;
@@ -359,8 +393,11 @@ int MapParameters::getT3MAPSfromFEI4(TString valName, int valFEI4) {
       }
     }
     else if (valName.Contains("col")) {
-      int colVal = (int)((((double)valFEI4) - mVar[orientation][3]) / mVar[orientation][2]);
-      int colSigma = (int)((((double)valFEI4) - (mVar[orientation][3]+mErr[orientation][3])) / (mVar[orientation][2]-mErr[orientation][2]));
+      int colVal = (int)((((double)valFEI4) - mVar[orientation][3]) /
+			 mVar[orientation][2]);
+      int colSigma = (int)((((double)valFEI4) - 
+			    (mVar[orientation][3]+mErr[orientation][3])) / 
+			   (mVar[orientation][2]-mErr[orientation][2]));
       if (myChips->isInChip("T3MAPS", 1, colVal)) {
 	if (valName.Contains("Val")) return colVal;
 	if (valName.Contains("Sigma")) return colSigma;
