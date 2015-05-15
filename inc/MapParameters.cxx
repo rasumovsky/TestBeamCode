@@ -39,7 +39,7 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   std::cout << "MapParameters: Initializing..." << std::endl;
   
   // Settings for FEI4 and T3MAPS chip layouts:
-  myChips = new ChipDimension();
+  chips = new ChipDimension();
   
   // Load map from file:
   if (option.Contains("FromFile")) {
@@ -60,14 +60,22 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   rowSign[2] = -1.0;  colSign[2] =  1.0;
   rowSign[3] = -1.0;  colSign[3] = -1.0;
   
+  // Set the constant slope parameters of the map:
+  for (int i_h = 0; i_h < 4; i_h++) {
+    mVar[i_h][0] = getRowSlope(i_h);
+    mErr[i_h][0] = getRowSlope(i_h) * 0.05;// 5% of calculated slope
+    mVar[i_h][2] = getColSlope(i_h);
+    mErr[i_h][2] = getColSlope(i_h) * 0.05;// 5% of calculated slope
+  }
+  
   // Calculate the min and max possibilities:
   double rMin1 = (-1.0 * getRowSlope(0) * 
-		  myChips->getRowPosition("T3MAPS",myChips->getNRow("T3MAPS")));
-  double rMax1 = myChips->getRowPosition("FEI4",myChips->getNRow("FEI4"));
+		  chips->getRowPosition("T3MAPS",chips->getNRow("T3MAPS")));
+  double rMax1 = chips->getRowPosition("FEI4",chips->getNRow("FEI4"));
   double rMax2 = rMax1 - rMin1;
   double cMin1 = (-1.0 * getColSlope(0) *
-		  myChips->getColPosition("T3MAPS",myChips->getNCol("T3MAPS")));
-  double cMax1 = myChips->getColPosition("FEI4",myChips->getNCol("FEI4"));
+		  chips->getColPosition("T3MAPS",chips->getNCol("T3MAPS")));
+  double cMax1 = chips->getColPosition("FEI4",chips->getNCol("FEI4"));
   double cMax2 = cMax1 - cMin1;
   h2Sig[0] = new TH2D("h2Sig0","h2Sig0",nRBin,rMin1,rMax1,nCBin,cMin1,cMax1);
   h2Bkg[0] = new TH2D("h2Bkg0","h2Bkg0",nRBin,rMin1,rMax1,nCBin,cMin1,cMax1);
@@ -82,17 +90,6 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   h2Bkg[3] = new TH2D("h2Bkg3","h2Bkg3",nRBin,0.0,rMax2,nCBin,0.0,cMax2);
   h2Diff[3] = new TH2D("h2Diff3","h2Diff3",nRBin,0.0,rMax2,nCBin,0.0,cMax2);
   
-  // Set relative orientations of FEI4 and T3MAPS:
-  /*
-  h2Sig[0] = new TH2D("h2Sig0", "h2Sig0", nRBin, -3.2, 16.8, nCBin, -4.5, 20.0);
-  h2Bkg[0] = new TH2D("h2Bkg0", "h2Bkg0", nRBin, -3.2, 16.8, nCBin, -4.5, 20.0);
-  h2Sig[1] = new TH2D("h2Sig1", "h2Sig1", nRBin, -3.2, 16.8, nCBin, 0.0, 24.5);
-  h2Bkg[1] = new TH2D("h2Bkg1", "h2Bkg1", nRBin, -3.2, 16.8, nCBin, 0.0, 24.5);
-  h2Sig[2] = new TH2D("h2Sig2", "h2Sig2", nRBin, 0.0, 20.0, nCBin, -4.5, 20.0);
-  h2Bkg[2] = new TH2D("h2Bkg2", "h2Bkg2", nRBin, 0.0, 20.0, nCBin, -4.5, 20.0);
-  h2Sig[3] = new TH2D("h2Sig3", "h2Sig3", nRBin, 0.0, 20.0, nCBin, 0.0, 24.5);
-  h2Bkg[3] = new TH2D("h2Bkg3", "h2Bkg3", nRBin, 0.0, 20.0, nCBin, 0.0, 24.5);
-  */
   std::cout << "MapParameters: Successfully initialized!" << std::endl;
 }
 
@@ -104,8 +101,8 @@ MapParameters::MapParameters(TString fileDir, TString option) {
 void MapParameters::addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
   
   // Check that hits are in the chips:
-  if (!myChips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
-      !myChips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
+  if (!chips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
+      !chips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
     std::cout << "MapParameters: Index Error!" << std::endl;
     hitFEI4->printHit();
     hitT3MAPS->printHit();
@@ -130,8 +127,8 @@ void MapParameters::addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
 void MapParameters::addPairToBkg(PixelHit *hitFEI4, PixelHit *hitT3MAPS) {
  
   // Check that hits are in the chips:
-  if (!myChips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
-      !myChips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
+  if (!chips->isInChip("T3MAPS", hitT3MAPS->getRow(), hitT3MAPS->getCol()) ||
+      !chips->isInChip("FEI4", hitFEI4->getRow(), hitFEI4->getCol())) {
     std::cout << "MapParameters: Index Error!" << std::endl;
     hitFEI4->printHit();
     hitT3MAPS->printHit();
@@ -179,11 +176,7 @@ void MapParameters::createMapFromHits() {
     // Slope parameters derived from chip geometry:
     projRowOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionX();
     projColOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionY();
-    mVar[i_h][0] = getRowSlope(i_h);
-    mErr[i_h][0] = getRowSlope(i_h) * 0.05;// 5% of calculated slope?
-    mVar[i_h][2] = getColSlope(i_h);
-    mErr[i_h][2] = getColSlope(i_h) * 0.05;// 5% of calculated slope?
-  
+      
     // Offset parameters from the maps:
     mVar[i_h][1] = projRowOff[i_h]->GetMean();
     mErr[i_h][1] = projRowOff[i_h]->GetRMS();
@@ -196,68 +189,6 @@ void MapParameters::createMapFromHits() {
   }
   hasMap = true;
 }
-
-/**
-   Get the column offset parameter (in mm) using column indices and orientation.
-   @param colFEI4 - the FEI4 column index.
-   @param colT3MAPS - the T3MAPS column index.
-   @param orientation - the chip orientation index.
-   @returns - the column offset parameter value.
-*/
-double MapParameters::getColOffset(int colFEI4, int colT3MAPS, 
-				   int orientation) {
-  
-  double colPosFEI4 = myChips->getColPosition("FEI4", colFEI4);
-  double colPosT3MAPS = myChips->getColPosition("T3MAPS", colT3MAPS);
-  double colOffset = (colPosFEI4 - (getColSlope(orientation) * colPosT3MAPS));
-  return colOffset;
-}
-
-/**
-   Get the row offset parameter (in mm) using row indices and orientation.
-   @param rowFEI4 - the FEI4 row index.
-   @param rowT3MAPS - the T3MAPS row index.
-   @param orientation - the chip orientation index.
-   @returns - the row offset parameter value.
-*/
-double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
-				   int orientation) {
-  double rowPosFEI4 = myChips->getRowPosition("FEI4", rowFEI4);
-  double rowPosT3MAPS = myChips->getRowPosition("T3MAPS", rowT3MAPS);
-  double rowOffset = (rowPosFEI4 - (getRowSlope(orientation) * rowPosT3MAPS));
-  return rowOffset;
-}
-
-/**
-   Get the slope of the column mapping.
-   @param orientation - the chip orientation index.
-   @returns - the slope of the column mapping.
-*/
-double MapParameters::getColSlope(int orientation) {
-  double colSlope = colSign[orientation] * (myChips->getColPitch("FEI4") / 
-					    myChips->getColPitch("T3MAPS"));
-  return colSlope;
-}
-
-/**
-   Get the slope of the row mapping.
-   @param orientation - the chip orientation index.
-   @returns - the slope of the row mapping.
-*/
-double MapParameters::getRowSlope(int orientation) {
-  double rowSlope = rowSign[orientation] * (myChips->getRowPitch("FEI4") / 
-					    myChips->getRowPitch("T3MAPS"));
-  return rowSlope;
-}
-
-
-
-//  Linear map format:                                                        //
-//        row_FEI4 = mVar[0] * row_T3MAPS + mVar[1];                          //
-//        col_FEI4 = mVar[2] * col_T3MAPS + mVar[3];                          //
-
-
-
 
 /**
    Load parameters from previous mapping from file.
@@ -314,6 +245,32 @@ void MapParameters::setOrientation(int newOrientation) {
 }
 
 /**
+   Set the error on the 4 parameters for the linear maps. Index = 0,1,2,3
+   @param varIndex - the index of the variable of interest.
+   @param value - the new value of the variable.
+*/
+void MapParameters::setMapErr(int varIndex, double value) {
+  mErr[orientation][varIndex] = value;
+}
+
+/**
+   Set the parameters for the linear maps.
+   @param varIndex - the index of the variable of interest.
+   @param value - the new value of the variable.
+*/
+void MapParameters::setMapVar(int varIndex, double value) {
+  mVar[orientation][varIndex] = value;
+}
+
+/**
+   Set the hasMap boolean.
+   @param doesExist - true iff map exists.
+*/
+void MapParameters::setMapExists(bool doesExist) {
+  hasMap = doesExist;
+}
+
+/**
    Checks that all four parameters necessary for a complete T3MAPS<-->FEI4
    mapping have been assigned.
 */
@@ -329,39 +286,27 @@ bool MapParameters::mapExists() {
 */
 int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
   if (mapExists()) {
+   
     // Row value:
     if (valName.Contains("row")) {
-      int rowVal = (int)(mVar[orientation][0] * ((double)valT3MAPS) +
-			 mVar[orientation][1]);
-      int rowSigma = (int)((mVar[orientation][0]+mErr[orientation][0]) *
-			   ((double)valT3MAPS) +
-			   (mVar[orientation][1]+mErr[orientation][1]))-rowVal;
-      if (rowSigma < 0) rowSigma = -1 * rowSigma;
-      if (myChips->isInChip("FEI4", rowVal, 1)) {
-	if (valName.Contains("Val")) return rowVal;
-	else if (valName.Contains("Sigma")) return rowSigma;
-      }
-      else {
-	std::cout << "MapParameters: Point is not in FEI4 chip!" << std::endl;
-	return -1;
-      }
+      double rowPos = (mVar[orientation][0] * rowSign[orientation] * chips->getRowPosition("T3MAPS", valT3MAPS)) + mVar[orientation][1];
+      double rowPosPlusSigma = (mVar[orientation][0] * rowSign[orientation] * chips->getRowPosition("T3MAPS", valT3MAPS)) + (mVar[orientation][1]+mErr[orientation][1]);
+      int rowVal = chips->getRowFromPos("FEI4",rowPos);
+      int rowPlusSigma = chips->getRowFromPos("FEI4",rowPosPlusSigma);
+      int rowSigma = std::abs(rowPlusSigma - rowVal);
+      if (valName.Contains("Val")) return rowVal;
+      else if (valName.Contains("Sigma")) return rowSigma;
     }
+    
     // Column value:
     else if (valName.Contains("col")) {
-      int colVal = (int)(mVar[orientation][2] * ((double)valT3MAPS) +
-			 mVar[orientation][3]);
-      int colSigma = (int)((mVar[orientation][2]+mErr[orientation][2]) *
-			   ((double)valT3MAPS) +
-			   (mVar[orientation][3]+mErr[orientation][3]))-colVal;
-      if (colSigma < 0) colSigma = -1 * colSigma;
-      if (myChips->isInChip("FEI4", 1, colVal)) {
-	if (valName.Contains("Val")) return colVal;
-	else if (valName.Contains("Sigma")) return colSigma;
-      }
-      else {
-	std::cout << "MapParameters: Point is not in FEI4 chip!" << std::endl;
-	return -1;
-      }
+      double colPos = (mVar[orientation][2] * colSign[orientation] * chips->getColPosition("T3MAPS", valT3MAPS)) + mVar[orientation][3];
+      double colPosPlusSigma = (mVar[orientation][2] * colSign[orientation] * chips->getColPosition("T3MAPS", valT3MAPS)) + (mVar[orientation][3]+mErr[orientation][3]);
+      int colVal = chips->getColFromPos("FEI4",colPos);
+      int colPlusSigma = chips->getColFromPos("FEI4",colPosPlusSigma);
+      int colSigma = std::abs(colPlusSigma - colVal);
+      if (valName.Contains("Val")) return colVal;
+      else if (valName.Contains("Sigma")) return colSigma;
     }
   }
   std::cout << "MapParameters: Bad valName!" << std::endl;
@@ -377,39 +322,83 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
 int MapParameters::getT3MAPSfromFEI4(TString valName, int valFEI4) {
   if (mapExists()) {
     if (valName.Contains("row")) {
-      int rowVal = (int)((((double)valFEI4) - mVar[orientation][1]) /
-			 mVar[orientation][0]);
-      int rowSigma = (int)((((double)valFEI4) -
-			    (mVar[orientation][1]+mErr[orientation][1])) /
-			   (mVar[orientation][0]-mErr[orientation][0]));
-      if (rowSigma < 0) rowSigma = -1 * rowSigma;
-      if (myChips->isInChip("T3MAPS", rowVal, 1)) {
-	if (valName.Contains("Val")) return rowVal;
-	else if (valName.Contains("Sigma")) return rowSigma;
-      }
-      else {
-	std::cout << "MapParameters: Point is not in T3MAPS!" << std::endl;
-	return -1;
-      }
+      double rowPos = (chips->getRowPosition("FEI4",valFEI4) - mVar[orientation][1]) / mVar[orientation][0];
+      double rowPosPlusSigma = (chips->getRowPosition("FEI4",valFEI4) - (mVar[orientation][1] + mErr[orientation][1])) / mVar[orientation][0];
+      int rowVal = chips->getRowFromPos("T3MAPS",rowPos);
+      int rowPlusSigma = chips->getRowFromPos("T3MAPS",rowPosPlusSigma);
+      int rowSigma = std::abs(rowPlusSigma - rowVal);
+      // Note: can return values outside of chips!
+      if (valName.Contains("Val")) return rowVal;
+      else if (valName.Contains("Sigma")) return rowSigma;
     }
     else if (valName.Contains("col")) {
-      int colVal = (int)((((double)valFEI4) - mVar[orientation][3]) /
-			 mVar[orientation][2]);
-      int colSigma = (int)((((double)valFEI4) - 
-			    (mVar[orientation][3]+mErr[orientation][3])) / 
-			   (mVar[orientation][2]-mErr[orientation][2]));
-      if (myChips->isInChip("T3MAPS", 1, colVal)) {
-	if (valName.Contains("Val")) return colVal;
-	if (valName.Contains("Sigma")) return colSigma;
-      }
-      else { 
-	std::cout << "MapParameters: Point is not in T3MAPS!" << std::endl;
-	return -1;
-      }
+      double colPos = (chips->getColPosition("FEI4",valFEI4) - mVar[orientation][3]) / mVar[orientation][2];
+      double colPosPlusSigma = (chips->getColPosition("FEI4",valFEI4) - (mVar[orientation][3] + mErr[orientation][3])) / mVar[orientation][2];
+      int colVal = chips->getColFromPos("T3MAPS",colPos);
+      int colPlusSigma = chips->getColFromPos("T3MAPS",colPosPlusSigma);
+      int colSigma = std::abs(colPlusSigma - colVal);
+      // Note: can return values outside of chips!
+      if (valName.Contains("Val")) return colVal;
+      if (valName.Contains("Sigma")) return colSigma;
     }
   }
   std::cout << "MapParameters: Bad valName!" << std::endl;
   return -1;
+}
+
+/**
+   Get the column offset parameter (in mm) using column indices and orientation.
+   @param colFEI4 - the FEI4 column index.
+   @param colT3MAPS - the T3MAPS column index.
+   @param orientation - the chip orientation index.
+   @returns - the column offset parameter value.
+*/
+double MapParameters::getColOffset(int colFEI4, int colT3MAPS, 
+				   int orientation) {
+  
+  double colPosFEI4 = chips->getColPosition("FEI4", colFEI4);
+  double colPosT3MAPS = (colSign[orientation] *
+			 chips->getColPosition("T3MAPS", colT3MAPS));
+  double colOffset = (colPosFEI4 - (getColSlope(orientation) * colPosT3MAPS));
+  return colOffset;
+}
+
+/**
+   Get the row offset parameter (in mm) using row indices and orientation.
+   @param rowFEI4 - the FEI4 row index.
+   @param rowT3MAPS - the T3MAPS row index.
+   @param orientation - the chip orientation index.
+   @returns - the row offset parameter value.
+*/
+double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
+				   int orientation) {
+  double rowPosFEI4 = chips->getRowPosition("FEI4", rowFEI4);
+  double rowPosT3MAPS = (rowSign[orientation] *
+			 chips->getRowPosition("T3MAPS", rowT3MAPS));
+  double rowOffset = (rowPosFEI4 - (getRowSlope(orientation) * rowPosT3MAPS));
+  return rowOffset;
+}
+
+/**
+   Get the slope of the column mapping.
+   @param orientation - the chip orientation index.
+   @returns - the slope of the column mapping.
+*/
+double MapParameters::getColSlope(int orientation) {
+  double colSlope = (chips->getColPitch("FEI4") / 
+		     chips->getColPitch("T3MAPS"));
+  return colSlope;
+}
+
+/**
+   Get the slope of the row mapping.
+   @param orientation - the chip orientation index.
+   @returns - the slope of the row mapping.
+*/
+double MapParameters::getRowSlope(int orientation) {
+  double rowSlope = (chips->getRowPitch("FEI4") / 
+		     chips->getRowPitch("T3MAPS"));
+  return rowSlope;
 }
 
 /**

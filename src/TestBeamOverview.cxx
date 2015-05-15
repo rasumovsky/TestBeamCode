@@ -344,7 +344,7 @@ int main(int argc, char **argv) {
     // Only match hits with Row > 75, Col > 40
     if (cF->column <= 40) continue;
     if (cF->row >= 75) continue;
-    
+        
     // Cut masked channels:
     bool maskCut = false;
     for (int i_c = 0; i_c < (int)maskFEI4.size(); i_c++) {
@@ -373,7 +373,7 @@ int main(int argc, char **argv) {
   //int totalPixFEI4 = chips->getNRow("FEI4") * chips->getNCol("FEI4");
   // Must account for the fact that much of the chip is ignored.
   int totalPixFEI4 = (75 * (chips->getNCol("FEI4")-41));
-
+  
   //int usedPixFEI4 = totalPixFEI4 - ((int)maskFEI4.size());
   int usedPixFEI4 = totalPixFEI4;
   int usedPixT3MAPS = totalPixT3MAPS - ((int)maskT3MAPS.size());

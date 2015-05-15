@@ -39,24 +39,27 @@ class MapParameters {
   virtual ~MapParameters() {};
   
   static const int nRBin = 89;
-  static const int nCBin = 48;//48;
+  static const int nCBin = 48;
   
   // Mutators:
   void addPairToMap(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void addPairToBkg(PixelHit *hitFEI4, PixelHit *hitT3MAPS);
   void createMapFromHits();
-  double getColOffset(int colFEI4, int colT3MAPS, int orientation);
-  double getRowOffset(int rowFEI4, int rowT3MAPS, int orientation);
-  double getColSlope(int orientation);
-  double getRowSlope(int orientation);
   void loadMapParameters(TString inputDir);
   void saveMapParameters(TString outputDir);
   void setOrientation(int orientation);
+  void setMapErr(int varIndex, double value);
+  void setMapVar(int varIndex, double value);
+  void setMapExists(bool doesExist);
 
   // Accessors:
   bool mapExists();
   int getFEI4fromT3MAPS(TString valName, int valT3MAPS);
   int getT3MAPSfromFEI4(TString valName, int valFEI4);
+  double getColOffset(int colFEI4, int colT3MAPS, int orientation);
+  double getRowOffset(int rowFEI4, int rowT3MAPS, int orientation);
+  double getColSlope(int orientation);
+  double getRowSlope(int orientation);
   double getMapErr(int varIndex);
   double getMapVar(int varIndex);
   void printMapParameters();
@@ -64,7 +67,7 @@ class MapParameters {
   
  private:
   
-  ChipDimension *myChips;
+  ChipDimension *chips;
     
   // Array to store linear constants.
   double mVar[4][4];

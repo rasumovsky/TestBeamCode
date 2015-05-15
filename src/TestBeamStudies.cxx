@@ -242,11 +242,16 @@ int main(int argc, char **argv) {
 			   (chips->getNRow("FEI4") - 0.5),
 			   chips->getNCol("FEI4"), -0.5,
 			   (chips->getNCol("FEI4") - 0.5));
-  TH2D *occOverFEI4 = new TH2D("occOverlapFEI4", "occOverlapFEI4",
-			       chips->getNRow("FEI4"), -0.5,
-			       (chips->getNRow("FEI4") - 0.5),
-			       chips->getNCol("FEI4"), -0.5,
-			       (chips->getNCol("FEI4") - 0.5));
+  TH2D *occOverlapFEI4 = new TH2D("occOverlapFEI4", "occOverlapFEI4",
+				  chips->getNRow("FEI4"), -0.5,
+				  (chips->getNRow("FEI4") - 0.5),
+				  chips->getNCol("FEI4"), -0.5,
+				  (chips->getNCol("FEI4") - 0.5));
+  TH2D *occExcludeFEI4 = new TH2D("occExcludeFEI4", "occExcludeFEI4",
+				  chips->getNRow("FEI4"), -0.5,
+				  (chips->getNRow("FEI4") - 0.5),
+				  chips->getNCol("FEI4"), -0.5,
+				  (chips->getNCol("FEI4") - 0.5));
   TH2D *occT3MAPS = new TH2D("occT3MAPS", "occT3MAPS",
 			     chips->getNRow("T3MAPS"), -0.5,
 			     (chips->getNRow("T3MAPS") - 0.5),
@@ -258,6 +263,7 @@ int main(int argc, char **argv) {
   int nHitsT3MAPS_afterCuts = 0;
   int nHitsFEI4_total = 0;
   int nHitsFEI4_overlapping = 0;
+  int nHitsFEI4_excluding = 0;
   
   // Graphs of map parameters and errors for timing scan analysis:
   TGraph *graphMapVar[4][4];
@@ -309,7 +315,7 @@ int main(int argc, char **argv) {
       cT->fChain->GetEntry(eventT3MAPS);
             
       // For map definition, cut on events with no T3MAPS hits:
-      if (cT->nHits == 0) continue;
+      //if (cT->nHits == 0) continue;
       
       // Add to total hit counter:
       if (graphPoint == 0) nHitsT3MAPS_noCuts += cT->nHits;
@@ -357,30 +363,40 @@ int main(int argc, char **argv) {
 	  if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
 	      cF->timestamp_stop <= (cT->timestamp_stop+timeOffset)) {
 	    
-	    // Fill overlapping FEI4 hit occupancy plot:
-	    if (graphPoint == 0) { 
-	      nHitsFEI4_overlapping++;
-	      occOverFEI4->Fill(currFEI4Hit->getRow(), currFEI4Hit->getCol());
+	    if (cT->nHits > 0) {
+
+	      // Fill overlapping FEI4 hit occupancy plot:
+	      if (graphPoint == 0) { 
+		nHitsFEI4_overlapping++;
+		occOverlapFEI4->Fill(currFEI4Hit->getRow(),
+				     currFEI4Hit->getCol());
+	      }
+	      
+	      // Loop over good T3MAPS hits:
+	      for (int i_h = 0; i_h < (int)hitsInT3MAPS.size(); i_h++) {
+		PixelHit *currT3MAPSHit = new PixelHit(hitsInT3MAPS[i_h].first,
+						       hitsInT3MAPS[i_h].second,
+						       1, 1, false);
+		mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
+		delete currT3MAPSHit;
+	      }
 	    }
-	    
-	    // Loop over good T3MAPS hits:
-	    for (int i_h = 0; i_h < (int)hitsInT3MAPS.size(); i_h++) {
-	      PixelHit *currT3MAPSHit = new PixelHit(hitsInT3MAPS[i_h].first,
-						     hitsInT3MAPS[i_h].second,
-						     1, 1, false);
-	      mapper->addPairToMap(currFEI4Hit, currT3MAPSHit);
-	      delete currT3MAPSHit;
-	    }
-	  }
-	  // If timestamps don't match up, use as background estimate:
-	  else {	  
-	    // Loop over T3MAPS hits:
-	    for (int i_h = 0; i_h < (int)hitsInT3MAPS.size(); i_h++) {
-	      PixelHit *currT3MAPSHit = new PixelHit(hitsInT3MAPS[i_h].first,
-						     hitsInT3MAPS[i_h].second,
-						     1, 1, false);
-	      mapper->addPairToBkg(currFEI4Hit, currT3MAPSHit);
-	      delete currT3MAPSHit;
+	    // If timestamps don't match up, use as background estimate:
+	    else {	
+	      if (graphPoint == 0) { 
+		nHitsFEI4_excluding++;
+		occExcludeFEI4->Fill(currFEI4Hit->getRow(),
+				     currFEI4Hit->getCol());
+	      }
+	      // Loop over possible T3MAPS hits:
+	      
+	      for (int i_r = 0; i_r < chips->getNRow("T3MAPS"); i_r++) {
+		for (int i_c = 0; i_c < chips->getNCol("T3MAPS"); i_c++) {
+		  PixelHit *missingT3MAPSHit = new PixelHit(i_r,i_c,1,1,false);
+		  mapper->addPairToBkg(currFEI4Hit, missingT3MAPSHit);
+		  delete missingT3MAPSHit;
+		}
+	      }
 	    }
 	  }
 	  delete currFEI4Hit;
@@ -438,7 +454,8 @@ int main(int argc, char **argv) {
   
   // Plot occupancy for FEI4 and T3MAPS:
   PlotUtil::plotTH2D(occFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyFEI4");
-  PlotUtil::plotTH2D(occOverFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyOverlappingFEI4");
+  PlotUtil::plotTH2D(occOverlapFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyOverlappingFEI4");
+  PlotUtil::plotTH2D(occExcludeFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyExcludingFEI4");
   PlotUtil::plotTH2D(occT3MAPS, "row_{T3MAPS}", "column_{T3MAPS}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyT3MAPS");
   
   // Plot deviations in map parameter histograms to find significant points:
@@ -455,45 +472,35 @@ int main(int argc, char **argv) {
       }
       PlotUtil::plotTGraph(graphDiffMax[i_h], "time offset [s]", "Difference Maximum", Form("../TestBeamOutput/TestBeamStudies/mapDiffMax_orient%d",i_h));
     }
-    
-    // Fourier analysis for the scan:
-    /*
-    double rMin1 = ;
-    double rMax1 = ;
-    double rMax2 = ;
-    double cMin1 = ;
-    double cMax1 = ;
-    double cMax2 = ;
-    
-    
-    TH2D *hFFT[4];
-    hFFT[0] = new TH2D("hFFT0", "hFFT0", MapParameters::nRBin, rMin1, rMax1, 
-		       MapParameters::nCBin, cMin1, cMax1);
-    hFFT[1] = new TH2D("hFFT1", "hFFT1", MapParameters::nRBin, rMin1, rMax1, 
-		       MapParameters::nCBin, 0.0, CMax2);
-    hFFT[2] = new TH2D("hFFT2", "hFFT2", MapParameters::nRBin, 0.0, rMax2, 
-		       MapParameters::nCBin, cMin1, cMax1);
-    hFFT[3] = new TH2D("hFFT3", "hFFT3", MapParameters::nRBin, 0.0, rMax2, 
-		       MapParameters::nCBin, 0.0, cMax2);
-    std::cout << "Starting the discrete fourier transforms" << std::endl;
-    for (int i_h = 0; i_h < 4; i_h++) {
-      for (int i_x = 0; i_x < MapParameters::nRBin; i_x++) {
-	for (int i_y = 0; i_y < MapParameters::nCBin; i_y++) {
-	  double valueFFT = GetFFTValue(hTime[i_h][i_x][i_y], frequency);
-	  hFFT[i_h]->SetBinContent(i_x+1, i_y+1, valueFFT);
-	}
-      }
-      PlotUtil::plotTH2D(hFFT[i_h], "row offset [mm]", "column offset [mm]", "FFT Magnitude", Form("../TestBeamOutput/TestBeamStudies/FFTMagnitude_orient%d",i_h));
-    }
-    */
   }
   
+  // Make subtraction plot:
+  occOverlapFEI4->Scale(1.0/occOverlapFEI4->Integral());
+  occExcludeFEI4->Scale(1.0/occExcludeFEI4->Integral());
+  TH2D *occDiffFEI4 = new TH2D("occDiffFEI4", "occDiffFEI4",
+			       (int)(((double)chips->getNRow("FEI4"))/8.0),
+			       -0.5, (chips->getNRow("FEI4") - 0.5),
+			       (int)(((double)chips->getNCol("FEI4"))/8.0),
+			       -0.5, (chips->getNCol("FEI4") - 0.5));
+  for (int i_x = 1; i_x <= occOverlapFEI4->GetNbinsX(); i_x++) {
+    for (int i_y = 1; i_y <= occOverlapFEI4->GetNbinsY(); i_y++) {
+      double value = (occOverlapFEI4->GetBinContent(i_x,i_y) -
+		      occExcludeFEI4->GetBinContent(i_x,i_y));
+      //occDiffFEI4->SetBinContent(i_x, i_y, value);
+      occDiffFEI4->Fill(occOverlapFEI4->GetXaxis()->GetBinCenter(i_x),
+			occOverlapFEI4->GetYaxis()->GetBinCenter(i_y), value);
+    }
+  }
+  
+  PlotUtil::plotTH2D(occDiffFEI4, "row_{FEI4}", "column_{FEI4}", "hits", "../TestBeamOutput/TestBeamStudies/occupancyDifferenceFEI4");
+    
   // Then print counters:
   std::cout << "TestBeamStudies: Printing hit counters." << std::endl;
-  std::cout << "T3MAPS before cuts = " << nHitsT3MAPS_noCuts << std::endl;
-  std::cout << "T3MAPS after cuts = " << nHitsT3MAPS_afterCuts << std::endl;
-  std::cout << "FEI4 total = " << nHitsFEI4_total << std::endl;
-  std::cout << "FEI4 overlapping = " << nHitsFEI4_overlapping << std::endl;
+  std::cout << "\tT3MAPS before cuts = " << nHitsT3MAPS_noCuts << std::endl;
+  std::cout << "\tT3MAPS after cuts = " << nHitsT3MAPS_afterCuts << std::endl;
+  std::cout << "\tFEI4 total = " << nHitsFEI4_total << std::endl;
+  std::cout << "\tFEI4 overlapping = " << nHitsFEI4_overlapping << std::endl;
+  std::cout << "\tFEI4 excluding = " << nHitsFEI4_excluding << std::endl;
   
   // End of analysis.
   std::cout << "TestBeamStudies: Finished analysis." << std::endl;
