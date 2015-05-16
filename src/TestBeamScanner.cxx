@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: TestBeamTracks.cxx                                                  //
+//  Name: TestBeamScanner.cxx                                                 //
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
-//  Date: 14/05/2015                                                          //
+//  Date: 15/05/2015                                                          //
 //                                                                            //
 //  This program runs through the test beam data to understand general        //
 //  characteristics of the data and to define quality cuts. The program also  //
@@ -135,7 +135,7 @@ bool canMatchHit(TString chipName, std::pair<int,int> singleHit) {
 /**
    The main method just requires an option to run. 
    @param option - "RunI" or "RunII" to select the desired dataset.
-   @returns - 0. Prints plots to TestBeamOutput/TestBeamTracks/ directory.
+   @returns - 0. Prints plots to TestBeamOutput/TestBeamScanner/ directory.
 */
 int main(int argc, char **argv) {
   // Check arguments:
@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
   
   // Loop over T3MAPS tree:
   Long64_t entriesT3MAPS = cT->fChain->GetEntries();
-  std::cout << "TestBeamTracks: T3MAPS entries = " << entriesT3MAPS
+  std::cout << "TestBeamScanner: T3MAPS entries = " << entriesT3MAPS
 	    << std::endl;
   for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
     cT->fChain->GetEntry(eventT3MAPS);
@@ -212,12 +212,12 @@ int main(int argc, char **argv) {
   ofstream fBusyFEI4;
   ofstream fBusyT3MAPS;
   if (options.Contains("RunII")) {
-    fBusyT3MAPS.open("../TestBeamOutput/TestBeamTracks/busyT3MAPS_RunII.txt");
-    fBusyFEI4.open("../TestBeamOutput/TestBeamTracks/busyFEI4_RunII.txt");
+    fBusyT3MAPS.open("../TestBeamOutput/TestBeamScanner/busyT3MAPS_RunII.txt");
+    fBusyFEI4.open("../TestBeamOutput/TestBeamScanner/busyFEI4_RunII.txt");
   }
   else {
-    fBusyT3MAPS.open("../TestBeamOutput/TestBeamTracks/busyT3MAPS_RunI.txt");
-    fBusyFEI4.open("../TestBeamOutput/TestBeamTracks/busyFEI4_RunI.txt");
+    fBusyT3MAPS.open("../TestBeamOutput/TestBeamScanner/busyT3MAPS_RunI.txt");
+    fBusyFEI4.open("../TestBeamOutput/TestBeamScanner/busyFEI4_RunI.txt");
   }
   
   // Clear masks:
@@ -259,169 +259,216 @@ int main(int argc, char **argv) {
     }
   }
   fBusyT3MAPS.close();
-  std::cout << "TestBeamTracks: Found pixels to mask: " << maskT3MAPS.size() 
+  std::cout << "TestBeamScanner: Found pixels to mask: " << maskT3MAPS.size() 
 	    << " in T3MAPS and " << maskFEI4.size() << " in FEI4." << std::endl;
   
   //----------------------------------------//
   // Start Part Two of the analysis -- track by track matching!
-  std::cout << "\n\nTestBeamTracks: Part Two - Track matching" << std::endl;
+  std::cout << "\n\nTestBeamScanner: Part Two - Track matching" << std::endl;
   
-  int goodHitsT3MAPS_total = 0;
-  int goodHitsT3MAPS_matchable = 0;
-  int goodHitsT3MAPS_matched = 0;
-  int goodHitsFEI4_total = 0;
-  int goodHitsFEI4_matchable = 0;
-  int goodHitsFEI4_matched = 0;
+  TGraph *gEff_T3MAPS = new TGraph();
+  TGraph *gEff_FEI4 = new TGraph();
+  gEff_T3MAPS->SetPoint(0, 0.0, 0.0);
+  gEff_FEI4->SetPoint(0, 0.0, 0.0);
   
-  // Instantiate the mapping utility:
-  mapper = new MapParameters("","");
-  int orientation = 0;
-  mapper->setOrientation(orientation);
-  // Orientation 0:
-  if (orientation == 0) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 1.7); mapper->setMapErr(1, 0.5);//0.75);
-      mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 1.0);//2.0);
-    }
-    else {
-      mapper->setMapVar(1, 2.6); mapper->setMapErr(1, 0.2);//0.4);
-      mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 1.0);//2.0);
-    }
-  }
-  // Orientation 1:
-  else if (orientation == 1) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 1.6); mapper->setMapErr(1, 0.5);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 1.0);
-    }
-    else {
-      mapper->setMapVar(1, 2.8); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  // Orientation 3:
-  else if (orientation == 2) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-    else {
-      mapper->setMapVar(1, 3.75); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  // Orientation 2:
-  else if (orientation == 2) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
-      mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 2.0);
-    }
-    else {
-      mapper->setMapVar(1, 4.0); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  mapper->setMapExists(true);
-  
-  
-  // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
-  Long64_t eventFEI4 = 0;
-  cF->fChain->GetEntry(eventFEI4);
-  
-  // Define the map from T3MAPS <--> FEI4
-  std::cout << "TestBeamTracks: Entering loop over events." << std::endl;
-  for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
-    cT->fChain->GetEntry(eventT3MAPS);
+  // Loop over uncertainty on mapping:
+  for (int i_e = 1; i_e <= 20; i_e++) {
     
-    // Start quality cuts:
-    // Remove T3MAPS events with 12 or more hits in one integration period.
-    if ((*cT->hit_row).size() >= 12) continue;
-    
-    // Create list of good T3MAPS hits:
-    std::vector<std::pair<int,int> > hitsInT3MAPS; hitsInT3MAPS.clear();
-    for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
-      // Check for masked T3MAPS pixels:
-      if (!isMasked((*cT->hit_row)[i_h],(*cT->hit_column)[i_h],"T3MAPS")) {
-	if ((*cT->hit_row)[i_h] > 0 && (*cT->hit_row)[i_h] < 17) {
-	  
-	  std::pair<int,int> newHitT3MAPS;
-	  newHitT3MAPS.first = (*cT->hit_row)[i_h];
-	  newHitT3MAPS.second = (*cT->hit_column)[i_h];
-	  goodHitsT3MAPS_total++;
-	
-	  if (canMatchHit("FEI4", newHitT3MAPS)) {
-	    hitsInT3MAPS.push_back(newHitT3MAPS);
-	    goodHitsT3MAPS_matchable++;
-	  }
-	}
-      }
-    }
-    
-    // Advance position in the FEI4 tree, store good FEI4 candidates:
-    std::vector<std::pair<int,int> > hitsInFEI4; hitsInFEI4.clear();
-    while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
-	   eventFEI4 < entriesFEI4) {
-      
-      // Exclude column 79, Row > 75, Col > 40, and masked pixels:
-      if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
-	  !isMasked(cF->row-1, cF->column-1, "FEI4")) {
-	
-	// Only consider events with timestamp inside that of T3MAPS
-	if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
-	    cF->timestamp_stop <= (cT->timestamp_stop+timeOffset)) {
-	  
-	  std::pair<int,int> newHitFEI4;
-	  newHitFEI4.first = cF->row-1;
-	  newHitFEI4.second = cF->column-1;
-	  goodHitsFEI4_total++;
-	
-	  if (canMatchHit("T3MAPS", newHitFEI4)) {
-	    hitsInFEI4.push_back(newHitFEI4);
-	    goodHitsFEI4_matchable++;
-	  }
-	}
-      }// if passes quality cuts
-      
-      // Then advance to the next FEI4 entry
-      eventFEI4++;
-      cF->fChain->GetEntry(eventFEI4);
-    }// End of loop over FEI4 hits
-    
-    // Now have lists of T3MAPS and FEI4 hits. Check for matches.
-
-    // Loop over FEI4 hits, see if matched in T3MAPS.
-    for (int i_f = 0; i_f < (int)hitsInFEI4.size(); i_f++) {
-      if (isHitMatched("T3MAPS", hitsInT3MAPS, hitsInFEI4[i_f])) {
-	goodHitsFEI4_matched++;
-      }
-    }
-    
-    // Loop over T3MAPS hits, see if matched in FEI4.
-    for (int i_t = 0; i_t < (int)hitsInT3MAPS.size(); i_t++) {
-      if (isHitMatched("FEI4", hitsInFEI4, hitsInT3MAPS[i_t])) {
-	goodHitsT3MAPS_matched++;
-      }
-    }
+    double mapError = ((double)(i_e)) / 5.0;
         
-  }// End of loop over T3MAPS events
-  std::cout << "TestBeamTracks: Ending loop over events." << std::endl;
+    int goodHitsT3MAPS_total = 0;
+    int goodHitsT3MAPS_matchable = 0;
+    int goodHitsT3MAPS_matched = 0;
+    int goodHitsFEI4_total = 0;
+    int goodHitsFEI4_matchable = 0;
+    int goodHitsFEI4_matched = 0;
+    
+    // Instantiate the mapping utility:
+    mapper = new MapParameters("","");
+    int orientation = 0;
+    mapper->setOrientation(orientation);
+    // Orientation 0:
+    if (orientation == 0) {
+      if (options.Contains("RunII")) {
+	mapper->setMapVar(1, 1.7); mapper->setMapErr(1, 0.75*mapError);
+	mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 2.0*mapError);
+      }
+      else {
+	mapper->setMapVar(1, 2.6); mapper->setMapErr(1, 0.4*mapError);
+	mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 2.0*mapError);
+      }
+    }
+    // Orientation 1:
+    else if (orientation == 1) {
+      if (options.Contains("RunII")) {
+	mapper->setMapVar(1, 1.6); mapper->setMapErr(1, 0.5);
+	mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 1.0);
+      }
+      else {
+	mapper->setMapVar(1, 2.8); mapper->setMapErr(1, 0.3);
+	mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
+      }
+    }
+    
+    // Orientation 3:
+    else if (orientation == 2) {
+      if (options.Contains("RunII")) {
+	mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
+	mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
+      }
+      else {
+	mapper->setMapVar(1, 3.75); mapper->setMapErr(1, 0.3);
+	mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
+      }
+    }
+    
+    // Orientation 2:
+    else if (orientation == 2) {
+      if (options.Contains("RunII")) {
+	mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
+	mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 2.0);
+      }
+      else {
+	mapper->setMapVar(1, 4.0); mapper->setMapErr(1, 0.3);
+	mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 2.0);
+      }
+    }
+    
+    mapper->setMapExists(true);
+    
+    
+    // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
+    Long64_t eventFEI4 = 0;
+    cF->fChain->GetEntry(eventFEI4);
+    
+    // Define the map from T3MAPS <--> FEI4
+    std::cout << "TestBeamScanner: Entering loop over events." << std::endl;
+    for (Long64_t eventT3MAPS = 0; eventT3MAPS < entriesT3MAPS; eventT3MAPS++) {
+      cT->fChain->GetEntry(eventT3MAPS);
+      
+      // Start quality cuts:
+      // Remove T3MAPS events with 12 or more hits in one integration period.
+      if ((*cT->hit_row).size() >= 12) continue;
+      
+      // Create list of good T3MAPS hits:
+      std::vector<std::pair<int,int> > hitsInT3MAPS; hitsInT3MAPS.clear();
+      for (int i_h = 0; i_h < (int)cT->hit_row->size(); i_h++) {
+	// Check for masked T3MAPS pixels:
+	if (!isMasked((*cT->hit_row)[i_h],(*cT->hit_column)[i_h],"T3MAPS")) {
+	  if ((*cT->hit_row)[i_h] > 0 && (*cT->hit_row)[i_h] < 17) {
+	    
+	    std::pair<int,int> newHitT3MAPS;
+	    newHitT3MAPS.first = (*cT->hit_row)[i_h];
+	    newHitT3MAPS.second = (*cT->hit_column)[i_h];
+	    goodHitsT3MAPS_total++;
+	    
+	    if (canMatchHit("FEI4", newHitT3MAPS)) {
+	      hitsInT3MAPS.push_back(newHitT3MAPS);
+	      goodHitsT3MAPS_matchable++;
+	    }
+	  }
+	}
+      }
+      
+      // Advance position in the FEI4 tree, store good FEI4 candidates:
+      std::vector<std::pair<int,int> > hitsInFEI4; hitsInFEI4.clear();
+      while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
+	     eventFEI4 < entriesFEI4) {
+	
+	// Exclude column 79, Row > 75, Col > 40, and masked pixels:
+	if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
+	    !isMasked(cF->row-1, cF->column-1, "FEI4")) {
+	  
+	  // Only consider events with timestamp inside that of T3MAPS
+	  if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
+	      cF->timestamp_stop <= (cT->timestamp_stop+timeOffset)) {
+	    
+	    std::pair<int,int> newHitFEI4;
+	    newHitFEI4.first = cF->row-1;
+	    newHitFEI4.second = cF->column-1;
+	    goodHitsFEI4_total++;
+	    
+	    if (canMatchHit("T3MAPS", newHitFEI4)) {
+	      hitsInFEI4.push_back(newHitFEI4);
+	      goodHitsFEI4_matchable++;
+	    }
+	  }
+	}// if passes quality cuts
+	
+	// Then advance to the next FEI4 entry
+	eventFEI4++;
+	cF->fChain->GetEntry(eventFEI4);
+      }// End of loop over FEI4 hits
+      
+      // Now have lists of T3MAPS and FEI4 hits. Check for matches.
+      
+      // Loop over FEI4 hits, see if matched in T3MAPS.
+      for (int i_f = 0; i_f < (int)hitsInFEI4.size(); i_f++) {
+	if (isHitMatched("T3MAPS", hitsInT3MAPS, hitsInFEI4[i_f])) {
+	  goodHitsFEI4_matched++;
+	}
+      }
+      
+      // Loop over T3MAPS hits, see if matched in FEI4.
+      for (int i_t = 0; i_t < (int)hitsInT3MAPS.size(); i_t++) {
+	if (isHitMatched("FEI4", hitsInFEI4, hitsInT3MAPS[i_t])) {
+	  goodHitsT3MAPS_matched++;
+	}
+      }
+      
+    }// End of loop over T3MAPS events
+    std::cout << "TestBeamScanner: Ending loop over events." << std::endl;
+    
+    double eff_T3MAPS = (((double)goodHitsT3MAPS_matched) / 
+			 ((double)goodHitsT3MAPS_matchable));
+    double eff_FEI4 = (((double)goodHitsFEI4_matched) / 
+		       ((double)goodHitsFEI4_matchable));
+    
+    std::cout << "\nPrinting matching statistics." << std::endl;
+    std::cout << "\tTotal Hits T3MAPS = " << goodHitsT3MAPS_total 
+	      << "\tTotal Hits FEI4 = " << goodHitsFEI4_total << std::endl;
+    std::cout << "\tT3MAPS (matched/matchable) = (" << goodHitsT3MAPS_matched
+	      << " / " << goodHitsT3MAPS_matchable << " ) = " << eff_T3MAPS
+	      << std::endl;
+    std::cout << "\tFEI4 (matched/matchable) = (" << goodHitsFEI4_matched
+	      << " / " << goodHitsFEI4_matchable << " ) = " << eff_FEI4
+	      << std::endl;
+    
+    gEff_T3MAPS->SetPoint(i_e, 100.0*mapError, 100.0*eff_T3MAPS);
+    gEff_FEI4->SetPoint(i_e, 100.0*mapError, 100.0*eff_FEI4);
+  }
   
-  std::cout << "\nPrinting matching statistics." << std::endl;
-  std::cout << "\tTotal Hits T3MAPS = " << goodHitsT3MAPS_total 
-	    << "\tTotal Hits FEI4 = " << goodHitsFEI4_total << std::endl;
-  std::cout << "\tT3MAPS (matched/matchable) = (" << goodHitsT3MAPS_matched
-	    << " / " << goodHitsT3MAPS_matchable << " ) = "
-	    << (((double)goodHitsT3MAPS_matched) / 
-		((double)goodHitsT3MAPS_matchable)) << std::endl;
+  TCanvas *can = new TCanvas("can","can",800,600);
+  can->cd();
+  gEff_T3MAPS->SetLineWidth(2);
+  gEff_FEI4->SetLineWidth(2);
+  gEff_T3MAPS->SetLineColor(kRed);
+  gEff_T3MAPS->SetMarkerColor(kRed);
+  gEff_FEI4->SetLineColor(kBlue);
+  gEff_FEI4->SetMarkerColor(kBlue);
+  gEff_T3MAPS->GetXaxis()->SetTitle("% of nominal map uncertainty");
+  gEff_T3MAPS->GetYaxis()->SetTitle("Efficiency [%]");
+  gEff_T3MAPS->Draw("ALP");
+  gEff_FEI4->Draw("LPSAME");
   
-  std::cout << "\tFEI4 (matched/matchable) = (" << goodHitsFEI4_matched << " / "
-	    << goodHitsFEI4_matchable << " ) = "
-	    << (((double)goodHitsFEI4_matched)/((double)goodHitsFEI4_matchable))
-	    << std::endl;
+  TLegend leg(0.6,0.6,0.85,0.75);
+  leg.SetBorderSize(0);
+  leg.SetFillColor(0);
+  leg.SetTextSize(0.04);
+  leg.AddEntry(gEff_T3MAPS, "T3MAPS efficiency", "LP");
+  leg.AddEntry(gEff_FEI4, "FEI4 efficiency", "LP");
+  leg.Draw("SAME");
   
-  std::cout << "\nTestBeamTracks: Finished analysis." << std::endl;
+  TLine *line = new TLine();
+  line->SetLineStyle(2);
+  line->SetLineWidth(1);
+  line->SetLineColor(kBlack);
+  line->DrawLine(100, gEff_T3MAPS->GetYaxis()->GetXmin(),
+		 100, gEff_T3MAPS->GetYaxis()->GetXmax());
+  
+  can->Print("../TestBeamOutput/TestBeamScanner/efficiencyGraph.eps");
+  can->Print("../TestBeamOutput/TestBeamScanner/efficiencyGraph.gif+");
+  
+  std::cout << "\nTestBeamScanner: Finished analysis." << std::endl;
   return 0;
 }
