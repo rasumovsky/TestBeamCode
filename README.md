@@ -17,31 +17,22 @@ classes are included, and a short description of each is provided below.
   - combines the TTrees via hadd.
 
 ##### TestBeamStudies.cxx
-  This is the main class for testing the mapping software. Unfortunately, it is very
-  difficult to locate T3MAPS’s position relative to FEI4, so we are having to test many
-  possible techniques. This program calls the MapParameters class and attempts to uncover
-  the linear mapping of FEI4 pixels to T3MAPS pixels.
+  This program applies quality cuts to the FEI4 and T3MAPS data and then 
+  constructs a mapping between hits in the two chips. It can also scan the time
+  offset for the two chips in case the relative clock times are unknown.
 
-##### TestBeamAnalysis.cxx (deprecated)
-  This is the main method for the analysis. All loops over the TTrees take place
-  within this main method. It makes calls to the LoadT3MAPS, to get the T3MAPS
-  TTree, and it loads the FEI4 TTree. It makes either direct or indirect calls
-  to the following classes: ChipDimension, LoadT3MAPS, MatchMaker, ModuleMapping
-  PixelCluster, PixelHit.
-  
-  Outline:
-  - Load the FEI4 and T3MAPS TTrees
-  - Initialize LinearMapMaker class
-  - Iterate over the two trees in tandem
-  - add data to the LinearMapMaker
-  - finish loop
-  - Calculate map based on input data
-  - Plot mapping data, compare results with chip specs
-  - Loop over TTrees in tandem again
-  - in each event, run the MatchMaker class.
-  - be sure FEI4 hits have same event number and are within T3MAPS time.
-  - get results...
-  
+##### TestBeamOverview.cxx
+  This program looks at the test beam data and identifies characteristics for
+  defining quality cuts on pixel hits.  
+
+##### TestBeamTracks.cxx
+  This program applies quality cuts to the FEI4 and T3MAPS data and then
+  computes a track-by-track efficiency measurement based on the map constructed
+  in TestBeamStudies.
+
+##### TestBeamScanner.cxx
+  This program is similar to TestBeamTracks, except it scans the value of the
+  map error to see how the efficiency changes. 
 
 ### Supporting Classes
 
