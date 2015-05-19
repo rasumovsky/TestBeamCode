@@ -62,18 +62,18 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   
   // Set the constant slope parameters of the map:
   for (int i_h = 0; i_h < 4; i_h++) {
-    mVar[i_h][0] = getRowSlope(i_h);
-    mErr[i_h][0] = getRowSlope(i_h) * 0.05;// 5% of calculated slope
-    mVar[i_h][2] = getColSlope(i_h);
-    mErr[i_h][2] = getColSlope(i_h) * 0.05;// 5% of calculated slope
+    mVar[i_h][0] = getRowSlope();
+    mErr[i_h][0] = getRowSlope() * 0.05;// 5% of calculated slope
+    mVar[i_h][2] = getColSlope();
+    mErr[i_h][2] = getColSlope() * 0.05;// 5% of calculated slope
   }
   
   // Calculate the min and max possibilities:
-  double rMin1 = (-1.0 * getRowSlope(0) * 
+  double rMin1 = (-1.0 * getRowSlope() * 
 		  chips->getRowPosition("T3MAPS",chips->getNRow("T3MAPS")));
   double rMax1 = chips->getRowPosition("FEI4",chips->getNRow("FEI4"));
   double rMax2 = rMax1 - rMin1;
-  double cMin1 = (-1.0 * getColSlope(0) *
+  double cMin1 = (-1.0 * getColSlope() *
 		  chips->getColPosition("T3MAPS",chips->getNCol("T3MAPS")));
   double cMax1 = chips->getColPosition("FEI4",chips->getNCol("FEI4"));
   double cMax2 = cMax1 - cMin1;
@@ -359,7 +359,7 @@ double MapParameters::getColOffset(int colFEI4, int colT3MAPS,
   double colPosFEI4 = chips->getColPosition("FEI4", colFEI4);
   double colPosT3MAPS = (colSign[orientation] *
 			 chips->getColPosition("T3MAPS", colT3MAPS));
-  double colOffset = (colPosFEI4 - (getColSlope(orientation) * colPosT3MAPS));
+  double colOffset = (colPosFEI4 - (getColSlope() * colPosT3MAPS));
   return colOffset;
 }
 
@@ -375,7 +375,7 @@ double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
   double rowPosFEI4 = chips->getRowPosition("FEI4", rowFEI4);
   double rowPosT3MAPS = (rowSign[orientation] *
 			 chips->getRowPosition("T3MAPS", rowT3MAPS));
-  double rowOffset = (rowPosFEI4 - (getRowSlope(orientation) * rowPosT3MAPS));
+  double rowOffset = (rowPosFEI4 - (getRowSlope() * rowPosT3MAPS));
   return rowOffset;
 }
 
@@ -384,7 +384,7 @@ double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
    @param orientation - the chip orientation index.
    @returns - the slope of the column mapping.
 */
-double MapParameters::getColSlope(int orientation) {
+double MapParameters::getColSlope() {
   double colSlope = (chips->getColPitch("FEI4") / 
 		     chips->getColPitch("T3MAPS"));
   return colSlope;
@@ -395,7 +395,7 @@ double MapParameters::getColSlope(int orientation) {
    @param orientation - the chip orientation index.
    @returns - the slope of the row mapping.
 */
-double MapParameters::getRowSlope(int orientation) {
+double MapParameters::getRowSlope() {
   double rowSlope = (chips->getRowPitch("FEI4") / 
 		     chips->getRowPitch("T3MAPS"));
   return rowSlope;

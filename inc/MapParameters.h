@@ -58,8 +58,8 @@ class MapParameters {
   int getT3MAPSfromFEI4(TString valName, int valFEI4);
   double getColOffset(int colFEI4, int colT3MAPS, int orientation);
   double getRowOffset(int rowFEI4, int rowT3MAPS, int orientation);
-  double getColSlope(int orientation);
-  double getRowSlope(int orientation);
+  double getColSlope();
+  double getRowSlope();
   double getMapErr(int varIndex);
   double getMapVar(int varIndex);
   void printMapParameters();
