@@ -56,11 +56,12 @@ ChipDimension *chips = new ChipDimension();
 */
 int main(int argc, char **argv) {
   // Check arguments:
-  if (argc < 2) {
-    std::cout << "\nUsage: " << argv[0] << " <option>" << std::endl; 
+  if (argc < 3) {
+    std::cout << "\nUsage: " << argv[0] << " <option> <orient>" << std::endl; 
     exit(0);
   }
   TString options = argv[1];
+  int orientation = atoi(argv[2]);
   
   // Fundamental job settings:
   TString inputT3MAPS = options.Contains("RunII") ?
@@ -74,6 +75,7 @@ int main(int argc, char **argv) {
   int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
   double integrationTime = options.Contains("RunII") ? 0.5 : 1.0;
   double timeOffset = 0.67;
+  int run = options.Contains("RunII") ? 1 : 0;
   
   // Set the output plot style:
   PlotUtil::setAtlasStyle();  
@@ -96,30 +98,26 @@ int main(int argc, char **argv) {
 				(chips->getNCol("FEI4") - 0.5));
   
   // Instantiate the mapping utility:
+  double mv1[4][2] = {{2.60, 1.70}, {2.80, 1.60}, {3.75, 2.00}, {4.00, 2.00}};
+  double me1[4][2] = {{0.20, 0.50}, {0.30, 0.50}, {0.30, 0.60}, {0.30, 0.60}};
+  double mv3[4][2] = {{11.0, 13.0}, {18.0, 18.0}, {11.0, 13.0}, {18.0, 18.0}};
+  double me3[4][2] = {{1.00, 1.00}, {1.00, 2.00}, {2.00, 2.00}, {2.00, 2.00}};
   mapper = new MapParameters("","");
-  mapper->setOrientation(2);
-  if (options.Contains("RunII")) {
-    mapper->setMapVar(1, 1.7); mapper->setMapErr(1, 0.5);//0.75);
-    mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 1.0);//2.0);
-  }
-  else {
-    mapper->setMapVar(1, 2.6); mapper->setMapErr(1, 0.2);//0.4);
-    mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 1.0);//2.0);
-  }
+  mapper->setOrientation(orientation);
+  mapper->setMapVar(1, mv1[orientation][run]);
+  mapper->setMapErr(1, me1[orientation][run]);
+  mapper->setMapVar(3, mv3[orientation][run]);
+  mapper->setMapErr(3, me3[orientation][run]);
   mapper->setMapExists(true);
   
   // Loop over T3MAPS pixels:
-  //for (int i_r = 0; i_r < chips->getNRow("T3MAPS"); i_r++) {
-  //for (int i_c = 0; i_c < chips->getNCol("T3MAPS"); i_c++) {
-  //for (int i_r = 0; i_r < 1; i_r++) {
-  //for (int i_c = 0; i_c < 1; i_c++) {
-  for (int i_r = 10; i_r < 83; i_r++) {
-  for (int i_c = 10; i_c < 16; i_c++) {
+  for (int i_r = 0; i_r < chips->getNRow("T3MAPS"); i_r++) {
+    for (int i_c = 0; i_c < chips->getNCol("T3MAPS"); i_c++) {
       
-      //locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
-      //	      mapper->getFEI4fromT3MAPS("colVal",i_c));
+      locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
+		      mapper->getFEI4fromT3MAPS("colVal",i_c));
       
-      locT3MAPS->Fill(mapper->getT3MAPSfromFEI4("rowVal",mapper->getFEI4fromT3MAPS("rowVal",i_r)),mapper->getT3MAPSfromFEI4("colVal",mapper->getFEI4fromT3MAPS("colVal",i_c)));
+      //locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",mapper->getT3MAPSfromFEI4("rowVal",i_r)),mapper->getFEI4fromT3MAPS("colVal",mapper->getT3MAPSfromFEI4("colVal",i_c)));
       
       locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) +
 			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
@@ -149,6 +147,7 @@ int main(int argc, char **argv) {
       locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
 			 mapper->getFEI4fromT3MAPS("colVal",i_c) -
 			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
+      
     }
   }
   

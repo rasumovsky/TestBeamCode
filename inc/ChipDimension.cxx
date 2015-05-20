@@ -110,8 +110,8 @@ double ChipDimension::getThickness(std::string chipName) {
 /**
    Returns the distance away from column 0, in millimeters.
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
-   @param col - the column number.
-   @returns - the distance away from row 0 in millimeters.
+   @param col - the column index.
+   @returns - the distance away from column 0 in millimeters.
 */
 double ChipDimension::getColPosition(std::string chipName, int col) {
   return ((double)col * getColPitch(chipName));
@@ -120,31 +120,65 @@ double ChipDimension::getColPosition(std::string chipName, int col) {
 /**
    Returns the distance away from row 0, in millimeters.
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
-   @param row - the row number.
-   @returns - the distance away from column 0 in millimeters.
+   @param row - the row index.
+   @returns - the distance away from row 0 in millimeters.
 */
 double ChipDimension::getRowPosition(std::string chipName, int row) {
   return ((double)row * getRowPitch(chipName));
 }
 
 /**
-   Get the column corresponding to the column position in mm.
+   Returns the distance away from row or column 0, in millimeters.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param parameter - either "row" or "col"
+   @param index - the row or column index.
+   @returns - the distance away from row or column 0 in millimeters.
+*/
+double ChipDimension::getPosition(std::string chipName, std::string parameter,
+				  int index) {
+  if (parameter.compare("row") == 0) {
+    return getRowPosition(chipName, index);
+  }
+  else if (parameter.compare("col") == 0) {
+    return getColPosition(chipName, index);
+  }
+}
+
+/**
+   Get the column index corresponding to the column position in mm.
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @param colPos - the column position in mm.
-   @returns - the column number.
+   @returns - the column index.
 */
 int ChipDimension::getColFromPos(std::string chipName, double colPos) {
   return (int)(colPos / getColPitch(chipName));
 }
 
 /**
-   Get the row corresponding to the row position in mm.
+   Get the row index corresponding to the row position in mm.
    @param chipName - the name of the chip ("FEI4" or "T3MAPS").
    @param rowPos - the row position in mm.
-   @returns - the row number.
+   @returns - the row index.
 */
 int ChipDimension::getRowFromPos(std::string chipName, double rowPos) {
   return (int)(rowPos / getRowPitch(chipName));
+}
+
+/**
+   Get row or column index corresponding to the row or column position in mm.
+   @param chipName - the name of the chip ("FEI4" or "T3MAPS").
+   @param parameter - either "row" or "column".
+   @param pos - the row or column position in mm.
+   @returns - the row or column index.
+*/
+int ChipDimension::getIndexFromPos(std::string chipName, std::string parameter,
+				   double pos) {
+  if (parameter.compare("row") == 0) {
+    return getRowFromPos(chipName, pos);
+  }
+  else if (parameter.compare("col") == 0) {
+    return getColFromPos(chipName, pos);
+  }
 }
 
 /**

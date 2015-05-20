@@ -54,18 +54,18 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   nSigHits = 0;
   
   // Define the relative orientation possibilities for the chips:
-  orientation = 0;
   rowSign[0] =  1.0;  colSign[0] =  1.0;
   rowSign[1] =  1.0;  colSign[1] = -1.0;
   rowSign[2] = -1.0;  colSign[2] =  1.0;
   rowSign[3] = -1.0;  colSign[3] = -1.0;
-  
+    
   // Set the constant slope parameters of the map:
-  for (int i_h = 0; i_h < 4; i_h++) {
-    mVar[i_h][0] = getRowSlope();
-    mErr[i_h][0] = getRowSlope() * 0.05;// 5% of calculated slope
-    mVar[i_h][2] = getColSlope();
-    mErr[i_h][2] = getColSlope() * 0.05;// 5% of calculated slope
+  for (int i_h = 3; i_h >= 0; i_h--) {
+    setOrientation(i_h);
+    setMapVar(0, getRowSlope());
+    setMapErr(0, getRowSlope() * 0.05);// 5% of calculated slope
+    setMapVar(2, getColSlope());
+    setMapErr(2, getColSlope() * 0.05);// 5% of calculated slope
   }
   
   // Calculate the min and max possibilities:
@@ -285,32 +285,41 @@ bool MapParameters::mapExists() {
    @param valT3MAPS - the value in T3MAPS.
 */
 int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
-  if (mapExists()) {
-   
-    // Row value:
-    if (valName.Contains("row")) {
-      double rowPos = (mVar[orientation][0] * rowSign[orientation] * chips->getRowPosition("T3MAPS", valT3MAPS)) + mVar[orientation][1];
-      double rowPosPlusSigma = (mVar[orientation][0] * rowSign[orientation] * chips->getRowPosition("T3MAPS", valT3MAPS)) + (mVar[orientation][1]+mErr[orientation][1]);
-      int rowVal = chips->getRowFromPos("FEI4",rowPos);
-      int rowPlusSigma = chips->getRowFromPos("FEI4",rowPosPlusSigma);
-      int rowSigma = std::abs(rowPlusSigma - rowVal);
-      if (valName.Contains("Val")) return rowVal;
-      else if (valName.Contains("Sigma")) return rowSigma;
-    }
-    
-    // Column value:
-    else if (valName.Contains("col")) {
-      double colPos = (mVar[orientation][2] * colSign[orientation] * chips->getColPosition("T3MAPS", valT3MAPS)) + mVar[orientation][3];
-      double colPosPlusSigma = (mVar[orientation][2] * colSign[orientation] * chips->getColPosition("T3MAPS", valT3MAPS)) + (mVar[orientation][3]+mErr[orientation][3]);
-      int colVal = chips->getColFromPos("FEI4",colPos);
-      int colPlusSigma = chips->getColFromPos("FEI4",colPosPlusSigma);
-      int colSigma = std::abs(colPlusSigma - colVal);
-      if (valName.Contains("Val")) return colVal;
-      else if (valName.Contains("Sigma")) return colSigma;
-    }
+  if (!mapExists()) {
+    std::cout << "MapParameters: No map exists!" << std::endl;
+    exit(0);
   }
-  std::cout << "MapParameters: Bad valName!" << std::endl;
-  return -1;
+  
+  // Spell out map parameter definitions for easier reading:
+  std::string param; double p0, p1, e0, e1, sign;
+  if (valName.Contains("row")) { 
+    p0 = mVar[orientation][0];  p1 = mVar[orientation][1];
+    e0 = mErr[orientation][0];  e1 = mErr[orientation][1];
+    sign = rowSign[orientation];
+    param = "row"; }
+  else if (valName.Contains("col")) { 
+    p0 = mVar[orientation][2];  p1 = mVar[orientation][3];
+    e0 = mErr[orientation][2];  e1 = mErr[orientation][3];
+    sign = colSign[orientation];
+    param = "col"; }
+  else {
+    std::cout << "MapParameters: Bad val name: "<< std::endl;
+    exit(0);
+  }
+  
+  double positionT = chips->getPosition("T3MAPS", param, valT3MAPS);
+  
+  // Here is the linear mapping function:
+  double positionF = (p0 * sign * positionT) + p1;
+  double posPlusSigma = (p0 * sign * positionT) + (p1 + e1);
+  
+  // Convert position back to index:
+  int index = chips->getIndexFromPos("FEI4", param, positionF);
+  int indexPlusSigma = chips->getIndexFromPos("FEI4", param, posPlusSigma);
+  int indexSigma = std::abs(indexPlusSigma - index);
+  if (valName.Contains("Val")) return index;
+  else if (valName.Contains("Sigma")) return indexSigma;
+  else exit(0);
 }
 
 /**
@@ -320,30 +329,44 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
    @param valT3MAPS - the value in FEI4.
 */
 int MapParameters::getT3MAPSfromFEI4(TString valName, int valFEI4) {
-  if (mapExists()) {
-    if (valName.Contains("row")) {
-      double rowPos = (chips->getRowPosition("FEI4",valFEI4) - mVar[orientation][1]) / mVar[orientation][0];
-      double rowPosPlusSigma = (chips->getRowPosition("FEI4",valFEI4) - (mVar[orientation][1] + mErr[orientation][1])) / mVar[orientation][0];
-      int rowVal = chips->getRowFromPos("T3MAPS",rowPos);
-      int rowPlusSigma = chips->getRowFromPos("T3MAPS",rowPosPlusSigma);
-      int rowSigma = std::abs(rowPlusSigma - rowVal);
-      // Note: can return values outside of chips!
-      if (valName.Contains("Val")) return rowVal;
-      else if (valName.Contains("Sigma")) return rowSigma;
-    }
-    else if (valName.Contains("col")) {
-      double colPos = (chips->getColPosition("FEI4",valFEI4) - mVar[orientation][3]) / mVar[orientation][2];
-      double colPosPlusSigma = (chips->getColPosition("FEI4",valFEI4) - (mVar[orientation][3] + mErr[orientation][3])) / mVar[orientation][2];
-      int colVal = chips->getColFromPos("T3MAPS",colPos);
-      int colPlusSigma = chips->getColFromPos("T3MAPS",colPosPlusSigma);
-      int colSigma = std::abs(colPlusSigma - colVal);
-      // Note: can return values outside of chips!
-      if (valName.Contains("Val")) return colVal;
-      if (valName.Contains("Sigma")) return colSigma;
-    }
+  if (!mapExists()) {
+    std::cout << "MapParameters: No map exists!" << std::endl;
+    exit(0);
   }
-  std::cout << "MapParameters: Bad valName!" << std::endl;
-  return -1;
+  
+  // Spell out map parameter definitions for easier reading:
+  std::string param; double p0, p1, e0, e1, sign;
+  if (valName.Contains("row")) { 
+    p0 = mVar[orientation][0];  p1 = mVar[orientation][1];
+    e0 = mErr[orientation][0];  e1 = mErr[orientation][1];
+    sign = rowSign[orientation];
+    param = "row";
+  }
+  else if (valName.Contains("col")) { 
+    p0 = mVar[orientation][2];  p1 = mVar[orientation][3];
+    e0 = mErr[orientation][2];  e1 = mErr[orientation][3];
+    sign = colSign[orientation];
+    param = "col"; 
+  }
+  else {
+    std::cout << "MapParameters: Bad val name: " << std::endl;
+    exit(0);
+  }
+  
+  double positionF = chips->getPosition("FEI4", param, valFEI4);
+  
+  // Here is the linear mapping function:
+  // multiply by col signs?
+  double positionT = sign * (positionF - p1) / p0;
+  double posPlusSigma = sign * (positionF - (p1 + e1)) / p0;
+  
+  // Convert position back to index:
+  int index = chips->getIndexFromPos("T3MAPS", param, positionT);
+  int indexPlusSigma = chips->getIndexFromPos("T3MAPS", param, posPlusSigma);
+  int indexSigma = std::abs(indexPlusSigma - index);
+  if (valName.Contains("Val")) return index;
+  else if (valName.Contains("Sigma")) return indexSigma;
+  else exit(0);
 }
 
 /**
