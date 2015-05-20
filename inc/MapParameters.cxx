@@ -289,7 +289,7 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
     std::cout << "MapParameters: No map exists!" << std::endl;
     exit(0);
   }
-  
+    
   // Spell out map parameter definitions for easier reading:
   std::string param; double p0, p1, e0, e1, sign;
   if (valName.Contains("row")) { 
@@ -307,12 +307,17 @@ int MapParameters::getFEI4fromT3MAPS(TString valName, int valT3MAPS) {
     exit(0);
   }
   
-  double positionT = chips->getPosition("T3MAPS", param, valT3MAPS);
-  
   // Here is the linear mapping function:
-  double positionF = (p0 * sign * positionT) + p1;
-  double posPlusSigma = (p0 * sign * positionT) + (p1 + e1);
+  // NOTE: slope already accounted for with getPosition() function.
+  double positionT = chips->getPosition("T3MAPS", param, valT3MAPS);
+  //double positionF = (p0 * sign * positionT) + p1;
+  //double posPlusSigma = (p0 * sign * positionT) + (p1 + e1);
+  double positionF = (sign * positionT) + p1;
+  double posPlusSigma = (sign * positionT) + (p1 + e1);
   
+  //std::cout << "MapParameters: \tpositionT3MAPS = " << positionT
+  //<< " \tpositionFEI4 = " << positionF << std::endl;
+
   // Convert position back to index:
   int index = chips->getIndexFromPos("FEI4", param, positionF);
   int indexPlusSigma = chips->getIndexFromPos("FEI4", param, posPlusSigma);
@@ -353,12 +358,13 @@ int MapParameters::getT3MAPSfromFEI4(TString valName, int valFEI4) {
     exit(0);
   }
   
-  double positionF = chips->getPosition("FEI4", param, valFEI4);
-  
   // Here is the linear mapping function:
-  // multiply by col signs?
-  double positionT = sign * (positionF - p1) / p0;
-  double posPlusSigma = sign * (positionF - (p1 + e1)) / p0;
+  // NOTE: slope already accounted for with getPosition() function.
+  double positionF = chips->getPosition("FEI4", param, valFEI4);
+  //double positionT = sign * (positionF - p1) / p0;
+  //double posPlusSigma = sign * (positionF - (p1 + e1)) / p0;
+  double positionT = sign * (positionF - p1);
+  double posPlusSigma = sign * (positionF - (p1 + e1));
   
   // Convert position back to index:
   int index = chips->getIndexFromPos("T3MAPS", param, positionT);

@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: LocateT3MAPS.cxx                                                  //
+//  Name: LocateT3MAPS.cxx                                                    //
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
 //  Date: 14/05/2015                                                          //
 //                                                                            //
 //  This program figures out the location of T3MAPS in FEI4 using a map that  //
-//  was produced with TestBeamStudies.cxx.
+//  was produced with TestBeamStudies.cxx.                                    //
 //                                                                            //
 //  Program options:                                                          //
 //                                                                            //
@@ -110,15 +110,31 @@ int main(int argc, char **argv) {
   mapper->setMapErr(3, me3[orientation][run]);
   mapper->setMapExists(true);
   
+  double colSizeT = ((double)chips->getNCol("T3MAPS") *
+		     chips->getColPitch("T3MAPS"));
+  double rowSizeT = ((double)chips->getNRow("T3MAPS") *
+		     chips->getRowPitch("T3MAPS"));
+  double colSizeF = ((double)chips->getNCol("FEI4") * 
+		     chips->getColPitch("FEI4"));
+  double rowSizeF = ((double)chips->getNRow("FEI4") * 
+		     chips->getRowPitch("FEI4"));
+  double nMappedCol = colSizeT / chips->getColPitch("FEI4");
+  double nMappedRow = rowSizeT / chips->getRowPitch("FEI4");
+
+  std::cout << "\nThe size of T3MAPS is (col x row) " << colSizeT << " x "
+	    << rowSizeT << " mm^2" << std::endl;
+  std::cout << "The size of FEI4 is (col x row) " << colSizeF << " x "
+	    << rowSizeF << " mm^2" << std::endl;
+  std::cout << "So T3MAPS should take up " << nMappedCol << " columns x "
+	    << nMappedRow << " rows in FEI4.\n" << std::endl;
+  
   // Loop over T3MAPS pixels:
   for (int i_r = 0; i_r < chips->getNRow("T3MAPS"); i_r++) {
     for (int i_c = 0; i_c < chips->getNCol("T3MAPS"); i_c++) {
-      
+      //std::cout<< "LocateT3MAPS: row=" << i_r << ", col=" << i_c <<std::endl;
       locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
 		      mapper->getFEI4fromT3MAPS("colVal",i_c));
       
-      //locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",mapper->getT3MAPSfromFEI4("rowVal",i_r)),mapper->getFEI4fromT3MAPS("colVal",mapper->getT3MAPSfromFEI4("colVal",i_c)));
-      
       locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) +
 			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
 			 mapper->getFEI4fromT3MAPS("colVal",i_c) +
@@ -147,7 +163,6 @@ int main(int argc, char **argv) {
       locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
 			 mapper->getFEI4fromT3MAPS("colVal",i_c) -
 			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      
     }
   }
   
