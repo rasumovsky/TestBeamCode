@@ -49,7 +49,9 @@ class MapParameters {
   void saveMapParameters(TString outputDir);
   void setOrientation(int orientation);
   void setMapErr(int varIndex, double value);
+  void setMapErr(int varIndex, double value, int valOrient);
   void setMapVar(int varIndex, double value);
+  void setMapVar(int varIndex, double value, int valOrient);
   void setMapExists(bool doesExist);
 
   // Accessors:

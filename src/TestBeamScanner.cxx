@@ -46,7 +46,6 @@ using namespace std;
 
 // Stores geometrical map of two chips:
 MapParameters *mapper;
-//MapParameters *mappers[20][20];
 
 // Stores the chip geometry:
 ChipDimension *chips = new ChipDimension();
@@ -277,9 +276,15 @@ int main(int argc, char **argv) {
   // Loop over uncertainty on mapping:
   for (int i_r = 1; i_r <= 20; i_r++) {
     for (int i_c = 1; i_c <= 20; i_c++) {
-    
-      double mapRowErr = 0.225 * ((double)i_r);
-      double mapColErr = 0.250 * ((double)i_c);
+      
+      // Instantiate the mapping utility:
+      mapper = new MapParameters("../TestBeamOutput","FromFile");
+      mapper->setOrientation(1);
+
+      //double mapRowErr = 0.225 * ((double)i_r);
+      //double mapColErr = 0.250 * ((double)i_c);
+      double mapRowErr = mapper->getMapErr(1) * ((double)i_r/10.0);
+      double mapColErr = mapper->getMapErr(3) * ((double)i_c/10.0);
       
       if (i_r == 1) {
 	gEffRow_T3MAPS[i_c] = new TGraph();
@@ -300,22 +305,7 @@ int main(int argc, char **argv) {
       int goodHitsFEI4_total = 0;
       int goodHitsFEI4_matchable = 0;
       int goodHitsFEI4_matched = 0;
-      
-      // Instantiate the mapping utility:
-      mapper = new MapParameters("","");
-      mapper->setOrientation(0);
-      if (options.Contains("RunII")) {
-	mapper->setMapVar(1, 2.6);//1.7);
-	mapper->setMapVar(3, 11.0);//13.0);
-      }
-      else {
-	mapper->setMapVar(1, 1.0);//2.6);
-	mapper->setMapVar(3, 5.0);//11.0);
-      }
-      mapper->setMapErr(1, mapRowErr);
-      mapper->setMapErr(3, mapColErr);
-      mapper->setMapExists(true);
-      
+            
       // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
       Long64_t eventFEI4 = 0;
       cF->fChain->GetEntry(eventFEI4);

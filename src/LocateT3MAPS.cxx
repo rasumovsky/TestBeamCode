@@ -9,11 +9,6 @@
 //  This program figures out the location of T3MAPS in FEI4 using a map that  //
 //  was produced with TestBeamStudies.cxx.                                    //
 //                                                                            //
-//  Program options:                                                          //
-//                                                                            //
-//    "RunI" or "RunII" as an option will implement the proper cuts and load  //
-//    the corresponding datasets.                                             //
-//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 // C++ includes:
@@ -56,27 +51,11 @@ ChipDimension *chips = new ChipDimension();
 */
 int main(int argc, char **argv) {
   // Check arguments:
-  if (argc < 3) {
-    std::cout << "\nUsage: " << argv[0] << " <option> <orient>" << std::endl; 
+  if (argc < 1) {
+    std::cout << "\nUsage: " << argv[0] << std::endl; 
     exit(0);
   }
-  TString options = argv[1];
-  int orientation = atoi(argv[2]);
-  
-  // Fundamental job settings:
-  TString inputT3MAPS = options.Contains("RunII") ?
-    "../TestBeamData/TestBeamData_May9/T3MAPS_May9_RunI.root" :
-    "../TestBeamData/TestBeamData_May3/T3MAPS_May3_RunI.root";
-  TString inputFEI4 = options.Contains("RunII") ?
-    "../TestBeamData/TestBeamData_May9/FEI4_May9_RunI.root" :
-    "../TestBeamData/TestBeamData_May3/FEI4_May3_RunI.root";
-  int lowerThresholdFEI4 = 10;
-  int noiseThresholdFEI4 = options.Contains("RunII") ? 300 : 600;
-  int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
-  double integrationTime = options.Contains("RunII") ? 0.5 : 1.0;
-  double timeOffset = 0.67;
-  int run = options.Contains("RunII") ? 1 : 0;
-  
+    
   // Set the output plot style:
   PlotUtil::setAtlasStyle();  
   
@@ -90,25 +69,22 @@ int main(int argc, char **argv) {
 			     (chips->getNRow("FEI4") - 0.5),
 			     chips->getNCol("FEI4"), -0.5,
 			     (chips->getNCol("FEI4") - 0.5));
+    
+  TH2D *locTempT3MAPS = new TH2D("locTempT3MAPS", "locTempT3MAPS", 
+				 chips->getNRow("FEI4"), -0.5,
+				 (chips->getNRow("FEI4") - 0.5),
+				 chips->getNCol("FEI4"), -0.5,
+				 (chips->getNCol("FEI4") - 0.5));
   
-  TH2D *locT3MAPSErr = new TH2D("locT3MAPSErr", "locT3MAPSErr", 
-				chips->getNRow("FEI4"), -0.5,
-				(chips->getNRow("FEI4") - 0.5),
-				chips->getNCol("FEI4"), -0.5,
-				(chips->getNCol("FEI4") - 0.5));
+  TH2D *locTempT3MAPSErr = new TH2D("locTempT3MAPSErr", "locTempT3MAPSErr", 
+				    chips->getNRow("FEI4"), -0.5,
+				    (chips->getNRow("FEI4") - 0.5),
+				    chips->getNCol("FEI4"), -0.5,
+				    (chips->getNCol("FEI4") - 0.5));
   
   // Instantiate the mapping utility:
-  double mv1[4][2] = {{2.60, 1.70}, {2.80, 1.60}, {3.75, 2.00}, {4.00, 2.00}};
-  double me1[4][2] = {{0.20, 0.50}, {0.30, 0.50}, {0.30, 0.60}, {0.30, 0.60}};
-  double mv3[4][2] = {{11.0, 13.0}, {18.0, 18.0}, {11.0, 13.0}, {18.0, 18.0}};
-  double me3[4][2] = {{1.00, 1.00}, {1.00, 2.00}, {2.00, 2.00}, {2.00, 2.00}};
-  mapper = new MapParameters("","");
-  mapper->setOrientation(orientation);
-  mapper->setMapVar(1, mv1[orientation][run]);
-  mapper->setMapErr(1, me1[orientation][run]);
-  mapper->setMapVar(3, mv3[orientation][run]);
-  mapper->setMapErr(3, me3[orientation][run]);
-  mapper->setMapExists(true);
+  mapper = new MapParameters("../TestBeamOutput","FromFile");
+  mapper->setOrientation(1);
   
   double colSizeT = ((double)chips->getNCol("T3MAPS") *
 		     chips->getColPitch("T3MAPS"));
@@ -128,47 +104,74 @@ int main(int argc, char **argv) {
   std::cout << "So T3MAPS should take up " << nMappedCol << " columns x "
 	    << nMappedRow << " rows in FEI4.\n" << std::endl;
   
+  int minColFEI4 = chips->getNCol("FEI4") + 1;
+  int maxColFEI4 = 0;
+  int minRowFEI4 = chips->getNRow("FEI4") + 1;
+  int maxRowFEI4 = 0;
+  
   // Loop over T3MAPS pixels:
   for (int i_r = 0; i_r < chips->getNRow("T3MAPS"); i_r++) {
     for (int i_c = 0; i_c < chips->getNCol("T3MAPS"); i_c++) {
-      //std::cout<< "LocateT3MAPS: row=" << i_r << ", col=" << i_c <<std::endl;
-      locT3MAPS->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
-		      mapper->getFEI4fromT3MAPS("colVal",i_c));
+      int currRow = mapper->getFEI4fromT3MAPS("rowVal",i_r);
+      int currCol = mapper->getFEI4fromT3MAPS("colVal",i_c);
+      int currRowSigma = mapper->getFEI4fromT3MAPS("rowSigma",i_r);
+      int currColSigma = mapper->getFEI4fromT3MAPS("colSigma",i_c);
+      if (currCol < minColFEI4) minColFEI4 = currCol;
+      if (currCol > maxColFEI4) maxColFEI4 = currCol;
+      if (currRow < minRowFEI4) minRowFEI4 = currRow;
+      if (currRow > maxRowFEI4) maxRowFEI4 = currRow;
       
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) +
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) +
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) +
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) -
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) -
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) +
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) -
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) -
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) +
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r) -
-			 mapper->getFEI4fromT3MAPS("rowSigma",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) +
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
-      locT3MAPSErr->Fill(mapper->getFEI4fromT3MAPS("rowVal",i_r),
-			 mapper->getFEI4fromT3MAPS("colVal",i_c) -
-			 mapper->getFEI4fromT3MAPS("colSigma",i_c));
+      locTempT3MAPS->Fill(currRow, currCol);
+      locTempT3MAPSErr->Fill(currRow + currRowSigma, currCol + currColSigma);
+      locTempT3MAPSErr->Fill(currRow + currRowSigma, currCol - currColSigma);
+      locTempT3MAPSErr->Fill(currRow - currRowSigma, currCol + currColSigma);
+      locTempT3MAPSErr->Fill(currRow - currRowSigma, currCol - currColSigma);
+      locTempT3MAPSErr->Fill(currRow + currRowSigma, currCol);
+      locTempT3MAPSErr->Fill(currRow - currRowSigma, currCol);
+      locTempT3MAPSErr->Fill(currRow, currCol + currColSigma);
+      locTempT3MAPSErr->Fill(currRow, currCol - currColSigma);
     }
   }
   
+  // Find range with uncertainties included:
+  int minErrColFEI4 = chips->getNCol("FEI4") + 1;
+  int maxErrColFEI4 = 0;
+  int minErrRowFEI4 = chips->getNRow("FEI4") + 1;
+  int maxErrRowFEI4 = 0;
+  for (int i_x = 1; i_x < locTempT3MAPSErr->GetNbinsX(); i_x++) {
+    for (int i_y = 1; i_y < locTempT3MAPSErr->GetNbinsY(); i_y++) {
+      if (locTempT3MAPSErr->GetBinContent(i_x,i_y) > 0) {
+	if (i_y < minErrColFEI4) minErrColFEI4 = i_y;
+	if (i_y > maxErrColFEI4) maxErrColFEI4 = i_y;
+	if (i_x < minErrRowFEI4) minErrRowFEI4 = i_x;
+	if (i_x > maxErrRowFEI4) maxErrRowFEI4 = i_x;
+      }
+    }
+  }
+  
+  // Then fill the normal histograms:
+  for (int i_x = minErrRowFEI4; i_x <= maxErrRowFEI4; i_x++) {
+    for (int i_y = minErrColFEI4; i_y <= maxErrColFEI4; i_y++) {
+      locT3MAPS->SetBinContent(i_x, i_y, 2);
+    }
+  }
+  
+  for (int i_x = minRowFEI4; i_x <= maxRowFEI4; i_x++) {
+    for (int i_y = minColFEI4; i_y <= maxColFEI4; i_y++) {
+      locT3MAPS->SetBinContent(i_x, i_y, 1);
+    }
+  }
+  
+  std::cout << "LocateT3MAPS: Printing location of T3MAPS in FEI4" << std::endl;
+  std::cout << "\tcolumn range = [" << minColFEI4 << ", " << maxColFEI4
+	    << "]" << std::endl;
+  std::cout << "\trow range = [" << minRowFEI4 << ", " << maxRowFEI4
+	    << "]" << std::endl;
+  
   PlotUtil::plotTH2D(locT3MAPS, "row_{FEI4}", "col_{FEI4}", "", "../TestBeamOutput/LocateT3MAPS/nominalLocationT3MAPS.eps");
-  PlotUtil::plotTH2D(locT3MAPSErr, "row_{FEI4}", "col_{FEI4}", "", "../TestBeamOutput/LocateT3MAPS/uncertaintyLocationT3MAPS.eps");
-    
+  //PlotUtil::plotTH2D(locTempT3MAPS, "row_{FEI4}", "col_{FEI4}", "", "../TestBeamOutput/LocateT3MAPS/nominalLocationT3MAPS.eps");
+  //PlotUtil::plotTH2D(locTempT3MAPSErr, "row_{FEI4}", "col_{FEI4}", "", "../TestBeamOutput/LocateT3MAPS/uncertaintyLocationT3MAPS.eps");
+  
   std::cout << "\nLocateT3MAPS: Finished analysis." << std::endl;
   return 0;
 }

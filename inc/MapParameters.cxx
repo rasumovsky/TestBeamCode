@@ -40,6 +40,8 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   
   // Settings for FEI4 and T3MAPS chip layouts:
   chips = new ChipDimension();
+
+  setOrientation(1);// What we believe to be correct
   
   // Load map from file:
   if (option.Contains("FromFile")) {
@@ -47,6 +49,15 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   }
   else {
     hasMap = false;
+    // Set the constant slope parameters of the map:
+    for (int i_h = 0; i_h < 4; i_h++) {
+      setOrientation(i_h);
+      setMapVar(0, getRowSlope());
+      setMapErr(0, getRowSlope() * 0.05);// 5% of calculated slope
+      setMapVar(2, getColSlope());
+      setMapErr(2, getColSlope() * 0.05);// 5% of calculated slope
+    }
+    setOrientation(1);// What we believe to be correct
   }
   
   // Set counters to zero:
@@ -58,15 +69,6 @@ MapParameters::MapParameters(TString fileDir, TString option) {
   rowSign[1] =  1.0;  colSign[1] = -1.0;
   rowSign[2] = -1.0;  colSign[2] =  1.0;
   rowSign[3] = -1.0;  colSign[3] = -1.0;
-    
-  // Set the constant slope parameters of the map:
-  for (int i_h = 3; i_h >= 0; i_h--) {
-    setOrientation(i_h);
-    setMapVar(0, getRowSlope());
-    setMapErr(0, getRowSlope() * 0.05);// 5% of calculated slope
-    setMapVar(2, getColSlope());
-    setMapErr(2, getColSlope() * 0.05);// 5% of calculated slope
-  }
   
   // Calculate the min and max possibilities:
   double rMin1 = (-1.0 * getRowSlope() * 
@@ -155,8 +157,6 @@ void MapParameters::createMapFromHits() {
   // Initialize the plotting utility
   PlotUtil::setAtlasStyle();
   
-  TH1F *projRowOff[4];
-  TH1F *projColOff[4];
   // Loop over 4 orientations:
   for (int i_h = 0; i_h < 4; i_h++) {
     PlotUtil::plotTH2D(h2Sig[i_h], "row offset [mm]", "column offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/sig_paraOff%d",i_h));
@@ -172,20 +172,14 @@ void MapParameters::createMapFromHits() {
     }
     
     PlotUtil::plotTH2D(h2Diff[i_h], "row offset [mm]", "column offset [mm]", "Sig-Bkg", Form("../TestBeamOutput/MapParameters/diff_paraOff%d",i_h));
-        
-    // Slope parameters derived from chip geometry:
-    projRowOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionX();
-    projColOff[i_h] = (TH1F*)h2Sig[i_h]->ProjectionY();
-      
-    // Offset parameters from the maps:
-    mVar[i_h][1] = projRowOff[i_h]->GetMean();
-    mErr[i_h][1] = projRowOff[i_h]->GetRMS();
-    mVar[i_h][3] = projColOff[i_h]->GetMean();
-    mErr[i_h][3] = projColOff[i_h]->GetRMS();
     
-    // Plot the profiles. 
-    PlotUtil::plotTH1F(projRowOff[i_h], "row offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/projRowOff%d",i_h));
-    PlotUtil::plotTH1F(projColOff[i_h], "col offset [mm]", "hits", Form("../TestBeamOutput/MapParameters/projColOff%d",i_h));
+    // Offset parameters from the maps, slope from chip pitches:
+    int maxBinX = 1; int maxBinY = 1; int maxBinZ = 1; 
+    int i = h2Diff[i_h]->GetMaximumBin(maxBinX, maxBinY, maxBinZ);
+    setMapVar(1, h2Diff[i_h]->GetXaxis()->GetBinCenter(maxBinX), i_h);
+    setMapErr(1, h2Diff[i_h]->GetXaxis()->GetBinWidth(maxBinX), i_h);
+    setMapVar(3, h2Diff[i_h]->GetYaxis()->GetBinCenter(maxBinY), i_h);
+    setMapErr(3, h2Diff[i_h]->GetYaxis()->GetBinWidth(maxBinY), i_h);
   }
   hasMap = true;
 }
@@ -214,7 +208,7 @@ void MapParameters::loadMapParameters(TString inputDir) {
     }
     lineIndex++;
   }
-  hasMap = true;
+  setMapExists(true);
   inputFile.close();
   printMapParameters();
 }
@@ -250,7 +244,17 @@ void MapParameters::setOrientation(int newOrientation) {
    @param value - the new value of the variable.
 */
 void MapParameters::setMapErr(int varIndex, double value) {
-  mErr[orientation][varIndex] = value;
+  setMapErr(varIndex, value, orientation);
+}
+
+/**
+   Set the error on the 4 parameters for the linear maps. Index = 0,1,2,3
+   @param varIndex - the index of the variable of interest.
+   @param value - the new value of the variable.
+   @param valOrient - the orientation corresponding to the new value.
+*/
+void MapParameters::setMapErr(int varIndex, double value, int valOrient) {
+  mErr[valOrient][varIndex] = value;
 }
 
 /**
@@ -259,7 +263,17 @@ void MapParameters::setMapErr(int varIndex, double value) {
    @param value - the new value of the variable.
 */
 void MapParameters::setMapVar(int varIndex, double value) {
-  mVar[orientation][varIndex] = value;
+  setMapVar(varIndex, value, orientation);
+}
+
+/**
+   Set the parameters for the linear maps.
+   @param varIndex - the index of the variable of interest.
+   @param value - the new value of the variable.
+   @param valOrient - the orientation corresponding to the new value.
+*/
+void MapParameters::setMapVar(int varIndex, double value, int valOrient) {
+  mVar[valOrient][varIndex] = value;
 }
 
 /**
@@ -388,7 +402,8 @@ double MapParameters::getColOffset(int colFEI4, int colT3MAPS,
   double colPosFEI4 = chips->getColPosition("FEI4", colFEI4);
   double colPosT3MAPS = (colSign[orientation] *
 			 chips->getColPosition("T3MAPS", colT3MAPS));
-  double colOffset = (colPosFEI4 - (getColSlope() * colPosT3MAPS));
+  //double colOffset = (colPosFEI4 - (getColSlope() * colPosT3MAPS));
+  double colOffset = (colPosFEI4 - colPosT3MAPS);
   return colOffset;
 }
 
@@ -404,7 +419,8 @@ double MapParameters::getRowOffset(int rowFEI4, int rowT3MAPS,
   double rowPosFEI4 = chips->getRowPosition("FEI4", rowFEI4);
   double rowPosT3MAPS = (rowSign[orientation] *
 			 chips->getRowPosition("T3MAPS", rowT3MAPS));
-  double rowOffset = (rowPosFEI4 - (getRowSlope() * rowPosT3MAPS));
+  //double rowOffset = (rowPosFEI4 - (getRowSlope() * rowPosT3MAPS));
+  double rowOffset = (rowPosFEI4 - rowPosT3MAPS);
   return rowOffset;
 }
 
@@ -462,7 +478,8 @@ double MapParameters::getMapVar(int varIndex) {
    Print the parameters from the most recent mapping.
 */
 void MapParameters::printMapParameters() {
-  std::cout << "MapParameters: Printing map parameters:" << std::endl;
+  std::cout << "MapParameters: Printing map parameters for orientation "
+	    << orientation << ":" << std::endl;
   for (int i = 0; i < 4; i++) {
     std::cout << "\tparameter(" << i << ") = " << mVar[orientation][i]
 	      << " +/- " << mErr[orientation][i] << std::endl;

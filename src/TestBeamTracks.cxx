@@ -274,59 +274,9 @@ int main(int argc, char **argv) {
   int goodHitsFEI4_matched = 0;
   
   // Instantiate the mapping utility:
-  mapper = new MapParameters("","");
-  int orientation = 0;
-  mapper->setOrientation(orientation);
-  // Orientation 0:
-  if (orientation == 0) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 1.7); mapper->setMapErr(1, 0.5);//0.75);
-      mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 1.0);//2.0);
-    }
-    else {
-      mapper->setMapVar(1, 2.6); mapper->setMapErr(1, 0.2);//0.4);
-      mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 1.0);//2.0);
-    }
-  }
-  // Orientation 1:
-  else if (orientation == 1) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 1.6); mapper->setMapErr(1, 0.5);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 1.0);
-    }
-    else {
-      mapper->setMapVar(1, 2.8); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  // Orientation 3:
-  else if (orientation == 2) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-    else {
-      mapper->setMapVar(1, 3.75); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 18.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  // Orientation 2:
-  else if (orientation == 2) {
-    if (options.Contains("RunII")) {
-      mapper->setMapVar(1, 2.0); mapper->setMapErr(1, 0.6);
-      mapper->setMapVar(3, 13.0); mapper->setMapErr(3, 2.0);
-    }
-    else {
-      mapper->setMapVar(1, 4.0); mapper->setMapErr(1, 0.3);
-      mapper->setMapVar(3, 11.0); mapper->setMapErr(3, 2.0);
-    }
-  }
-  
-  mapper->setMapExists(true);
-  
-  
+  mapper = new MapParameters("../TestBeamOutput","FromFile");
+  mapper->setOrientation(1);
+    
   // Prepare FEI4 tree for loop inside T3MAPS tree's loop.
   Long64_t eventFEI4 = 0;
   cF->fChain->GetEntry(eventFEI4);

@@ -345,7 +345,7 @@ int main(int argc, char **argv) {
       // Advance position in the FEI4 tree:
       while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
 	     eventFEI4 < entriesFEI4) {
-		
+	
 	// Exclude column 79, Row > 75, Col > 40, and masked pixels:
 	if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
 	    !isMasked(cF->row-1, cF->column-1, "FEI4")) {
@@ -413,7 +413,7 @@ int main(int argc, char **argv) {
     mapper->createMapFromHits();
     if (options.Contains("NoScan")) {
       mapper->saveMapParameters("../TestBeamOutput");
-      mapper->setOrientation(3);// Use what I think is correct orientation.
+      mapper->setOrientation(1);// Use what I think is correct orientation.
       mapper->printMapParameters();
     }
     
