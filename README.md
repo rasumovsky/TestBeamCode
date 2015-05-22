@@ -16,23 +16,34 @@ classes are included, and a short description of each is provided below.
   - creates a TTree for each of the smaller text files (LoadT3MAPS)
   - combines the TTrees via hadd.
 
-##### TestBeamStudies.cxx
-  This program applies quality cuts to the FEI4 and T3MAPS data and then 
-  constructs a mapping between hits in the two chips. It can also scan the time
-  offset for the two chips in case the relative clock times are unknown.
+##### LocateT3MAPS.cxx
+  This program uses the MapParameters class to find the location in FEI4
+  corresponding to T3MAPS.
 
 ##### TestBeamOverview.cxx
   This program looks at the test beam data and identifies characteristics for
   defining quality cuts on pixel hits.  
+
+##### TestBeamScanner.cxx
+  This program is similar to TestBeamTracks, except it scans the value of the
+  map error to see how the efficiency changes with map uncertainty. 
+
+##### TestBeamStudies.cxx
+  This program applies quality cuts to the FEI4 and T3MAPS data and then 
+  constructs a mapping between hits in the two chips. It can also scan the time
+  offset for the two chips in case the relative clock times are unknown. NOTE:
+  for the scanning feature, the TimingScan.cxx implementation is preferred. 
+  Better to use this with the option "NoScan".
 
 ##### TestBeamTracks.cxx
   This program applies quality cuts to the FEI4 and T3MAPS data and then
   computes a track-by-track efficiency measurement based on the map constructed
   in TestBeamStudies.
 
-##### TestBeamScanner.cxx
-  This program is similar to TestBeamTracks, except it scans the value of the
-  map error to see how the efficiency changes. 
+##### TimingScan.cxx
+  This program just runs TestBeamTracks multiple times with different timing
+  offsets between the two chips in order to validate the timing. It identifies
+  the timing giving the maximum FEI4 efficiency.
 
 ### Supporting Classes
 
@@ -55,10 +66,6 @@ classes are included, and a short description of each is provided below.
   It can load previously calculated mapping data. It can also be called during 
   a loop over TTrees to add events, and then create a new mapping. It also 
   provides an interface for accessing map data from other classes.
-
-  ** Note: methods for calculating uncertainty are based on application of +1
-  sigma values of mapping constaints. This should be revisited when real data
-  are available and the actual spreads can be determined. 
 
 ##### PixelCluster.cxx
   This class stores a list of hits that have been associated as a cluster. It
