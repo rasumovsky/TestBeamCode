@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   double effMax = 0.0;
   
   // Loop over timing offsets:
-  for (double timing = -2.0; timing <= 2.0; timing += 0.1) {
+  for (double timing = -4.0; timing <= 4.0; timing += 0.1) {
     
     // Run the track efficiency program:
     system(Form("./bin/TestBeamTracks %s %f",option.Data(),timing));
@@ -75,7 +75,10 @@ int main(int argc, char **argv) {
     point++;
     
     // Update the maximum efficiency
-    if (effT3MAPS >= effMax) timingMax = timing;
+    if (effT3MAPS >= effMax) {
+      timingMax = timing;
+      effMax = effT3MAPS;
+    }
   }
   
   // Finally, plot the data:
@@ -92,7 +95,7 @@ int main(int argc, char **argv) {
   gEffT3MAPS->Draw("ALP");
   gEffFEI4->Draw("LPSAME");
   
-  TLegend leg(0.5,0.6,0.75,0.75);
+  TLegend leg(0.24, 0.7, 0.44, 0.8);
   leg.SetBorderSize(0);
   leg.SetFillColor(0);
   leg.SetTextSize(0.03);
@@ -106,7 +109,7 @@ int main(int argc, char **argv) {
   line->SetLineColor(kBlack);
   line->DrawLine(timingMax, gEffT3MAPS->GetYaxis()->GetXmin(),
 		 timingMax, gEffT3MAPS->GetYaxis()->GetXmax());
-  can->Print("../TestBeamOutput/TestBeamScanner/timeEffScan.eps");
+  can->Print("../TestBeamOutput/TimingScan/timeEffScan.eps");
   can->Clear();
   
   std::cout << "\nTimingScan: Finished analysis." << std::endl;
