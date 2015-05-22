@@ -152,7 +152,6 @@ int main(int argc, char **argv) {
   TString inputFEI4 = options.Contains("RunII") ?
     "../TestBeamData/TestBeamData_May9/FEI4_May9_RunI.root" :
     "../TestBeamData/TestBeamData_May3/FEI4_May3_RunI.root";
-  int lowerThresholdFEI4 = 10;
   int noiseThresholdFEI4 = options.Contains("RunII") ? 300 : 600;
   int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
   double timeOffset = 0.67;
@@ -226,14 +225,8 @@ int main(int argc, char **argv) {
   // Fill the FEI4 hit per pixel plots, get mask list:
   for (int i_r = 1; i_r <= chips->getNRow("FEI4"); i_r++) {
     for (int i_c = 1; i_c <= chips->getNCol("FEI4"); i_c++) {
-      // Exclude noisy column 79. 
-      if (i_c >= 80) continue;
-      // Only match hits with Row > 75, Col > 40
-      if (i_c <= 40) continue;
-      if (i_r >= 75) continue;
-      
       int currNHits = (int)totOccFEI4->GetBinContent(i_r, i_c);
-      if (currNHits >= noiseThresholdFEI4 || currNHits <= lowerThresholdFEI4) {
+      if (currNHits >= noiseThresholdFEI4) {
 	std::pair<int,int> pairFEI4;
 	pairFEI4.first = i_r-1;
 	pairFEI4.second = i_c-1;
@@ -272,7 +265,10 @@ int main(int argc, char **argv) {
   
   TH2D *g2Eff_T3MAPS = new TH2D("effT3MAPS","effT3MAPS",20,0.0,4.50,20,0.0,5.0);
   TH2D *g2Eff_FEI4 = new TH2D("effFEI4","effFEI4",20,0.0,4.50,20,0.0,5.0);
-    
+  
+  double initErr1 = 0.0;
+  double initErr3 = 0.0;
+  
   // Loop over uncertainty on mapping:
   for (int i_r = 1; i_r <= 20; i_r++) {
     for (int i_c = 1; i_c <= 20; i_c++) {
@@ -280,11 +276,18 @@ int main(int argc, char **argv) {
       // Instantiate the mapping utility:
       mapper = new MapParameters("../TestBeamOutput","FromFile");
       mapper->setOrientation(1);
-
-      //double mapRowErr = 0.225 * ((double)i_r);
-      //double mapColErr = 0.250 * ((double)i_c);
-      double mapRowErr = mapper->getMapErr(1) * ((double)i_r/10.0);
-      double mapColErr = mapper->getMapErr(3) * ((double)i_c/10.0);
+      // A deliberately incorrect value:
+      //mapper->setMapVar(3, mapper->getMapVar(3)-3.0);
+      
+      if (i_r == 1 && i_c == 1) {
+	initErr1 = mapper->getMapErr(1);
+	initErr3 = mapper->getMapErr(3);
+      }
+      
+      double mapRowErr = initErr1 * ((double)i_r/8.0);
+      double mapColErr = initErr3 * ((double)i_c/8.0);
+      mapper->setMapErr(1,mapRowErr);
+      mapper->setMapErr(3,mapColErr);
       
       if (i_r == 1) {
 	gEffRow_T3MAPS[i_c] = new TGraph();
@@ -344,9 +347,8 @@ int main(int argc, char **argv) {
 	while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
 	       eventFEI4 < entriesFEI4) {
 	  
-	  // Exclude column 79, Row > 75, Col > 40, and masked pixels:
-	  if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
-	      !isMasked(cF->row-1, cF->column-1, "FEI4")) {
+	  // Exclude column 79 and masked pixels:
+	  if (cF->column < 80 && !isMasked(cF->row-1, cF->column-1, "FEI4")) {
 	    
 	    // Only consider events with timestamp inside that of T3MAPS
 	    if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
@@ -428,14 +430,20 @@ int main(int argc, char **argv) {
     gEffRow_T3MAPS[i_c]->Draw("ALP");
     gEffRow_FEI4[i_c]->Draw("LPSAME");
     
-    TLegend leg(0.6,0.6,0.85,0.75);
+    TLegend leg(0.5,0.6,0.75,0.75);
     leg.SetBorderSize(0);
     leg.SetFillColor(0);
     leg.SetTextSize(0.03);
     leg.AddEntry(gEffRow_T3MAPS[i_c], "T3MAPS", "LP");
     leg.AddEntry(gEffRow_FEI4[i_c], "FEI4", "LP");
     leg.Draw("SAME");
-    //TLine *line = new TLine(); line->SetLineStyle(2); line->SetLineWidth(1); line->SetLineColor(kBlack); line->DrawLine(100, gEff_T3MAPS->GetYaxis()->GetXmin(), 100, gEff_T3MAPS->GetYaxis()->GetXmax());
+    
+    TLine *line = new TLine();
+    line->SetLineStyle(2);
+    line->SetLineWidth(1);
+    line->SetLineColor(kBlack);
+    line->DrawLine(initErr1, gEffRow_T3MAPS[i_c]->GetYaxis()->GetXmin(),
+		   initErr1, gEffRow_T3MAPS[i_c]->GetYaxis()->GetXmax());
     can->Print(Form("../TestBeamOutput/TestBeamScanner/rowEefficiencyGraph%d.eps",i_c));
     can->Print("../TestBeamOutput/TestBeamScanner/rowEfficiencyGraph.gif+");
     if (i_c == 20) {
@@ -456,13 +464,20 @@ int main(int argc, char **argv) {
     gEffCol_T3MAPS[i_r]->Draw("ALP");
     gEffCol_FEI4[i_r]->Draw("LPSAME");
     
-    TLegend leg(0.6,0.6,0.85,0.75);
+    TLegend leg(0.5,0.6,0.75,0.75);
     leg.SetBorderSize(0);
     leg.SetFillColor(0);
     leg.SetTextSize(0.03);
     leg.AddEntry(gEffCol_T3MAPS[i_r], "T3MAPS", "LP");
     leg.AddEntry(gEffCol_FEI4[i_r], "FEI4", "LP");
     leg.Draw("SAME");
+    
+    TLine *line = new TLine();
+    line->SetLineStyle(2);
+    line->SetLineWidth(1);
+    line->SetLineColor(kBlack);
+    line->DrawLine(initErr3, gEffCol_T3MAPS[i_r]->GetYaxis()->GetXmin(),
+		   initErr3, gEffCol_T3MAPS[i_r]->GetYaxis()->GetXmax());
     
     can->Print(Form("../TestBeamOutput/TestBeamScanner/colEefficiencyGraph%d.eps",i_r));
     can->Print("../TestBeamOutput/TestBeamScanner/colEfficiencyGraph.gif+10");
@@ -479,6 +494,7 @@ int main(int argc, char **argv) {
   leg2.SetFillColor(0);
   leg2.SetTextSize(0.03);
   for (int i_c = 20; i_c >= 1; i_c--) {
+    if (i_c % 2 != 0) continue;
     double mapColErr = 0.250 * ((double)i_c);
     gEffRow_T3MAPS[i_c]->SetLineColor(kRed+i_c-10);
     gEffRow_T3MAPS[i_c]->SetMarkerColor(kRed+i_c-10);
@@ -490,6 +506,14 @@ int main(int argc, char **argv) {
     leg2.AddEntry(gEffRow_T3MAPS[i_c], Form("T3MAPS #Delta_{col}=%2.2f",mapColErr), "LP");
     leg2.AddEntry(gEffRow_FEI4[i_c], Form("FEI4 #Delta_{col}=%2.2f",mapColErr), "LP");
   }
+  
+  TLine *line2 = new TLine();
+  line2->SetLineStyle(2);
+  line2->SetLineWidth(1);
+  line2->SetLineColor(kBlack);
+  line2->DrawLine(initErr1, gEffRow_T3MAPS[20]->GetYaxis()->GetXmin(),
+		  initErr1, gEffRow_T3MAPS[20]->GetYaxis()->GetXmax());
+  
   leg2.Draw("SAME");
   can->Print("../TestBeamOutput/TestBeamScanner/rowGroupEfficiencyGraph.eps");
   can->Clear();
@@ -501,6 +525,7 @@ int main(int argc, char **argv) {
   leg3.SetFillColor(0);
   leg3.SetTextSize(0.03);
   for (int i_r = 20; i_r >= 1; i_r--) {
+    if (i_r % 2 != 0) continue;
     double mapRowErr = 0.225 * ((double)i_r);
     gEffCol_T3MAPS[i_r]->SetLineColor(kRed+i_r-10);
     gEffCol_T3MAPS[i_r]->SetMarkerColor(kRed+i_r-10);
@@ -512,6 +537,14 @@ int main(int argc, char **argv) {
     leg3.AddEntry(gEffCol_T3MAPS[i_r], Form("T3MAPS #Delta_{row}=%2.2f",mapRowErr), "LP");
     leg3.AddEntry(gEffCol_FEI4[i_r], Form("FEI4 #Delta_{row}=%2.2f",mapRowErr), "LP");
   }
+  
+  TLine *line3 = new TLine();
+  line3->SetLineStyle(2);
+  line3->SetLineWidth(1);
+  line3->SetLineColor(kBlack);
+  line3->DrawLine(initErr3, gEffCol_T3MAPS[20]->GetYaxis()->GetXmin(),
+		  initErr3, gEffCol_T3MAPS[20]->GetYaxis()->GetXmax());
+  
   leg3.Draw("SAME");
   can->Print("../TestBeamOutput/TestBeamScanner/colGroupEfficiencyGraph.eps");
   can->Clear();

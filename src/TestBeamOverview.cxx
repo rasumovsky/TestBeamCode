@@ -17,6 +17,8 @@
 //    "RunI" or "RunII" as an option will implement the proper cuts and load  //
 //    the corresponding datasets.                                             //
 //                                                                            //
+// WARNING! MUST UPDATE totalPixFEI4 corresponding to the overlapping area.   //
+//                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
 // C++ includes:
@@ -66,10 +68,13 @@ int main(int argc, char **argv) {
   TString inputFEI4 = options.Contains("RunII") ?
     "../TestBeamData/TestBeamData_May9/FEI4_May9_RunI.root" :
     "../TestBeamData/TestBeamData_May3/FEI4_May3_RunI.root";
-  int lowerThresholdFEI4 = 10;
   int noiseThresholdFEI4 = options.Contains("RunII") ? 300 : 600;
   int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
   double integrationTime = options.Contains("RunII") ? 0.5 : 1.0;
+  
+  // MUST UPDATE:
+  int totalPixFEI4 = 462;//nominal
+  //int totalPixFEI4 = 1020;//uncertainty
   
   // Set the output plot style:
   PlotUtil::setAtlasStyle();  
@@ -186,11 +191,10 @@ int main(int argc, char **argv) {
     }
     
     // integration time with +/- 1 second window
-    if (cF->timestamp_start > 1430686885 && cF->timestamp_stop < 1430686888) {
+    if (cF->timestamp_start > 1430686886 && cF->timestamp_stop < 1430686887) {
       matchEvtFEI4->Fill(cF->row-1, cF->column-1);
     }
     
-    //TH1F *hitPerPeriodFEI4 = new TH1F("hitPerPeriodFEI4",
     if (cF->timestamp_start >= previousTime && 
 	cF->timestamp_stop < previousTime + integrationTime) {
       hitsInPeriod++;
@@ -225,7 +229,7 @@ int main(int argc, char **argv) {
     for (int i_c = 1; i_c <= chips->getNCol("FEI4"); i_c++) {
       int currNHits = (int)occFEI4->GetBinContent(i_r, i_c);
       hitPerPixFEI4->Fill(currNHits);
-      if (currNHits >= noiseThresholdFEI4 || currNHits <= lowerThresholdFEI4) {
+      if (currNHits >= noiseThresholdFEI4) {
 	std::pair<int,int> pairFEI4;
 	pairFEI4.first = i_r-1;
 	pairFEI4.second = i_c-1;
@@ -276,10 +280,7 @@ int main(int argc, char **argv) {
 	    <<  hitPerEvtT3MAPS->GetMean() << std::endl;
   std::cout << "The FEI4 mean hits/integration is "
 	    << hitPerPeriodFEI4->GetMean() << std::endl;
-
-
-
-
+  
   //**********//
   // Start Part Two of the analysis, with cuts implemented:
   std::cout << "\n\nTestBeamOverview: Part Two - Apply Cuts" << std::endl;
@@ -340,11 +341,14 @@ int main(int argc, char **argv) {
     
     // Exclude noisy column 79. 
     if (cF->column >= 80) continue;
-    
-    // Only match hits with Row > 75, Col > 40
-    if (cF->column <= 40) continue;
-    if (cF->row >= 75) continue;
         
+    //Uncertainty range:
+    //if (cF->column > 68 || cF->column < 56 || cF->row > 97 || cF->row < 12) {
+    // Nominal range:
+    if (cF->column > 64 || cF->column < 58 || cF->row > 92 || cF->row < 15) {
+      continue;
+    }
+    
     // Cut masked channels:
     bool maskCut = false;
     for (int i_c = 0; i_c < (int)maskFEI4.size(); i_c++) {
@@ -370,11 +374,8 @@ int main(int argc, char **argv) {
 	    << "%" << std::endl;
   
   int totalPixT3MAPS = chips->getNRow("T3MAPS") * chips->getNCol("T3MAPS");
-  //int totalPixFEI4 = chips->getNRow("FEI4") * chips->getNCol("FEI4");
-  // Must account for the fact that much of the chip is ignored.
-  int totalPixFEI4 = (75 * (chips->getNCol("FEI4")-41));
   
-  //int usedPixFEI4 = totalPixFEI4 - ((int)maskFEI4.size());
+  
   int usedPixFEI4 = totalPixFEI4;
   int usedPixT3MAPS = totalPixT3MAPS - ((int)maskT3MAPS.size());
   double meanHitsPerGoodPixT3MAPS = (((double)nPassCutsT3MAPS) /

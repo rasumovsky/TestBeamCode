@@ -139,11 +139,12 @@ bool canMatchHit(TString chipName, std::pair<int,int> singleHit) {
 */
 int main(int argc, char **argv) {
   // Check arguments:
-  if (argc < 2) {
-    std::cout << "\nUsage: " << argv[0] << " <option>" << std::endl; 
+  if (argc < 3) {
+    std::cout << "\nUsage: " << argv[0] << " <option> <timing>" << std::endl; 
     exit(0);
   }
   TString options = argv[1];
+  double timeOffset = atof(argv[2]);//0.67
   
   // Fundamental job settings:
   TString inputT3MAPS = options.Contains("RunII") ?
@@ -152,12 +153,10 @@ int main(int argc, char **argv) {
   TString inputFEI4 = options.Contains("RunII") ?
     "../TestBeamData/TestBeamData_May9/FEI4_May9_RunI.root" :
     "../TestBeamData/TestBeamData_May3/FEI4_May3_RunI.root";
-  int lowerThresholdFEI4 = 10;
   int noiseThresholdFEI4 = options.Contains("RunII") ? 300 : 600;
   int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
   double integrationTime = options.Contains("RunII") ? 0.5 : 1.0;
-  double timeOffset = 0.67;
-  
+    
   // Set the output plot style:
   PlotUtil::setAtlasStyle();  
   
@@ -227,14 +226,8 @@ int main(int argc, char **argv) {
   // Fill the FEI4 hit per pixel plots, get mask list:
   for (int i_r = 1; i_r <= chips->getNRow("FEI4"); i_r++) {
     for (int i_c = 1; i_c <= chips->getNCol("FEI4"); i_c++) {
-      // Exclude noisy column 79. 
-      if (i_c >= 80) continue;
-      // Only match hits with Row > 75, Col > 40
-      if (i_c <= 40) continue;
-      if (i_r >= 75) continue;
-      
       int currNHits = (int)totOccFEI4->GetBinContent(i_r, i_c);
-      if (currNHits >= noiseThresholdFEI4 || currNHits <= lowerThresholdFEI4) {
+      if (currNHits >= noiseThresholdFEI4) {
 	std::pair<int,int> pairFEI4;
 	pairFEI4.first = i_r-1;
 	pairFEI4.second = i_c-1;
@@ -315,9 +308,8 @@ int main(int argc, char **argv) {
     while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
 	   eventFEI4 < entriesFEI4) {
       
-      // Exclude column 79, Row > 75, Col > 40, and masked pixels:
-      if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
-	  !isMasked(cF->row-1, cF->column-1, "FEI4")) {
+      // Exclude column 79 and masked pixels:
+      if (cF->column < 80 && !isMasked(cF->row-1, cF->column-1, "FEI4")) {
 	
 	// Only consider events with timestamp inside that of T3MAPS
 	if (cF->timestamp_start >= (cT->timestamp_start+timeOffset) &&
@@ -362,15 +354,23 @@ int main(int argc, char **argv) {
   std::cout << "\nPrinting matching statistics." << std::endl;
   std::cout << "\tTotal Hits T3MAPS = " << goodHitsT3MAPS_total 
 	    << "\tTotal Hits FEI4 = " << goodHitsFEI4_total << std::endl;
+  
+  double fracT3MAPS = (((double)goodHitsT3MAPS_matched) / 
+		     ((double)goodHitsT3MAPS_matchable));
+  double fracFEI4 = (((double)goodHitsFEI4_matched) / 
+		     ((double)goodHitsFEI4_matchable));
   std::cout << "\tT3MAPS (matched/matchable) = (" << goodHitsT3MAPS_matched
-	    << " / " << goodHitsT3MAPS_matchable << " ) = "
-	    << (((double)goodHitsT3MAPS_matched) / 
-		((double)goodHitsT3MAPS_matchable)) << std::endl;
+	    << " / " << goodHitsT3MAPS_matchable << " ) = " << fracT3MAPS
+	    << std::endl;
   
   std::cout << "\tFEI4 (matched/matchable) = (" << goodHitsFEI4_matched << " / "
-	    << goodHitsFEI4_matchable << " ) = "
-	    << (((double)goodHitsFEI4_matched)/((double)goodHitsFEI4_matchable))
-	    << std::endl;
+	    << goodHitsFEI4_matchable << " ) = " << fracFEI4 << std::endl;
+  
+  // Write efficiencies to file:
+  ofstream effFile(Form("../TestBeamOutput/TestBeamTracks/eff_t%2.2f.txt",
+			timeOffset));
+  effFile << fracT3MAPS << "\t" << fracFEI4 << std::endl;
+  effFile.close();
   
   std::cout << "\nTestBeamTracks: Finished analysis." << std::endl;
   return 0;

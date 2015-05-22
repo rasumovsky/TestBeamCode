@@ -85,7 +85,8 @@ int main(int argc, char **argv) {
   // Instantiate the mapping utility:
   mapper = new MapParameters("../TestBeamOutput","FromFile");
   mapper->setOrientation(1);
-  
+  //mapper->setMapVar(3, mapper->getMapVar(3)-3.0);
+
   double colSizeT = ((double)chips->getNCol("T3MAPS") *
 		     chips->getColPitch("T3MAPS"));
   double rowSizeT = ((double)chips->getNRow("T3MAPS") *
@@ -162,10 +163,19 @@ int main(int argc, char **argv) {
     }
   }
   
-  std::cout << "LocateT3MAPS: Printing location of T3MAPS in FEI4" << std::endl;
+  std::cout << "LocateT3MAPS: Printing nominal location of T3MAPS in FEI4"
+	    << std::endl;
   std::cout << "\tcolumn range = [" << minColFEI4 << ", " << maxColFEI4
 	    << "]" << std::endl;
   std::cout << "\trow range = [" << minRowFEI4 << ", " << maxRowFEI4
+	    << "]" << std::endl;
+  
+  
+  std::cout << "LocateT3MAPS: Printing location + uncertainty of T3MAPS in FEI4"
+	    << std::endl;
+  std::cout << "\tcolumn range = [" << minErrColFEI4 << ", " << maxErrColFEI4
+	    << "]" << std::endl;
+  std::cout << "\trow range = [" << minErrRowFEI4 << ", " << maxErrRowFEI4
 	    << "]" << std::endl;
   
   PlotUtil::plotTH2D(locT3MAPS, "row_{FEI4}", "col_{FEI4}", "", "../TestBeamOutput/LocateT3MAPS/nominalLocationT3MAPS.eps");

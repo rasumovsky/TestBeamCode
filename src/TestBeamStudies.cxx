@@ -116,7 +116,6 @@ int main(int argc, char **argv) {
   TString inputFEI4 = options.Contains("RunII") ?
     "../TestBeamData/TestBeamData_May9/FEI4_May9_RunI.root" :
     "../TestBeamData/TestBeamData_May3/FEI4_May3_RunI.root";
-  int lowerThresholdFEI4 = 10;
   int noiseThresholdFEI4 = options.Contains("RunII") ? 300 : 600;
   int noiseThresholdT3MAPS = options.Contains("RunII") ? 15 : 20;
   double integrationTime = options.Contains("RunII") ? 0.5 : 1.0;
@@ -199,14 +198,8 @@ int main(int argc, char **argv) {
   // Fill the FEI4 hit per pixel plots, get mask list:
   for (int i_r = 1; i_r <= chips->getNRow("FEI4"); i_r++) {
     for (int i_c = 1; i_c <= chips->getNCol("FEI4"); i_c++) {
-      // Exclude noisy column 79. 
-      if (i_c >= 80) continue;
-      // Only match hits with Row > 75, Col > 40
-      if (i_c <= 40) continue;
-      if (i_r >= 75) continue;
-      
       int currNHits = (int)totOccFEI4->GetBinContent(i_r, i_c);
-      if (currNHits >= noiseThresholdFEI4 || currNHits <= lowerThresholdFEI4) {
+      if (currNHits >= noiseThresholdFEI4) {
 	std::pair<int,int> pairFEI4;
 	pairFEI4.first = i_r-1;
 	pairFEI4.second = i_c-1;
@@ -346,9 +339,8 @@ int main(int argc, char **argv) {
       while (cF->timestamp_start < (cT->timestamp_stop+timeOffset) &&
 	     eventFEI4 < entriesFEI4) {
 	
-	// Exclude column 79, Row > 75, Col > 40, and masked pixels:
-	if (cF->column < 80 && cF->column > 40 && cF->row < 75 &&
-	    !isMasked(cF->row-1, cF->column-1, "FEI4")) {
+	// Exclude column 79 and masked pixels:
+	if (cF->column < 80 && !isMasked(cF->row-1, cF->column-1, "FEI4")) {
 	  
 	  PixelHit *currFEI4Hit = new PixelHit(cF->row-1, cF->column-1,
 					       cF->LVL1ID, cF->tot, false);
