@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
-//  Name: TimingScan.cxx                                                    //
+//  Name: TimingScan.cxx                                                      //
 //                                                                            //
 //  Created: Andrew Hard                                                      //
 //  Email: ahard@cern.ch                                                      //
 //  Date: 14/05/2015                                                          //
 //                                                                            //
-//  This program figures out the location of T3MAPS in FEI4 using a map that  //
-//  was produced with TestBeamStudies.cxx.                                    //
+//  This program cross-checks the timing offset between two chips by          //
+//  maximizing the efficiency measurement in TestBeamTracks.cxx.              //
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
